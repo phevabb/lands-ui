@@ -1,0 +1,3 @@
+props are props
+
+but children can be wraped around ba a different component before being passed
