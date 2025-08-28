@@ -34,6 +34,7 @@ import MaterialDashboard from "./material-dashboard";
 const router = new VueRouter({
   routes, // short for routes: routes
   linkExactActiveClass: "nav-item active",
+  mode: 'history'
 });
 
 
@@ -43,6 +44,7 @@ Vue.use(MaterialDashboard);
 Vue.use(GlobalComponents);
 Vue.use(GlobalDirectives);
 Vue.use(Notifications);
+
 
 /* eslint-disable no-new */
 new Vue({

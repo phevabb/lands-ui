@@ -1,19 +1,25 @@
-import DashboardLayout from "@/pages/Layout/DashboardLayout.vue";
+import DashboardLayout from "@/admin_BOX/pages/Layout/DashboardLayout.vue";
 
-import Dashboard from "@/pages/Dashboard.vue";
-import UserProfile from "@/pages/UserProfile.vue";
-import TableList from "@/pages/TableList.vue";
-import Typography from "@/pages/Typography.vue";
-import Icons from "@/pages/Icons.vue";
-import Maps from "@/pages/Maps.vue";
-import Notifications from "@/pages/Notifications.vue";
-import UpgradeToPRO from "@/pages/UpgradeToPRO.vue";
+import Dashboard from "@/admin_BOX/pages/Dashboard.vue";
+import UserProfile from "@/admin_BOX/pages/UserProfile.vue";
+import TableList from "@/admin_BOX/pages/TableList.vue";
+import Typography from "@/admin_BOX/pages/Typography.vue";
+import Icons from "@/admin_BOX/pages/Icons.vue";
+import Maps from "@/admin_BOX/pages/Maps.vue";
+import Notifications from "@/admin_BOX/pages/Notifications.vue";
+import UpgradeToPRO from "@/admin_BOX/pages/UpgradeToPRO.vue";
+import Login from "@/registration/Login.vue";
 
 const routes = [
+
+  {
+    path: "/login",
+    name: "Login",
+    component: Login,
+  },
   {
     path: "/",
     component: DashboardLayout,
-    redirect: "/dashboard",
     children: [
       {
         path: "dashboard",
@@ -59,7 +65,9 @@ const routes = [
         component: UpgradeToPRO,
       },
     ],
-  },
+
+  }
+
 ];
 
 export default routes;
