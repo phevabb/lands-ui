@@ -120,7 +120,7 @@ import { ref, getCurrentInstance } from "vue";
 import TopNavbar from "./TopNavbar.vue";
 import ContentFooter from "./ContentFooter.vue";
 import DashboardContent from "./Content.vue";
-import MobileMenu from "@/pages/Layout/MobileMenu.vue";
+import MobileMenu from "@/admin_BOX/pages/Layout/MobileMenu.vue";
 import SideBar from "@/components/SidebarPlugin/SideBar.vue";
 import SidebarLink from "@/components/SidebarPlugin/SidebarLink.vue";
 import Notifications from "@/components/NotificationPlugin/Notifications.vue";
