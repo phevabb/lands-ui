@@ -73,30 +73,48 @@
           </span>
         </SidebarLink>
 
-        <SidebarLink
-          :link="{
-          name: 'Dashboard',
-          path: '/maps',
-          }"
-          class="sidebar-link">
-          <span class="sidebar-item">
-            <md-icon>location_on</md-icon>
-            <span class="sidebar-text">Maps</span>
-          </span>
-        </SidebarLink>
-
-        <SidebarLink
-          :link="{
-          name: 'Dashboard',
-          path: '/notifications',
-          }"
-          class="sidebar-link"
+        <!-- Account Dropdown -->
+  <div  class="sidebar-link"
+    :class="{ active: activeAccountItem === 'account' }"
+    @mouseenter="setActive('account')"
+    @mouseleave="setActive(null)"
+    @click="toggleAccountDropdown"
+    style="cursor:pointer;"
+    >
+    <span class="sidebar-item">
+      <md-icon>account_circle</md-icon>
+      <span class="sidebar-text">Account</span>
+      <md-icon style="margin-left:auto;">arrow_drop_down</md-icon>
+    </span>
+  </div>
+  <div v-if="showAccountDropdown" class="sidebar-dropdown">
+    <div class="sidebar-link"
+      :class="{ active: activeAccountItem === 'logout' }"
+      @mouseenter="setActive('logout')"
+      @mouseleave="setActive(null)"
+      @click="handleLogout"
+      style="cursor:pointer;"
         >
-          <span class="sidebar-item">
-            <md-icon>notifications</md-icon>
-            <span class="sidebar-text">Notifications</span>
-          </span>
-        </SidebarLink>
+      <span class="sidebar-item">
+        <md-icon>logout</md-icon>
+        <span class="sidebar-text">Logout</span>
+      </span>
+    </div>
+    <div class="sidebar-link"
+      :class="{ active: activeAccountItem === 'change' }"
+      @mouseenter="setActive('change')"
+      @mouseleave="setActive(null)"
+      @click="goToChangePassword"
+      style="cursor:pointer;"
+      >
+      <span class="sidebar-item">
+        <md-icon>lock</md-icon>
+        <span class="sidebar-text">Change Password</span>
+      </span>
+    </div>
+  </div>
+
+        
 
       </template>
     </SideBar>
@@ -115,6 +133,9 @@
 
 <script setup>
 import { ref, getCurrentInstance } from "vue";
+import { useRouter } from "vue-router/composables";
+import { logout } from "../../../services/api";
+
 
 // Components
 import TopNavbar from "./TopNavbar.vue";
@@ -126,6 +147,29 @@ import SidebarLink from "@/components/SidebarPlugin/SidebarLink.vue";
 import Notifications from "@/components/NotificationPlugin/Notifications.vue";
 
 // Access global properties (like $sidebar and $route)
+
+const router = useRouter();
+const showAccountDropdown = ref(false);
+
+const toggleAccountDropdown = () => {
+  showAccountDropdown.value = !showAccountDropdown.value;
+};
+
+const goToChangePassword = () => {
+  router.push("/change-password"); // Make sure this route exists
+};
+
+const handleLogout = async () => {
+  try {
+    await logout();
+    localStorage.removeItem("token"); // Remove token before redirect
+    router.push("/login");
+  } catch (error) {
+    console.error("Logout failed:", error);
+  }
+};
+
+
 const { proxy } = getCurrentInstance();
 
 // Sidebar state
@@ -140,6 +184,7 @@ const sidebarBackgroundImage = ref(require("@/assets/img/new.jpg"));
   padding: 10px 15px;
   color: white;
   text-decoration: none;
+  transition: background 0.2s;
 }
 
 .sidebar-item {
@@ -155,6 +200,17 @@ const sidebarBackgroundImage = ref(require("@/assets/img/new.jpg"));
   margin: 0;
   padding: 0;
   text-align: left;
+}
+.sidebar-dropdown {
+  background: rgba(0,0,0,0.2);
+  margin-left: 10px;
+  border-radius: 5px;
+}
+
+.sidebar-link:hover,
+.sidebar-link.active {
+  background: hwb(78 3% 7% / 0.15);
+  color: #fff;
 }
 
 /* Ensure SidebarLink aligns content left */

@@ -11,6 +11,10 @@ import UpgradeToPRO from "@/admin_BOX/pages/UpgradeToPRO.vue";
 import Login from "@/registration/Login.vue";
 
 const routes = [
+  {
+    path: "/",
+    redirect: "/login"
+  },
 
   {
     path: "/login",
@@ -25,45 +29,33 @@ const routes = [
         path: "dashboard",
         name: "Dashboard",
         component: Dashboard,
+        meta: { requiresAuth: true }
       },
       {
         path: "user",
         name: "User Profile",
         component: UserProfile,
+        meta: { requiresAuth: true }
       },
       {
         path: "table",
         name: "Table List",
         component: TableList,
+        meta: { requiresAuth: true }
       },
       {
         path: "typography",
         name: "Typography",
         component: Typography,
+        meta: { requiresAuth: true }
       },
       {
         path: "icons",
         name: "Icons",
         component: Icons,
+        meta: { requiresAuth: true }
       },
-      {
-        path: "maps",
-        name: "Maps",
-        meta: {
-          hideFooter: true,
-        },
-        component: Maps,
-      },
-      {
-        path: "notifications",
-        name: "Notifications",
-        component: Notifications,
-      },
-      {
-        path: "upgrade",
-        name: "Upgrade to PRO",
-        component: UpgradeToPRO,
-      },
+      
     ],
 
   }

@@ -1,19 +1,3 @@
-// =========================================================
-// * Vue Material Dashboard - v1.5.2
-// =========================================================
-//
-// * Product Page: https://www.creative-tim.com/product/vue-material-dashboard
-// * Copyright 2024 Creative Tim (https://www.creative-tim.com)
-// * Licensed under MIT (https://github.com/creativetimofficial/vue-material-dashboard/blob/master/LICENSE.md)
-//
-// * Coded by Creative Tim
-//
-// =========================================================
-//
-// * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-// The Vue build version to load with the `import` command
-// (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from "vue";
 import VueRouter from "vue-router";
 import App from "./App";
@@ -35,6 +19,20 @@ const router = new VueRouter({
   routes, // short for routes: routes
   linkExactActiveClass: "nav-item active",
   mode: 'history'
+});
+
+router.beforeEach((to, from, next) => {
+  const isAuthenticated = !!localStorage.getItem("token"); // Or your auth logic
+  console.log("herrr", isAuthenticated);
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    if (!isAuthenticated) {
+      next("/login");
+    } else {
+      next();
+    }
+  } else {
+    next();
+  }
 });
 
 

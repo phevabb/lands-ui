@@ -28,14 +28,19 @@
 
         <form @submit.prevent="handleLogin" class="login-form">
           <div class="form-group">
-            <label for="department">Choose Department</label>
-            <div class="input-wrapper">
-              <select v-model="form.staff_department" id="department">
-                <option value="" disabled>Select department</option>
-                <option v-for="dept in departments" :key="dept.id" :value="dept.name">{{ dept.name }}</option>
-              </select>
-            </div>
-          </div>
+  <label for="department">Choose Department</label>
+  <div class="input-wrapper select-wrapper">
+    <select v-model="form.staff_department" id="department">
+      <option value="" disabled selected>Select Department</option>
+      <option v-for="dept in departments" :key="dept.id" :value="dept.name">
+        {{ dept.name }}
+      </option>
+    </select>
+    <!-- Dropdown arrow -->
+    <span class="dropdown-icon">▼</span>
+  </div>
+</div>
+
 
           <div class="form-group">
             <label for="userID">Staff ID</label>
@@ -59,12 +64,17 @@
             </div>
           </div>
 
-          <button type="submit" class="login-btn">Log in</button>
+         <!-- Loading spinner OR button -->
+        <md-progress-bar v-if="loading" md-mode="indeterminate"></md-progress-bar>
+        <button v-else type="submit" class="login-btn">Log in</button>
+
 
           <div class="forgot-password">
             <router-link to="/password-reset">Forgot password?</router-link>
           </div>
         </form>
+
+
       </div>
     </div>
   </div>
@@ -73,8 +83,13 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import {login} from '@/services/api'
+const loading = ref(false)
+
 
 const messages = ref([])
+const insert_message = (msg) => {
+  messages.value.push(msg)
+}
 const closeAlert = (index) => {
   messages.value.splice(index, 1)
 }
@@ -98,13 +113,14 @@ const togglePassword = () => {
 }
 
 const handleLogin = async () => {
+  loading.value = true
   try{
     const {data} = await login(form)
     localStorage.setItem('token', data.token) // save token
     console.log('logged in:', data)
     const v = data.user.role
     console.log('logged in:', JSON.stringify(v, null, 2));
-    console.log("dataaaaaaaaaaa", JSON.stringify(data, null, 2));
+ 
 
     if (data.user.role === "Admin") {
       window.location.href ='/dashboard'
@@ -114,9 +130,22 @@ const handleLogin = async () => {
     }
 
     else {window.location.href ='/dashboard_staff'}
-  } catch(err){
-    console.log("Login Failed", err)
+  }catch (err) {
+  const message =
+    err?.response?.data?.non_field_errors?.[0] ||
+    err?.response?.data?.staff_department?.[0] ||
+    err?.response?.data?.user_ID?.[0] ||
+    err?.response?.data?.password?.[0] ||
+    'Please check your internet connection';
+
+  insert_message(message);
+  console.log("Login Failed", err);
+}
+
+ finally{
+    loading.value = false
   }
+
 
   console.log('Form submitted', form)
 }
@@ -393,5 +422,29 @@ body {
     padding: 2rem 1rem;
   }
 }
+.select-wrapper {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.select-wrapper select {
+  width: 100%;
+  padding-right: 30px; /* space for icon */
+  appearance: none; /* hide default arrow */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.select-wrapper .dropdown-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none; /* so clicks go to select */
+  color: black; /* black icon */
+  font-size: 14px;
+}
+
 
 </style>
