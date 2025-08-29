@@ -9,17 +9,50 @@ import Maps from "@/admin_BOX/pages/Maps.vue";
 import Notifications from "@/admin_BOX/pages/Notifications.vue";
 import UpgradeToPRO from "@/admin_BOX/pages/UpgradeToPRO.vue";
 import Login from "@/registration/Login.vue";
+import ChangePassword from "../registration/ChangePassword.vue";
+import ChangePasswordComplete from "../registration/ChangePasswordComplete.vue";
+import ResetPasswordSuccess from "../registration/ResetPasswordSuccess.vue";
+import ResetPassword from "../registration/ResetPassword.vue";
+import ResetPasswordDone from "../registration/ResetPasswordDone.vue";
+import ResetPasswordConfirm from "../registration/ResetPasswordConfirm.vue"; 
+
 
 const routes = [
   {
-    path: "/",
-    redirect: "/login"
-  },
+  path: "/",
+  redirect: "/login",
+},
+{
+  path: "/password-reset-confirm/:uid/:token",
+  name: "password-reset-confirm",
+  component: ResetPasswordConfirm,
+},
 
   {
     path: "/login",
     name: "Login",
     component: Login,
+  },
+  {
+    path: "/reset-password",
+    name: "reset-password",
+    component: ResetPassword,
+  },
+  
+  {
+    path: "/password-reset-success",
+    name: "password-reset-success",
+    component: ResetPasswordSuccess,
+  },
+  {
+    path: "/change-password-complete",
+    name: "change-password-complete",
+    component: ChangePasswordComplete,
+  },
+  {
+    path: "/password-reset-done",
+    name: "password-reset-done",
+    component: ResetPasswordDone,
   },
   {
     path: "/",
@@ -53,6 +86,12 @@ const routes = [
         path: "icons",
         name: "Icons",
         component: Icons,
+        meta: { requiresAuth: true }
+      },
+      {
+        path: "change-password",
+        name: "change-password",
+        component: ChangePassword,
         meta: { requiresAuth: true }
       },
       

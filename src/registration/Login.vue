@@ -70,7 +70,7 @@
 
 
           <div class="forgot-password">
-            <router-link to="/password-reset">Forgot password?</router-link>
+            <router-link to="/reset-password">Forgot password?</router-link>
           </div>
         </form>
 
