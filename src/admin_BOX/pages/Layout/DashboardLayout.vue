@@ -117,6 +117,11 @@
         
 
       </template>
+
+
+
+
+      
     </SideBar>
 
     <div class="main-panel">
@@ -163,6 +168,7 @@ const handleLogout = async () => {
   try {
     await logout();
     localStorage.removeItem("token"); // Remove token before redirect
+    localStorage.removeItem("user");
     router.push("/login");
   } catch (error) {
     console.error("Logout failed:", error);

@@ -4,9 +4,7 @@
       <div class="md-toolbar-section-start">
         <h3 class="md-title">{{ $route.name }}</h3>
       </div>
-
       <div class="md-toolbar-section-end">
-        <!-- Sidebar Toggle -->
         <md-button
           class="md-just-icon md-simple md-toolbar-toggle"
           :class="{ toggled: $sidebar.showSidebar }"
@@ -18,7 +16,6 @@
         </md-button>
 
         <div class="md-collapse">
-          <!-- Autocomplete -->
           <div class="md-autocomplete">
             <md-autocomplete
               class="search"
@@ -29,16 +26,17 @@
             </md-autocomplete>
           </div>
 
-          <!-- Right side menu -->
+
           <md-list>
             <md-list-item href="/dashboard">
               <i class="material-icons">dashboard</i>
               <p class="hidden-lg hidden-md">Dashboard</p>
             </md-list-item>
 
-            <!-- Profile dropdown -->
-<!-- Profile Dropdown -->
-<!-- Profile Dropdown -->
+            
+           
+
+            <!-- Profile Dropdown -->
 <div>
   <md-menu>
     <!-- Trigger list-item styled like your Dashboard link -->
@@ -62,9 +60,6 @@
   </md-menu>
 </div>
 
-
-
-
           </md-list>
         </div>
       </div>
@@ -72,35 +67,25 @@
   </md-toolbar>
 </template>
 
-<script setup>
-import { ref } from "vue";
+<script>
+export default {
+  
+  
 
-// state
-const selectedEmployee = ref(null);
-const employees = ref([
-  "Jim Halpert",
-  "Dwight Schrute",
-  "Michael Scott",
-  "Pam Beesly",
-  "Angela Martin",
-  "Kelly Kapoor",
-  "Ryan Howard",
-  "Kevin Malone",
-]);
 
-// methods
-function toggleSidebar() {
-  // if you're still using a global sidebar plugin
-  // this may need updating for Vue 3
-  // (depends on how $sidebar was ported)
-  // Example:
-  // $sidebar.displaySidebar(!$sidebar.showSidebar)
-}
 
-function logout() {
+  methods: {
+    toggleSidebar() {
+      this.$sidebar.displaySidebar(!this.$sidebar.showSidebar);
+    },
+    logout() {
   localStorage.removeItem("token");
+  localStorage.removeItem("user");
   window.location.href = "/login"; // or use router.push
 }
+    
+  },
+};
 </script>
 
 <style scoped>  
@@ -141,4 +126,3 @@ function logout() {
 }
 
 </style>
-

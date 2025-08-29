@@ -31,19 +31,42 @@
           </div>
         </div>
 
-        <button
-          type="submit"
-          class="btn btn-primary"
-          :disabled="loading"
-        >
-          <!-- Corrected conditional rendering using a single v-if/v-else pair -->
-          <span v-if="loading">
-            <i class="fas fa-circle-notch spinner"></i> Sending...
-          </span>
-          <span v-else>
-            <i class="fas fa-paper-plane"></i> Send Reset Email
-          </span>
-        </button>
+
+
+
+       <div class="text-center">
+  <button
+    type="submit"
+    class="btn btn-primary w-full py-3 mb-3"
+    :disabled="loading"
+  >
+    <span v-if="loading">
+      <i class="fas fa-circle-notch fa-spin mr-2"></i>
+      Sending...
+    </span>
+    <span v-else>
+      <i class="fas fa-paper-plane mr-2"></i>
+      Send Reset Email
+    </span>
+  </button>
+  
+  <br/>
+
+    <button
+      type="button"
+      class="btn btn-back btn-secondary w-full py-3"
+      @click="$router.push('/login')">
+    
+      ← Back to login page
+
+    </button>    
+  
+
+</div>
+
+
+
+        
       </form>
     </div>
   </div>
@@ -115,6 +138,27 @@ const sendResetEmail = async () => {
   align-items: center;
   padding: 20px;
 }
+.btn-back {
+  background-color: #6c757d;   /* same as btn-secondary */
+  color: #fff;
+  padding: 0.75rem;
+  width: 100%;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.btn-back:hover {
+  background-color: #5a6268;  /* darker gray */
+  color: #e2e6ea;             /* lighter text */
+}
+
+.btn-back:active {
+  background-color: #545b62;  /* even darker when clicked */
+  color: #dee2e6;
+}
+
  
 .card {
   width: 100%;
@@ -323,5 +367,8 @@ const sendResetEmail = async () => {
   .subtitle {
     font-size: 14px;
   }
+
+  
+
 }
 </style>

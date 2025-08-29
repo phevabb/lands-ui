@@ -13,12 +13,12 @@
       </a>
 
       <router-link
-        to="/dashboard"
-        class="simple-text logo-normal"
-      >
-        {{ title }}
-      </router-link>
-
+  to="/dashboard"
+  class="simple-text logo-normal"
+  style="font-size: 0.9rem; color: rgba(255, 255, 255, 0.9);"
+>
+  Welcome, <strong style="color: #fff;">{{ fullName || title }}</strong>
+</router-link>
     </div>
 
     <div class="sidebar-wrapper">
@@ -33,6 +33,14 @@
 <script setup>
 import { computed, provide } from "vue"
 import SidebarLink from "./SidebarLink.vue"
+import { onMounted, ref } from "vue";
+const fullName = ref(null);
+
+
+onMounted(() => {
+  fullName.value = localStorage.getItem("user");
+  console.log("Retrieved user from localStorage:", fullName.value);
+});
 
 const props = defineProps({
   title: {
@@ -93,5 +101,7 @@ const sidebarStyle = computed(() => ({
   font-weight: bold;
   margin-left: 10px; /* space between icon and text */
 }
+
+
 
 </style>
