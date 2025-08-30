@@ -19,7 +19,7 @@
         >
           <span class="sidebar-item">
             <md-icon>dashboard</md-icon>
-            <span class="sidebar-text">Dashboard</span>
+            <span style="font-size: small;" class="sidebar-text">staff distribution Analysis</span>
           </span>
         </SidebarLink>
 

@@ -1,162 +1,157 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { StatsCard, NavTabsCard, NavTabsTable, OrderedTable } from "@/components";
+import { directorate_stats } from "../../services/api";
+import { class_stats } from "../../services/api";
 
-// Tab data
-const tabs = [
-  {
-    id: "tab-home",
-    label: "Bugs",
-    icon: "bug_report",
-    users: [{ name: "Bug 1" }, { name: "Bug 2" }],
-  },
-  {
-    id: "tab-pages",
-    label: "Website",
-    icon: "code",
-    users: [
-      { name: "Website 1" },
-      { name: "Website 2" }
-    ]
-  },
-  {
-    id: "tab-posts",
-    label: "Server",
-    icon: "cloud",
-    users: [
-      { name: "Server 1" },
-      { name: "Server 2" }
-    ]
-  },
-  {
-    id: "tab-age",
-    label: "Age",
-    icon: "cloud",
-    users: [
-      { name: "Age 1" },
-      { name: "Age 2" }
-    ]
+const table_1 = ref([]);
+const isLoading = ref(true);
+const currentPage = ref(1);
+const totalCount = ref(0);
+const next = ref(null);
+const previous = ref(null);
+
+onMounted(async () => {
+  isLoading.value = true;
+
+  try {
+    // Call both APIs at once
+    const [{ data: classData }, { data: dirData }] = await Promise.all([
+      class_stats(),
+      directorate_stats()
+    ]);
+
+    // Class tab
+    const classTab = {
+      id: "tab-classes",
+      label: "Classes",
+      icon: "school",
+      users: (classData.table_data ?? []).map(d => ({
+        name: d.class,   // adjust field name if different
+        count: d.count,
+      })),
+      total: classData.num_of_classes,
+      name_: classData.name_,
+    };
+
+    // Directorate tab
+    const directorateTab = {
+      id: "tab-dept",
+      label: "Departments",
+      icon: "account_balance",
+      users: (dirData.table_data ?? []).map(d => ({
+        name: d.department,
+        count: d.count,
+      })),
+      total: dirData.num_of_departments,
+      name_: dirData.name_,
+    };
+
+    // Push into table
+    table_1.value = [directorateTab, classTab];
+
+  } catch (err) {
+    console.error("error loading stats data", err);
+  } finally {
+    isLoading.value = false;
   }
-];
+});
 
-// Charts
 
 </script>
+
 
 <template>
   <div class="content">
     <div class="md-layout">
       <!-- 4 stat cards -->
-      <div class="md-layout-item md-medium-size-50 md-xsmall-size-100 md-size-25">
-        <stats-card data-background-color="green">
-          <template #header>
-            <md-icon>store</md-icon>
-          </template>
-          <template #content>
-            <p class="category">Revenue</p>
-            <h3 class="title">$34,245</h3>
-          </template>
-          <template #footer>
-            <div class="stats">
-              <md-icon>date_range</md-icon>
-              Last 24 Hours
-            </div>
-          </template>
-        </stats-card>
-      </div>
+      <template>
+        <!-- Total staff -->
+        <div class="md-layout-item md-medium-size-50 md-xsmall-size-100 md-size-25">
+          <stats-card data-background-color="green">
+            <template #header>
+              <md-icon>group</md-icon>
+            </template>
 
-      <div class="md-layout-item md-medium-size-50 md-xsmall-size-100 md-size-25">
-        <stats-card data-background-color="orange">
-          <template #header>
-            <md-icon>content_copy</md-icon>
-          </template>
-          <template #content>
-            <p class="category">Used Space</p>
-            <h3 class="title">49/50 <small>GB</small></h3>
-          </template>
-          <template #footer>
-            <div class="stats">
-              <md-icon class="text-danger">warning</md-icon>
-              <a href="#pablo">Get More Space...</a>
-            </div>
-          </template>
-        </stats-card>
-      </div>
+            <template #content>
+              <p style="color: black;" class="category">Total Staff</p>
+              <h3 class="title">34,245</h3>
+            </template>
+          </stats-card>
+        </div>
 
-      <div class="md-layout-item md-medium-size-50 md-xsmall-size-100 md-size-25">
-        <stats-card data-background-color="red">
-          <template #header>
-            <md-icon>info_outline</md-icon>
-          </template>
-          <template #content>
-            <p class="category">Fixed Issues</p>
-            <h3 class="title">75</h3>
-          </template>
-          <template #footer>
-            <div class="stats">
-              <md-icon>local_offer</md-icon>
-              Tracked from Github
-            </div>
-          </template>
-        </stats-card>
-      </div>
+        <!-- Males -->
+        <div class="md-layout-item md-medium-size-50 md-xsmall-size-100 md-size-25">
+          <stats-card data-background-color="orange">
+            <template #header>
+              <md-icon>man</md-icon>
+            </template>
 
-      <div class="md-layout-item md-medium-size-50 md-xsmall-size-100 md-size-25">
-        <stats-card data-background-color="blue">
-          <template #header>
-            <i class="fab fa-twitter"></i>
-          </template>
-          <template #content>
-            <p class="category">Followers</p>
-            <h3 class="title">+245</h3>
-          </template>
-          <template #footer>
-            <div class="stats">
-              <md-icon>update</md-icon>
-              Just Updated
-            </div>
-          </template>
-        </stats-card>
-      </div>
+            <template #content>
+              <p style="color: black;" class="category">Males</p>
+              <h3 class="title">34,245</h3>
+            </template>
+          </stats-card>
+        </div>
 
-      <div class="md-layout-item md-medium-size-50 md-xsmall-size-100 md-size-25">
-        <stats-card data-background-color="blue">
-          <template #header>
-            <i class="fab fa-twitter"></i>
-          </template>
-          <template #content>
-            <p class="category">Followers</p>
-            <h3 class="title">+245</h3>
-          </template>
-          <template #footer>
-            <div class="stats">
-              <md-icon>update</md-icon>
-              Just Updated
-            </div>
-          </template>
-        </stats-card>
-      </div>
+        <!-- Females -->
+        <div class="md-layout-item md-medium-size-50 md-xsmall-size-100 md-size-25">
+          <stats-card data-background-color="red">
+            <template #header>
+              <md-icon>woman</md-icon>
+            </template>
 
-      <div class="md-layout-item md-medium-size-50 md-xsmall-size-100 md-size-25">
-        <stats-card data-background-color="blue">
-          <template #header>
-            <i class="fab fa-twitter"></i>
-          </template>
-          <template #content>
-            <p class="category">Followers</p>
-            <h3 class="title">+245</h3>
-          </template>
-          <template #footer>
-            <div class="stats">
-              <md-icon>update</md-icon>
-              Just Updated
-            </div>
-          </template>
-        </stats-card>
-      </div>
+            <template #content>
+              <p style="color: black;" class="category">Females</p>
+              <h3 class="title">75</h3>
+            </template>
+          </stats-card>
+        </div>
 
+        <!-- Admins -->
+        <div class="md-layout-item md-medium-size-50 md-xsmall-size-100 md-size-25">
+          <stats-card data-background-color="blue">
+            <template #header>
+              <md-icon>admin_panel_settings</md-icon>
+            </template>
 
-      <!-- Employees Table -->
+            <template #content>
+              <p style="color: black;" class="category">Admins</p>
+              <h3 class="title">5</h3>
+            </template>
+          </stats-card>
+        </div>
+
+        <!-- Managers -->
+        <div class="md-layout-item md-medium-size-50 md-xsmall-size-100 md-size-25">
+          <stats-card data-background-color="blue">
+            <template #header>
+              <md-icon>supervisor_account</md-icon>
+            </template>
+
+            <template #content>
+              <p style="color: black;" class="category">Managers</p>
+              <h3 class="title">+245</h3>
+            </template>
+          </stats-card>
+        </div>
+
+        <!-- General Staff -->
+        <div class="md-layout-item md-medium-size-50 md-xsmall-size-100 md-size-25">
+          <stats-card data-background-color="blue">
+            <template #header>
+              <md-icon>badge</md-icon>
+            </template>
+
+            <template #content>
+              <p style="color: black;" class="category">Staff</p>
+              <h3 class="title">45</h3>
+            </template>
+          </stats-card>
+        </div>
+      </template>
+
+      <!-- Employees Table (commented out)
       <div class="md-layout-item md-medium-size-100 md-xsmall-size-100 md-size-50">
         <md-card>
           <md-card-header data-background-color="orange">
@@ -168,25 +163,38 @@ const tabs = [
           </md-card-content>
         </md-card>
       </div>
+      -->
 
-      <!-- Nav Tabs Card with Dynamic Tables -->
-      <div class="md-layout-item md-medium-size-100 md-xsmall-size-100 md-size-50">
+      <!-- Nav Tabs Card with v-if guard -->
+      <div v-if="!isLoading && table_1.length > 0" class="md-layout-item md-medium-size-100 md-xsmall-size-100 md-size-50">
         <nav-tabs-card>
           <template #content>
-            <span class="md-nav-tabs-title">Units:</span>
             <md-tabs class="md-success" md-alignment="left">
               <md-tab
-                v-for="tab in tabs"
+                v-for="tab in table_1"
                 :key="tab.id"
                 :id="tab.id"
                 :md-label="tab.label"
                 :md-icon="tab.icon"
               >
-                <nav-tabs-table :users="tab.users"></nav-tabs-table>
+                <nav-tabs-table :users="tab.users" :total="tab.total"  :name_="tab.name_"></nav-tabs-table>
+
               </md-tab>
             </md-tabs>
           </template>
         </nav-tabs-card>
+      </div>
+
+      <!-- Loading state -->
+      <div v-if="isLoading" class="md-layout-item md-medium-size-100 md-xsmall-size-100 md-size-50">
+        <md-card>
+          <md-card-content>
+            <div class="text-center py-4">
+              <md-icon class="md-size-3x">hourglass_empty</md-icon>
+              <p>Loading department data...</p>
+            </div>
+          </md-card-content>
+        </md-card>
       </div>
     </div>
   </div>
