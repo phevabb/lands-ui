@@ -94,6 +94,12 @@ const pages = computed(() => {
   background: #f8f8f8;
   cursor: pointer;
   border-radius: 4px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: #007bff;
+  color: white;
 }
 
 .pagination-btn:disabled {
@@ -108,6 +114,12 @@ const pages = computed(() => {
   border-radius: 4px;
   min-width: 32px;
   text-align: center;
+  transition: background 0.2s, color 0.2s;
+}
+
+.pagination-page:hover:not(.dots):not(.active) {
+  background: #007bff;
+  color: white;
 }
 
 .pagination-page.active {

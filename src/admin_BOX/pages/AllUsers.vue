@@ -9,6 +9,7 @@ const next = ref(null)
 const previous = ref(null)
 const totalPages = ref(null);
 const currentPage = ref(null);
+const itemsPerPage = ref(null)
 
 
 // function to check loading state
@@ -21,7 +22,8 @@ async function fetchUsers(page = 1) {
     const response = await all_users({ page });
 
     rows.value = response.data.results;
-    totalPages.value = Math.ceil(response.data.count / 10);
+    itemsPerPage.value = response.data.page_size
+    totalPages.value = Math.ceil(response.data.count / itemsPerPage.value);
     currentPage.value = getCurrentPageFromUrl(response.data.next, response.data.previous);
     next.value = response.data.next;
     previous.value = response.data.previous;
@@ -50,7 +52,9 @@ onMounted(async () => {
   fetchUsers(1);
   try {
     const response = await all_users({ page: 1  })
-    totalPages.value = Math.ceil(response.data.count / 10);
+    itemsPerPage.value = response.data.page_size
+
+    totalPages.value = Math.ceil(response.data.count / itemsPerPage.value);
     currentPage.value = getCurrentPageFromUrl(response.data.next, response.data.previous);
 
     
