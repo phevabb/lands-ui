@@ -35,8 +35,29 @@ export const resetpasswordconfirm = (data) => api.post('api/v1/auth/password-res
 // SUPERADMIN
 // directorate stats
 export const directorate_stats = () =>  api.get("superadmin/api/v1/directorate-stats");
-// class stats
 export const class_stats = () =>  api.get("superadmin/api/v1/class-stats");
+export const region_stats = () =>  api.get("superadmin/api/v1/region-stats");
+export const management_stats = () =>  api.get("superadmin/api/v1/management-stats");
+export const senior_stats = () =>  api.get("superadmin/api/v1/senior-stats");
+export const gender_stats = () =>  api.get("superadmin/api/v1/gender-stats");
+export const age_stats = () =>  api.get("superadmin/api/v1/age-stats");
+export const salary_stats = () =>  api.get("superadmin/api/v1/salary-grade-stats");
+export const leave_stats = () =>  api.get("superadmin/api/v1/leave-stats");
+export const contract_stats = () =>  api.get("superadmin/api/v1/contract-stats");
+export const pro_stats = () =>  api.get("superadmin/api/v1/pro-stats");
+export const admin_dashboard_summary = () =>  api.get("superadmin/api/v1/admin-dashboard-summary");
+export const all_users = (params) => api.get("superadmin/api/v1/all-users", { params });
+
+
+
+
+
+
+
+
+
+
+
 
 
 

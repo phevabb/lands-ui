@@ -15,6 +15,7 @@ import ResetPasswordSuccess from "../registration/ResetPasswordSuccess.vue";
 import ResetPassword from "../registration/ResetPassword.vue";
 import ResetPasswordDone from "../registration/ResetPasswordDone.vue";
 import ResetPasswordConfirm from "../registration/ResetPasswordConfirm.vue"; 
+import AllUsers from "../admin_BOX/pages/AllUsers.vue";
 
 
 const routes = [
@@ -74,6 +75,12 @@ const routes = [
         path: "table",
         name: "Table List",
         component: TableList,
+        meta: { requiresAuth: true }
+      },
+      {
+        path: "allusers",
+        name: "All Users",
+        component: AllUsers,
         meta: { requiresAuth: true }
       },
       {

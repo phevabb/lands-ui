@@ -62,6 +62,23 @@
 
         <SidebarLink
           :link="{
+          name: 'All Users',
+          path: '/allusers',
+          }"
+          class="sidebar-link">
+          <span class="sidebar-item">
+            <md-icon>group</md-icon>  
+            <span class="sidebar-text">All Users</span>
+          </span>
+        </SidebarLink>
+
+        
+
+
+
+
+        <SidebarLink
+          :link="{
           name: 'Dashboard',
           path: '/icons',
           }"
