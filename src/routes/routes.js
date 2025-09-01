@@ -16,6 +16,8 @@ import ResetPassword from "../registration/ResetPassword.vue";
 import ResetPasswordDone from "../registration/ResetPasswordDone.vue";
 import ResetPasswordConfirm from "../registration/ResetPasswordConfirm.vue"; 
 import AllUsers from "../admin_BOX/pages/AllUsers.vue";
+import NewEntry from "../admin_BOX/pages/NewEntry.vue";
+
 
 
 const routes = [
@@ -69,6 +71,12 @@ const routes = [
         path: "user",
         name: "User Profile",
         component: UserProfile,
+        meta: { requiresAuth: true }
+      },
+      {
+        path: "new-entry",
+        name: "New Entry",
+        component: NewEntry,
         meta: { requiresAuth: true }
       },
       {

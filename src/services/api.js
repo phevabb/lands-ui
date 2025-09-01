@@ -47,6 +47,9 @@ export const contract_stats = () =>  api.get("superadmin/api/v1/contract-stats")
 export const pro_stats = () =>  api.get("superadmin/api/v1/pro-stats");
 export const admin_dashboard_summary = () =>  api.get("superadmin/api/v1/admin-dashboard-summary");
 export const all_users = (params) => api.get("superadmin/api/v1/all-users", { params });
+// api.js
+export const create_user = (payload) => api.post("superadmin/api/v1/users/create", payload);
+
 
 
 

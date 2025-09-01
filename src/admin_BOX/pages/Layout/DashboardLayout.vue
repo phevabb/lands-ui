@@ -72,6 +72,19 @@
           </span>
         </SidebarLink>
 
+
+        <SidebarLink
+          :link="{
+          name: 'New Entry',
+          path: '/new-entry',
+          }"
+          class="sidebar-link">
+          <span class="sidebar-item">
+            <md-icon>group</md-icon>  
+            <span class="sidebar-text">New Entry</span>
+          </span>
+        </SidebarLink>
+
         
 
 
