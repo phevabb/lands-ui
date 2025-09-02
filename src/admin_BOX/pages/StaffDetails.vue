@@ -213,7 +213,7 @@ const fetchUserDetails = async () => {
   const id_user = route.params.id;
   const res = await get_user_details(id_user);
   user.value = res.data;
-  console.log("okay, here we are.. detail table,:", res.data);
+
 };
 
 onMounted(fetchUserDetails);
@@ -284,7 +284,7 @@ const getStatusClass = (status) => {
 };
 
 const goBack = () => {
-  console.log("Navigate back to staff list");
+
   // In a real app, use router.go(-1) or router.push()
 };
 </script>

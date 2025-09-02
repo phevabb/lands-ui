@@ -116,17 +116,14 @@ const handleLogin = async () => {
   loading.value = true
   try{
     const {data} = await login(form)
-    console.log("tttttttttt", data)
+ 
     localStorage.setItem('token', data.token) // save token
     localStorage.setItem('user', data.user.full_name) // save user info
-    console.log('logged in:', data)
+
     const v = data.user.role
     const name = data.user.full_name
     
 
-    console.log('logged ROLEnnnnnnnnnnnnnnnn:', JSON.stringify(data, null, 2));
-    console.log('logged FIRST NAME:', JSON.stringify(name, null, 2));
- 
 
     if (data.user.role === "Admin") {
       window.location.href ='/dashboard'
@@ -145,7 +142,7 @@ const handleLogin = async () => {
     'Please check your internet connection';
 
   insert_message(message);
-  console.log("Login Failed", err);
+
 }
 
  finally{
@@ -153,7 +150,7 @@ const handleLogin = async () => {
   }
 
 
-  console.log('Form submitted', form)
+
 }
 </script>
 

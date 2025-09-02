@@ -23,7 +23,7 @@ const router = new VueRouter({
 
 router.beforeEach((to, from, next) => {
   const isAuthenticated = !!localStorage.getItem("token"); // Or your auth logic
-  console.log("herrr", isAuthenticated);
+  
   if (to.matched.some(record => record.meta.requiresAuth)) {
     if (!isAuthenticated) {
       next("/login");

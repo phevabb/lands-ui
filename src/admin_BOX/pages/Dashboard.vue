@@ -205,7 +205,7 @@ onMounted(async () => {
 
 
   } catch (err) {
-    console.error("error loading stats data", err);
+  
   } finally {
     isLoading.value = false;
   }

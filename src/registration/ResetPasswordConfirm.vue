@@ -128,8 +128,7 @@ const token = pathParts[3];  // "cvafe9-3b934a70853c743416438254ec529c09"
 
 
 onMounted(() => {
-  console.log("uid:", uidb64);
-  console.log("token:", token);
+
 });
 
 const calculatePasswordStrength = (password) => {
@@ -168,7 +167,7 @@ async function handleSubmit() {
     const response = await resetpasswordconfirm(payload);
 
     success.value = true;
-    console.log("Password reset response:", response.data);
+   
 
     // Clear fields after success
     password1.value = "";
@@ -183,7 +182,7 @@ async function handleSubmit() {
   } else {
     error.value = tokenErrors ? tokenErrors[0] : "An unexpected error occurred.";
   }
-  console.error("Password reset error details:", tokenErrors ? tokenErrors[0] : err.response.data);
+
 } else {
   error.value = "❌ Something went wrong. Please try again.";
 }

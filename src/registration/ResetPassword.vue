@@ -112,7 +112,7 @@ const sendResetEmail = async () => {
         type: "error",
       };
     }
-    console.error("Password reset failed:", error);
+ 
   } finally {
     loading.value = false;
   }

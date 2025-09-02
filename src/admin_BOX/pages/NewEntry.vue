@@ -24,7 +24,7 @@ onMounted(async () => {
     userFields.value = res.data
     
   } catch (err) {
-    console.error("Failed to fetch user fields:", err)
+    
   }
 })
 

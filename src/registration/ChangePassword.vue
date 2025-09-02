@@ -66,7 +66,7 @@ const handleChangePassword = async () => {
         type: "error",
       };
     }
-    console.error("Password change failed:", error);
+    
   } finally {
     loading.value = false;
   }

@@ -36,7 +36,7 @@ async function fetchUsers(page = 1) {
     next.value = response.data.next;
     previous.value = response.data.previous;
   } catch (error) {
-    console.error("Error fetching all users:", error);
+   
   } finally {
     isLoading.value = false;
   }
@@ -79,8 +79,6 @@ onMounted(async () => {
     next.value = response.data.next
     previous.value = response.data.previous 
 
-    console.log("Next page:", next)
-    console.log("Previous page:", previous)
 
   } catch (error) {
     

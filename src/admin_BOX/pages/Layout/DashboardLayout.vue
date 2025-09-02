@@ -160,7 +160,7 @@ const handleLogout = async () => {
     localStorage.removeItem("user");
     router.push("/login");
   } catch (error) {
-    console.error("Logout failed:", error);
+
   }
 };
 

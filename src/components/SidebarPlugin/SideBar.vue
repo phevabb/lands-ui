@@ -39,7 +39,7 @@ const fullName = ref(null);
 
 onMounted(() => {
   fullName.value = localStorage.getItem("user");
-  console.log("Retrieved user from localStorage:", fullName.value);
+  
 });
 
 const props = defineProps({
