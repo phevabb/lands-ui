@@ -1,10 +1,11 @@
 <script setup>
-import axios from "axios";
+
+import { user_fields } from "../../services/api";
 import { ref, onMounted } from "vue";
 import EditProfileForm from "@/admin_BOX/pages/UserProfile/EditProfileForm.vue";
 import UserCard from "@/admin_BOX/pages/UserProfile/UserCard.vue";
 import { create_user } from "../../services/api";
-import Swal from "sweetalert2"; // 
+ 
 import { useRouter } from "vue-router/composables";
 
 const router = useRouter()
@@ -19,9 +20,9 @@ const userFields = ref([])
 
 onMounted(async () => {
   try {
-    const res = await axios.get("http://127.0.0.1:8000/superadmin/api/v1/user-fields")
+    const res = await user_fields()
     userFields.value = res.data
-    console.log("Fetched fields:", userFields.value)
+    
   } catch (err) {
     console.error("Failed to fetch user fields:", err)
   }

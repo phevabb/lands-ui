@@ -23,42 +23,11 @@
           </span>
         </SidebarLink>
 
-        <SidebarLink
-          :link="{
-          name: 'User Profile',
-          path: '/user',
-          }"
-          class="sidebar-link">
-          <span class="sidebar-item">
-            <md-icon>person</md-icon>
-            <span class="sidebar-text">User Profile</span>
-          </span>
-        </SidebarLink>
+      
 
-        <SidebarLink
-          :link="{
-          name: 'Table list',
-          path: '/table',
-          }"
-           class="sidebar-link"
-        >
-          <span class="sidebar-item">
-            <md-icon>content_paste</md-icon>
-            <span class="sidebar-text">Table list</span>
-          </span>
-        </SidebarLink>
+      
 
-        <SidebarLink
-          :link="{
-          name: 'Dashboard',
-          path: '/typography',
-          }"
-          class="sidebar-link">
-          <span class="sidebar-item">
-            <md-icon>library_books</md-icon>
-            <span class="sidebar-text">Typography</span>
-          </span>
-        </SidebarLink>
+      
 
         <SidebarLink
           :link="{
@@ -71,6 +40,8 @@
             <span class="sidebar-text">All Users</span>
           </span>
         </SidebarLink>
+
+
 
 
         <SidebarLink
@@ -90,18 +61,6 @@
 
 
 
-        <SidebarLink
-          :link="{
-          name: 'Dashboard',
-          path: '/icons',
-          }"
-           class="sidebar-link"
-        >
-          <span class="sidebar-item">
-            <md-icon>bubble_chart</md-icon>
-            <span class="sidebar-text">Icons</span>
-          </span>
-        </SidebarLink>
 
         <!-- Account Dropdown -->
   <div  class="sidebar-link"

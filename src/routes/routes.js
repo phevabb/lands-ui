@@ -17,6 +17,7 @@ import ResetPasswordDone from "../registration/ResetPasswordDone.vue";
 import ResetPasswordConfirm from "../registration/ResetPasswordConfirm.vue"; 
 import AllUsers from "../admin_BOX/pages/AllUsers.vue";
 import NewEntry from "../admin_BOX/pages/NewEntry.vue";
+import StaffDetails from "../admin_BOX/pages/StaffDetails.vue"; 
 
 
 
@@ -61,12 +62,22 @@ const routes = [
     path: "/",
     component: DashboardLayout,
     children: [
+
       {
         path: "dashboard",
         name: "Admin Dashboard",
         component: Dashboard,
         meta: { requiresAuth: true }
       },
+
+      {
+        path: "staff-details/:id",
+        name: "Staff Details",
+        component: StaffDetails,
+        meta: { requiresAuth: true }
+      },
+
+      
       {
         path: "user",
         name: "User Profile",

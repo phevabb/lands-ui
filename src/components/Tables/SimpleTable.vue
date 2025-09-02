@@ -1,9 +1,6 @@
 <script setup>
-import { defineProps, ref } from "vue";
+import { defineProps,defineEmits, } from "vue";
 import Pagination from "../Pagination.vue";
-
-
-
 
 
 const props = defineProps({
@@ -53,23 +50,34 @@ const props = defineProps({
     ],
   },
 });
-// Re-emit events from Pagination
-const emit = defineEmits(["page-changed"]);
+
+const visibleEntries = (item) => {
+  return Object.entries(item).filter(([key]) => key !== 'id')
+}
+
+const emit = defineEmits(["user-selected", "page-changed"]);
+
+const selectUser = (userItem) => {
+
+
+  emit("user-selected", userItem);
+};
 </script>
 
 <template>
   <div>
     <md-table :value="rows" :table-header-color="tableHeaderColor">
       <template #md-table-row="{ item }">
-        <md-table-row>
-          <md-table-cell
-            v-for="(value, key) in item"
-            :key="key"
-            :md-label="key"
-          >
-            {{ value }}
-          </md-table-cell>
-        </md-table-row>
+        <md-table-row @click="selectUser(item.id)" style="cursor: pointer;">
+    <md-table-cell
+      v-for="[key, value] in visibleEntries(item)"
+      :key="key"
+      :md-label="key"
+    >
+      {{ value }}
+    </md-table-cell>
+  </md-table-row>
+
       </template>
     </md-table>
     <pagination :currentPage="currentPage" :totalPages="totalPages" @page-changed="(page) => emit('page-changed', page)"/>

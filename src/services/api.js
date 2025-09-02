@@ -49,6 +49,11 @@ export const admin_dashboard_summary = () =>  api.get("superadmin/api/v1/admin-d
 export const all_users = (params) => api.get("superadmin/api/v1/all-users", { params });
 // api.js
 export const create_user = (payload) => api.post("superadmin/api/v1/users/create", payload);
+export const user_fields = () => api.get("superadmin/api/v1/user-fields");
+// Fetch user details by ID
+export const get_user_details = (userId) =>api.get(`superadmin/api/v1/users/${userId}/`);
+
+
 
 
 

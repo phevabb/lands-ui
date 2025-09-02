@@ -2,6 +2,10 @@
 import { ref, onMounted } from "vue"
 import { all_users } from "../../services/api"
 import { SimpleTable } from "@/components"
+import StaffDetails from "./StaffDetails.vue"
+import { useRouter } from "vue-router/composables";
+
+const router = useRouter();
 
 const isLoading = ref(true)
 const rows = ref([])
@@ -10,10 +14,13 @@ const previous = ref(null)
 const totalPages = ref(null);
 const currentPage = ref(null);
 const itemsPerPage = ref(null)
+const selectedUser = ref(null)
 
 
 // function to check loading state
 const checkLoading = () => isLoading.value
+
+
 
 
 async function fetchUsers(page = 1) {
@@ -22,6 +29,7 @@ async function fetchUsers(page = 1) {
     const response = await all_users({ page });
 
     rows.value = response.data.results;
+    
     itemsPerPage.value = response.data.page_size
     totalPages.value = Math.ceil(response.data.count / itemsPerPage.value);
     currentPage.value = getCurrentPageFromUrl(response.data.next, response.data.previous);
@@ -47,6 +55,10 @@ function getCurrentPageFromUrl(next, previous) {
   return parseInt(nextPage) - 1;
 }
 
+const goToUserDetail = (id) => {
+  router.push({ name: "Staff Details", params: { id } });
+};
+
 onMounted(async () => {
   isLoading.value = true
   fetchUsers(1);
@@ -61,7 +73,7 @@ onMounted(async () => {
 
 
    // console.log("All users response:", response.data)
-   console.log("All users response type:",  response)
+ 
 
     rows.value = response.data.results
     next.value = response.data.next
@@ -71,7 +83,7 @@ onMounted(async () => {
     console.log("Previous page:", previous)
 
   } catch (error) {
-    console.error("Error fetching all users:", error)
+    
   } finally {
     isLoading.value = false
   }
@@ -84,8 +96,8 @@ onMounted(async () => {
       <div class="md-layout-item md-medium-size-100 md-xsmall-size-100 md-size-100">
         <md-card>
           <md-card-header data-background-color="green">
-            <h4 class="title">Simple Table</h4>
-            <p class="category">Here is a subtitle for this table</p>
+            <h4 class="title">Staff Data</h4>
+            <p class="category">Click on staff for more info</p>
           </md-card-header>
 
           <md-card-content>
@@ -99,6 +111,7 @@ onMounted(async () => {
               :currentPage="currentPage"
               :totalPages="totalPages"
               @page-changed="fetchUsers"
+              @user-selected="goToUserDetail"
             />
           </md-card-content>
         </md-card>
