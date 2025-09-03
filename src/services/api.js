@@ -5,7 +5,7 @@ import axios from 'axios';
 const api = axios.create({
   // http://127.0.0.1:8000/
   // 'https://phevab1.pythonanywhere.com/
-  baseURL: 'http://127.0.0.1:8000/', //or your base URL
+  baseURL: 'https://phevab1.pythonanywhere.com/', //or your base URL
   headers: {
     'Content-Type': 'application/json'
   }
