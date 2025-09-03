@@ -6,9 +6,11 @@
         <button class="btn btn-outline" @click="goBack">
           <i class="fas fa-arrow-left"></i> Back to List
         </button>
-        <button class="btn btn-primary">
+
+        <button class="btn btn-primary" @click="editStaff">
           <i class="fas fa-edit"></i> Edit Profile
         </button>
+
       </div>
     </div>
 
@@ -61,7 +63,7 @@
         <div class="details-card">
           <div class="card-header">
             Personal Information
-            <span class="edit">Edit</span>
+            
           </div>
           <div class="info-grid">
             <div class="info-item">
@@ -95,7 +97,7 @@
         <div class="details-card">
           <div class="card-header">
             Employment Details
-            <span class="edit">Edit</span>
+            
           </div>
           <div class="info-grid">
             <div class="info-item">
@@ -103,7 +105,7 @@
               <div class="info-value">{{ staff.directorate }}</div>
             </div>
             <div class="info-item">
-              <div class="info-label">Category</div>
+              <div class="info-label">Class</div>
               <div class="info-value">{{ staff.category }}</div>
             </div>
             <div class="info-item">
@@ -129,7 +131,7 @@
         <div class="details-card">
           <div class="card-header">
             Compensation & Benefits
-            <span class="edit">Edit</span>
+            
           </div>
           <div class="info-grid">
             <div class="info-item">
@@ -163,7 +165,7 @@
         <div class="details-card">
           <div class="card-header">
             Additional Information
-            <span class="edit">Edit</span>
+            
           </div>
           <div class="info-grid">
             <div class="info-item">
@@ -203,11 +205,13 @@
 
 <script setup>
 import { ref, onMounted, computed } from "vue";
-import { useRoute } from "vue-router/composables";
+import { useRoute, useRouter } from "vue-router/composables";
 import { get_user_details } from "../../services/api";
 
 const user = ref(null);
 const route = useRoute();
+const router = useRouter()
+
 
 const fetchUserDetails = async () => {
   const id_user = route.params.id;
@@ -215,6 +219,12 @@ const fetchUserDetails = async () => {
   user.value = res.data;
 
 };
+
+const editStaff = () => {
+  router.push({ name: "Staff Update", params: { id: user.value.id } });
+};
+
+
 
 onMounted(fetchUserDetails);
 
@@ -284,6 +294,8 @@ const getStatusClass = (status) => {
 };
 
 const goBack = () => {
+
+  router.push("/allusers")
 
   // In a real app, use router.go(-1) or router.push()
 };

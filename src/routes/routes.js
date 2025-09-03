@@ -18,7 +18,7 @@ import ResetPasswordConfirm from "../registration/ResetPasswordConfirm.vue";
 import AllUsers from "../admin_BOX/pages/AllUsers.vue";
 import NewEntry from "../admin_BOX/pages/NewEntry.vue";
 import StaffDetails from "../admin_BOX/pages/StaffDetails.vue"; 
-
+import StaffUpdate from "../admin_BOX/pages/StaffUpdate.vue"; 
 
 
 const routes = [
@@ -76,6 +76,14 @@ const routes = [
         component: StaffDetails,
         meta: { requiresAuth: true }
       },
+
+      {
+        path: "staff-update/:id",
+        name: "Staff Update",
+        component: StaffUpdate,
+        meta: { requiresAuth: true }
+      },
+
 
       
       {
