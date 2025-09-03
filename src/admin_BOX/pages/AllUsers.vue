@@ -72,11 +72,11 @@ onMounted(async () => {
     
 
 
-   // console.log("All users response:", response.data)
+
  
 
     rows.value = response.data.results
-    console.log("it", response.data.results)
+
     next.value = response.data.next
     previous.value = response.data.previous 
 

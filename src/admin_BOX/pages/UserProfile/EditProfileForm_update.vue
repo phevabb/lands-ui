@@ -141,7 +141,7 @@ const handleSubmit = async () => {
 
     });
 
-    console.log("payload:", payload)
+
 
     emit("submitForm", payload);
 

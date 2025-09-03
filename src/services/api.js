@@ -67,6 +67,12 @@ export const put_user = (userId, payload) =>
 export const all_users_to_excel = () => api.get("superadmin/api/v1/all-users-to-excel");
 
 
+export const users_by_department = (dept) => {return api.get(`superadmin/api/v1/users-by-department/?dept=${encodeURIComponent(dept)}`)
+}
+
+
+
+
 
 
 

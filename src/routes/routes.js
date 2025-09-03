@@ -5,9 +5,6 @@ import UserProfile from "@/admin_BOX/pages/UserProfile.vue";
 import TableList from "@/admin_BOX/pages/TableList.vue";
 import Typography from "@/admin_BOX/pages/Typography.vue";
 import Icons from "@/admin_BOX/pages/Icons.vue";
-import Maps from "@/admin_BOX/pages/Maps.vue";
-import Notifications from "@/admin_BOX/pages/Notifications.vue";
-import UpgradeToPRO from "@/admin_BOX/pages/UpgradeToPRO.vue";
 import Login from "@/registration/Login.vue";
 import ChangePassword from "../registration/ChangePassword.vue";
 import ChangePasswordComplete from "../registration/ChangePasswordComplete.vue";
@@ -19,6 +16,7 @@ import AllUsers from "../admin_BOX/pages/AllUsers.vue";
 import NewEntry from "../admin_BOX/pages/NewEntry.vue";
 import StaffDetails from "../admin_BOX/pages/StaffDetails.vue"; 
 import StaffUpdate from "../admin_BOX/pages/StaffUpdate.vue"; 
+import UserByUnit from "../admin_BOX/pages/UserByUnit.vue"; 
 
 
 const routes = [
@@ -67,6 +65,13 @@ const routes = [
         path: "dashboard",
         name: "Admin Dashboard",
         component: Dashboard,
+        meta: { requiresAuth: true }
+      },
+
+      {
+        path: "user-by-unit",
+        name: "User By Unit",
+        component: UserByUnit,
         meta: { requiresAuth: true }
       },
 

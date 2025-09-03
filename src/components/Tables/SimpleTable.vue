@@ -141,7 +141,7 @@ const exportExcel = async () => {
     // Call your API
     const res = await all_users_to_excel()
     const exportData = res.data   // <-- JSON array from backend
-    console.log("the res:", res)
+
 
     if (!Array.isArray(exportData) || exportData.length === 0) {
       console.warn("No data available to export")

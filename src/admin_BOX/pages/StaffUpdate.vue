@@ -48,9 +48,9 @@ onMounted(async () => {
     // Fetch user details
     const userDetailsRes = await get_user_details(userId)
     userData.value = userDetailsRes.data || {}
-    console.log("User details loaded:", userData.value)
+
   } catch (err) {
-    console.error("Failed to fetch data:", err)
+
   }
 })
 
@@ -60,7 +60,7 @@ const handleFormSubmit = async (formData) => {
   successMessage.value = ""
 
   try {
-    console.log("Form data being submitted:", formData)
+
     const res = await patch_user(userId, formData)
     successMessage.value = "User updated successfully!"
 
