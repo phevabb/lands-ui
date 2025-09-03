@@ -68,7 +68,7 @@ const handleFormSubmit = async (formData) => {
       router.push("/allusers")
     }, 1500)
   } catch (err) {
-    console.error("Update failed:", err)
+  
     if (err.response?.data) {
       backendErrors.value = err.response.data
     } else {

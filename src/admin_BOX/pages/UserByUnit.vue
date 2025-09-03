@@ -22,7 +22,7 @@ onMounted(() => {
 
               })
       .catch((err) => {
-        console.error("API error:", err.response?.data || err.message);
+        
       });
   }
 });
