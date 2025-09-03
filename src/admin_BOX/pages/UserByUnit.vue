@@ -3,7 +3,7 @@ import { ref, computed, onMounted } from "vue";
 import * as XLSX from "xlsx";
 import { useRoute, useRouter } from "vue-router/composables";
 import { saveAs } from "file-saver";
-import { users_by_department } from "../../services/api";
+import { users_per_department } from "../../services/api";
 
 const route = useRoute();
 const users = ref([]);
@@ -14,7 +14,7 @@ const router = useRouter()
 onMounted(() => {
   const deptName = route.query.dept;
   if (deptName) {
-    users_by_department(deptName)
+    users_per_department(deptName)
       .then((res) => {
         users.value = res.data.users;
         dept.value = res.data.dept

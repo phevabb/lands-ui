@@ -3,8 +3,9 @@ import axios from 'axios';
 
 
 const api = axios.create({
-  
-  baseURL: 'https://phevab1.pythonanywhere.com/', // or your base URL
+  // http://127.0.0.1:8000/
+  // 'https://phevab1.pythonanywhere.com/
+  baseURL: 'http://127.0.0.1:8000/', //or your base URL
   headers: {
     'Content-Type': 'application/json'
   }
@@ -67,7 +68,7 @@ export const put_user = (userId, payload) =>
 export const all_users_to_excel = () => api.get("superadmin/api/v1/all-users-to-excel");
 
 
-export const users_by_department = (dept) => {return api.get(`superadmin/api/v1/users-by-department/?dept=${encodeURIComponent(dept)}`)
+export const users_per_department = (dept) => {return api.get(`superadmin/api/v1/users-per-department/?dept=${encodeURIComponent(dept)}`)
 }
 
 

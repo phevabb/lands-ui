@@ -69,8 +69,8 @@ const routes = [
       },
 
       {
-        path: "user-by-unit",
-        name: "User By Unit",
+        path: "users-per-department",
+        name: "Users Per Department",
         component: UserByUnit,
         meta: { requiresAuth: true }
       },
