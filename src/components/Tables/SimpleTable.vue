@@ -144,7 +144,7 @@ const exportExcel = async () => {
 
 
     if (!Array.isArray(exportData) || exportData.length === 0) {
-      console.warn("No data available to export")
+    
       return
     }
 
@@ -156,7 +156,7 @@ const exportExcel = async () => {
     // Download as Excel file
     XLSX.writeFile(workbook, "staff_data.xlsx")
   } catch (error) {
-    console.error("Export failed:", error)
+   
     emit("export-error", "Failed to export data to Excel")
   } finally {
     loading.value = false // stop loading
