@@ -56,6 +56,7 @@ onMounted(async () => {
 
 // Handle form submit
 const handleFormSubmit = async (formData) => {
+  console.log("formdataaaaaaaaaa: ", formData)
   backendErrors.value = {}
   successMessage.value = ""
 

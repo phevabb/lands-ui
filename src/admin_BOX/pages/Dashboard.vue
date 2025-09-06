@@ -8,6 +8,7 @@ const table_1 = ref([]);
 const table_2 = ref([]);
 const table_3 = ref([]);
 const isLoading = ref(true);
+const errorMessage = ref("");
 const currentPage = ref(1);
 const totalCount = ref(0);
 const next = ref(null);
@@ -23,6 +24,7 @@ const totalStaffMembers = ref(0);
 
 onMounted(async () => {
   isLoading.value = true;
+    errorMessage.value =""
 
   try {
     // Call both APIs at once
@@ -42,6 +44,7 @@ onMounted(async () => {
       
 
     ]);
+    console.log("Age Stats Data:", ageData);
     
 
     allUsers.value = summaryData.num_of_users;
@@ -204,7 +207,13 @@ onMounted(async () => {
     table_3.value = [leaTab, conTab, proTab];
 
 
-  } catch (err) {
+  } catch (err) {  
+    
+     if (err.message.includes("Network Error") || err.code === "ERR_NETWORK") {
+      errorMessage.value = "Please check your internet connection.";
+    } else {
+      errorMessage.value = "Something went wrong while fetching staff data.";
+    }
   
   } finally {
     isLoading.value = false;
@@ -323,6 +332,7 @@ onMounted(async () => {
 
       <!-- Nav Table 1 guard -->
       <div v-if="!isLoading && table_1.length > 0" class="md-layout-item md-medium-size-100 md-xsmall-size-100 md-size-50">
+        
         <nav-tabs-card>
           <template #content>
             
@@ -398,6 +408,38 @@ onMounted(async () => {
           </md-card-content>
         </md-card>
       </div>
+
+      <!-- Error message -->
+      <div v-else-if="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+
+
     </div>
   </div>
 </template>
+
+
+<style scoped>
+
+.error-message {
+  color: red;
+  font-weight: bold;
+  font-size: 1.2rem;
+  text-align: center;
+  margin: 1rem 0;
+}
+.loading-message {
+  font-weight: bold;
+  font-size: 1.5rem;
+  text-align: center;
+  margin: 1rem 0;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.3; }
+  50% { opacity: 1; }
+  100% { opacity: 0.3; }
+}
+</style>

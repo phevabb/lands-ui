@@ -140,6 +140,7 @@ const exportExcel = async () => {
     loading.value = true // start loading
     // Call your API
     const res = await all_users_to_excel()
+  
     const exportData = res.data   // <-- JSON array from backend
 
 
@@ -166,15 +167,15 @@ const exportExcel = async () => {
 <template>
   <div>
     <md-button
-  class="md-dense md-primary"
-  @click="exportExcel"
-  :disabled="loading"
-  style="padding: 6px 12px; font-size: 13px; min-width: 120px; margin-bottom: 16px;"
->
-  <md-icon v-if="!loading" style="font-size: 16px; margin-right: 6px;">download</md-icon>
-  <md-icon v-else style="font-size: 16px; margin-right: 6px;">hourglass_top</md-icon>
-  {{ loading ? "Exporting..." : "Export" }}
-</md-button>
+    class="md-dense md-primary"
+    @click="exportExcel"
+    :disabled="loading"
+    style="padding: 6px 12px; font-size: 13px; min-width: 120px; margin-bottom: 16px;"
+  >
+    <md-icon v-if="!loading" style="font-size: 16px; margin-right: 6px;">download</md-icon>
+    <md-icon v-else style="font-size: 16px; margin-right: 6px;">hourglass_top</md-icon>
+    {{ loading ? "Exporting..." : "Export" }}
+  </md-button>
 
     <md-table :value="rows" :table-header-color="tableHeaderColor">
       <template #md-table-row="{ item }">

@@ -5,7 +5,7 @@ import axios from 'axios';
 const api = axios.create({
   // http://127.0.0.1:8000/
   // 'https://phevab1.pythonanywhere.com/
-  baseURL: 'https://phevab1.pythonanywhere.com/', //or your base URL
+  baseURL: 'http://127.0.0.1:8000/', //or your base URL
   headers: {
     'Content-Type': 'application/json'
   }
@@ -57,11 +57,11 @@ export const get_user_details = (userId) =>api.get(`superadmin/api/v1/users/${us
 export const update_user = (userId) =>api.get(`superadmin/api/v1/user-update/${userId}`);
 
 // PUT (full update)
-export const patch_user = (userId, payload) =>
+export const put_user= (userId, payload) =>
   api.put(`superadmin/api/v1/user-update/${userId}`, payload);
 
 // PATCH (partial update)
-export const put_user = (userId, payload) =>
+export const patch_user  = (userId, payload) =>
   api.patch(`superadmin/api/v1/user-update/${userId}`, payload);
 
 

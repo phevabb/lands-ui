@@ -13,6 +13,28 @@ const router = useRouter();
 
 
 const props = defineProps({
+
+  next: {
+    type: String,
+    default: "iik",
+  },
+  previous: {
+    type: String,
+    default: "fatts",
+  },
+  totalPages: {
+    type: Number,
+    required: true,
+    default: 4,
+  },
+  currentPage: {
+    type: Number,
+    required: true,
+    default: 2,
+  },
+
+  
+  // same as rows
   users: {
     type: Array,
     required: true,

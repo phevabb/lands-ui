@@ -11,8 +11,8 @@
       <div class="login-card">
         <div class="login-header">
           <img
-            src="@/assets/img/landss.jpg"
-            alt="Ghana Lands Commission Logo"
+            src="@/assets/img/landss2.jpg"
+            alt="Office of the Administrator of Stool Lands"
             class="login-logo"
           />
           <h2 class="login-title">Staff Login</h2>
@@ -185,7 +185,7 @@ body {
 
 .login-left {
   flex: 1;
-  background-image: url('@/assets/img/landss.jpg');
+  background-image: url('@/assets/img/landss2.jpg');
   background-size: cover;
   background-position: center;
   position: relative;

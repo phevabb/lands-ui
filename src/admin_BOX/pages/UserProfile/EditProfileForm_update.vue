@@ -120,53 +120,18 @@ watch(
 
 
 // ----------------- Handle Submit -----------------
-const handleSubmit = async () => {
-  isLoading.value = true;
+const handleSubmit = () => {
+  const payload = { ...formData };
 
-  try {
-    const payload = { ...formData };
-
-    // Ensure foreign key values are numbers (not strings)
-    props.backformdata.forEach((field) => {
-      if (
-        (field.field_type === "ForeignKey" || field.choices) &&
-        payload[field.field_name]
-      ) {
-        payload[field.field_name] = Number(payload[field.field_name]);
-
-     
-      }
-
-     
-
-    });
-
-
-
-    emit("submitForm", payload);
-
-    if (props.successMessage && props.button_name === "Create") {
-      Swal.fire({
-        icon: "success",
-        title: "Success",
-        text: props.successMessage || "User created successfully!",
-        timer: 2000,
-        showConfirmButton: false,
-      });
-
-      // Reset only on create
-      Object.keys(formData).forEach((key) => (formData[key] = ""));
+  props.backformdata.forEach((field) => {
+    if (field.field_type === "ForeignKey" && payload[field.field_name]) {
+      payload[field.field_name] = Number(payload[field.field_name]);
     }
-  } catch (err) {
-    Swal.fire({
-      icon: "error",
-      title: "Error",
-      text: err.message || "Something went wrong!",
-    });
-  } finally {
-    isLoading.value = false;
-  }
+  });
+
+  emit("submitForm", payload);
 };
+
 
 
 

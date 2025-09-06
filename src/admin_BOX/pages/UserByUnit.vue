@@ -1,79 +1,65 @@
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, onMounted } from "vue";
 import * as XLSX from "xlsx";
 import { useRoute, useRouter } from "vue-router/composables";
 import { saveAs } from "file-saver";
 import { users_per_department } from "../../services/api";
 
 const route = useRoute();
+const router = useRouter();
+
 const users = ref([]);
-const dept = ref('');
-const router = useRouter()
-
-
-onMounted(() => {
-  const deptName = route.query.dept;
-  if (deptName) {
-    users_per_department(deptName)
-      .then((res) => {
-        users.value = res.data.users;
-        dept.value = res.data.dept
-
-
-              })
-      .catch((err) => {
-        
-      });
-  }
-});
-
-const staffData = ref([
-  { id: "1111", name: "None None", contact: "N/A", category: "JUNIOR STAFF", status: "Active" },
-  { id: "1293399", name: "Rachel Korang", contact: "N/A", category: "N/A", status: "Active" },
-  { id: "892652", name: "Joyce Oppong", contact: "N/A", category: "N/A", status: "Inactive" },
-  { id: "782341", name: "Michael Johnson", contact: "+1 (555) 123-4567", category: "SENIOR STAFF", status: "Active" },
-  { id: "562891", name: "Sarah Williams", contact: "+1 (555) 987-6543", category: "MANAGEMENT", status: "Active" },
-]);
-
+const dept = ref("");
 const searchQuery = ref("");
 const selectedRow = ref(null);
-const staffid =ref("")
-const currentPage = ref(1);
-const pageSize = 5;
+const staffid = ref("");
+const isLoading = ref(true);
+const loading = ref(false)
+const errorMessage = ref("");
 
-const filteredStaff = computed(() => {
-  return staffData.value.filter(
-    (s) =>
-      s.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      s.id.toLowerCase().includes(searchQuery.value.toLowerCase())
-  );
-});
 
-const totalPages = computed(() => Math.ceil(filteredStaff.value.length / pageSize));
 
-const paginatedStaff = computed(() => {
-  const start = (currentPage.value - 1) * pageSize;
-  return filteredStaff.value.slice(start, start + pageSize);
-});
+onMounted(async () => {
+  isLoading.value = true
+  errorMessage.value =""
+  try {
+    const deptName = route.query.dept
+    if (deptName) {
+      const res = await users_per_department(deptName)
+      users.value = res.data.users
+      dept.value = res.data.dept
+    }
+  } catch (err) {
+    console.error("Error fetching users per department:", err);
+     if (err.message.includes("Network Error") || err.code === "ERR_NETWORK") {
+      errorMessage.value = "Please check your internet connection.";
+    } else {
+      errorMessage.value = "Something went wrong while fetching staff data.";
+    }
+  } 
+  finally {
+    isLoading.value = false
+  }
+})
+
+// function to check loading state
+const checkLoading = () => isLoading.value
+
 
 function selectRow(staff) {
   selectedRow.value = staff;
   staffid.value = staff.id;
-    router.push({ name: "Staff Details", params: { id: staff.id } });
-  
-}
-
-function changePage(page) {
-  currentPage.value = page;
+  router.push({ name: "Staff Details", params: { id: staff.id } });
 }
 
 function exportExcel() {
-  const ws = XLSX.utils.json_to_sheet(staffData.value);
+  const ws = XLSX.utils.json_to_sheet(users.value);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Staff");
   const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
   const data = new Blob([excelBuffer], { type: "application/octet-stream" });
-  saveAs(data, "StaffDirectory.xlsx");
+  saveAs(data, `${dept.value}.xlsx`);
+
 }
 </script>
 
@@ -81,36 +67,71 @@ function exportExcel() {
   <div class="premium-container">
     <div class="premium-header">
       <div class="premium-title">
-        <i class="material-icons">{{dept}}</i>
-        
+        <i class="material-icons">{{ dept }}</i>
       </div>
-      
     </div>
 
     <div class="table-footer">
       <div class="rows-info">
-        Showing {{ paginatedStaff.length }} of {{ filteredStaff.length }} staff members
+        Showing {{ users.length }} staff members
       </div>
+
+      <!-- Modern Export Button -->
+    
+
+
+    <md-button
+    class="md-dense md-primary"
+    @click="exportExcel"
+    :disabled="loading"
+    style="padding: 6px 12px; font-size: 13px; min-width: 120px; margin-bottom: 16px;"
+  >
+    <md-icon v-if="!loading" style="font-size: 16px; margin-right: 6px;">download</md-icon>
+    <md-icon v-else style="font-size: 16px; margin-right: 6px;">hourglass_top</md-icon>
+    {{ loading ? "Exporting..." : "Export" }}
+  </md-button>
+
+
+
+
       <div class="search-box">
         <i class="material-icons">search</i>
-        <input type="text" v-model="searchQuery" placeholder="Search staff members..." />
+        <input
+          type="text"
+          v-model="searchQuery"
+          placeholder="Search staff members..."
+        />
       </div>
     </div>
 
     <div class="table-container">
-      <table class="premium-table">
+      <!-- Show loader while fetching -->
+      <div v-if="checkLoading()" class="loading-message">
+        Loading users...
+      </div>
+
+      <!-- Error message -->
+      <div v-else-if="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+
+      <!-- Show table after loading -->
+      <table v-else class="premium-table">
         <thead>
           <tr>
             <th>Staff ID</th>
             <th>Full Name</th>
             <th>Contact</th>
             <th>Supervisor's Name</th>
-            
           </tr>
         </thead>
         <tbody>
           <tr
-            v-for="staff in users"
+            v-for="staff in users.filter(
+              (s) =>
+                s.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                s.user_id?.toLowerCase().includes(searchQuery.toLowerCase())
+            )"
             :key="staff.id"
             @click="selectRow(staff)"
             :class="{ 'row-selected': selectedRow?.id === staff.id }"
@@ -119,40 +140,16 @@ function exportExcel() {
             <td>{{ staff.full_name }}</td>
             <td>{{ staff.phone_number }}</td>
             <td>{{ staff.supervisor_name }}</td>
-            
           </tr>
         </tbody>
       </table>
     </div>
 
-    <div class="pagination">
-      <div class="pagination-info">Page {{ currentPage }} of {{ totalPages }}</div>
-      <div class="pagination-controls">
-        <button class="pagination-btn" :disabled="currentPage === 1" @click="changePage(currentPage - 1)">
-          <i class="material-icons">chevron_left</i>
-          Previous
-        </button>
-
-        <div class="page-numbers">
-          <div
-            v-for="page in totalPages"
-            :key="page"
-            class="page-number"
-            :class="{ active: currentPage === page }"
-            @click="changePage(page)"
-          >
-            {{ page }}
-          </div>
-        </div>
-
-        <button class="pagination-btn" :disabled="currentPage === totalPages" @click="changePage(currentPage + 1)">
-          Next
-          <i class="material-icons">chevron_right</i>
-        </button>
-      </div>
-    </div>
+    
   </div>
 </template>
+
+
 
 <style scoped>
 
@@ -172,6 +169,62 @@ function exportExcel() {
             padding: 20px;
             color: #334155;
         }
+
+        .export-btn-wrapper {
+  display: inline-block;
+  position: relative;
+}
+
+.export-btn {
+  background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 50px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+  transition: all 0.3s ease;
+}
+
+.export-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+}
+
+.export-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+.export-btn i {
+  font-size: 18px;
+}
+
+.tooltip {
+  position: absolute;
+  bottom: -35px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  width: max-content;
+}
+
+.export-btn:hover + .tooltip {
+  opacity: 1;
+}
+
         
         .premium-container {
             width: 100%;
@@ -224,6 +277,26 @@ function exportExcel() {
             transform: translateY(-2px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
         }
+        .error-message {
+  color: red;
+  font-weight: bold;
+  font-size: 1.2rem;
+  text-align: center;
+  margin: 1rem 0;
+}
+.loading-message {
+  font-weight: bold;
+  font-size: 1.5rem;
+  text-align: center;
+  margin: 1rem 0;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.3; }
+  50% { opacity: 1; }
+  100% { opacity: 0.3; }
+}
         
         .export-btn:disabled {
             background: linear-gradient(90deg, #94a3b8 0%, #64748b 100%);
@@ -235,6 +308,8 @@ function exportExcel() {
             overflow-x: auto;
             padding: 0 20px;
         }
+
+
         
         .premium-table {
             width: 100%;

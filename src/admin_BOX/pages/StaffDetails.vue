@@ -31,8 +31,8 @@
             <div class="stat-label">Years in Service</div>
           </div>
           <div class="stat">
-            <div class="stat-value">{{ staff.current_grade }}</div>
-            <div class="stat-label">Grade</div>
+            <div class="stat-value">{{ staff.date_of_retirement }}</div>
+            <div class="stat-label">Retirement Date</div>
           </div>
         </div>
 
@@ -55,6 +55,38 @@
             </div>
             <div>{{ staff.district }}, {{ staff.region }}</div>
           </div>
+
+          <div class="contact-item">
+            <div class="contact-icon">
+              <i class="fas fa-building"></i>
+            </div>
+            <div>{{ staff.management_unit_cost_centre }}</div>
+          </div>
+
+          <div class="contact-item">
+            <div class="contact-icon">
+              <i class="fas fa-user-tie"></i>
+            </div>
+            <div>{{ staff.professional }}</div>
+          </div>
+
+          <div class="contact-item">
+            <div class="contact-icon">
+              <i class="fas fa-user-tag"></i>
+            </div>
+            <div>{{ staff.role }}</div>
+          </div>
+
+          <div class="contact-item">
+            <div class="contact-icon">
+              <i class="fas fa-users"></i>
+            </div>
+            <div>{{ staff.staff_category }}</div>
+          </div>
+
+          
+
+          
         </div>
       </div>
 
@@ -112,18 +144,71 @@
               <div class="info-label">Supervisor</div>
               <div class="info-value">{{ staff.supervisor_name || 'Not specified' }}</div>
             </div>
+
             <div class="info-item">
-              <div class="info-label">Date of First Appointment</div>
+              <div class="info-label">Substantive Date</div>
+              <div class="info-value">{{ formatDate(staff.substantive_date) }}</div>
+            </div>
+
+
+            <div class="info-item">
+              <div class="info-label">Date Of First Appointment</div>
               <div class="info-value">{{ formatDate(staff.date_of_first_appointment) }}</div>
             </div>
+
             <div class="info-item">
-              <div class="info-label">Date of Last Promotion</div>
+              <div class="info-label">Notional Effective Date</div>
+              <div class="info-value">{{ formatDate(staff.national_effective_date) }}</div>
+            </div>
+
+            
+
+            
+            <div class="info-item">
+              <div class="info-label">Date Of Assumption Of Duty</div>
+              <div class="info-value">{{ formatDate(staff.date_of_assumption_of_duty) }}</div>
+            </div>
+
+
+            <div class="info-item">
+              <div class="info-label">Date Of Last Promotion</div>
               <div class="info-value">{{ formatDate(staff.date_of_last_promotion) }}</div>
             </div>
             <div class="info-item">
-              <div class="info-label">Years in Service</div>
+              <div class="info-label">Years In Service</div>
               <div class="info-value">{{ staff.number_of_years_in_service }} years</div>
             </div>
+
+            <div class="info-item">
+              <div class="info-label">Fulltime / Contract</div>
+              <div class="info-value">{{ staff.fulltime_contract_staff }}</div>
+            </div>
+
+           
+            <div class="info-item">
+              <div class="info-label">Change Of Grade</div>
+              <div class="info-value">{{ staff.change_of_grade }} </div>
+            </div>
+
+            <div class="info-item">
+              <div class="info-label">Current Grade</div>
+              <div class="info-value">{{ staff.current_grade }} </div>
+            </div>
+
+            <div class="info-item">
+              <div class="info-label">Years On Current Grade</div>
+              <div class="info-value">{{ staff.years_on_current_grade }} </div>
+            </div>
+
+            
+            <div class="info-item">
+              <div class="info-label">Next Grade</div>
+              <div class="info-value">{{ staff.next_grade }} </div>
+            </div>
+
+            
+
+
           </div>
         </div>
 
@@ -134,10 +219,25 @@
             
           </div>
           <div class="info-grid">
+
+
+            <div class="info-item">
+              <div class="info-label">Single Spine</div>
+              <div class="info-value">{{ staff.single_spine_monthly_salary }}</div>
+            </div>
+
+
             <div class="info-item">
               <div class="info-label">Current Salary Level</div>
               <div class="info-value">{{ staff.current_salary_level }}</div>
             </div>
+
+            <div class="info-item">
+              <div class="info-label">Next Salary Level</div>
+              <div class="info-value">{{ staff.next_salary_level }}</div>
+            </div>
+
+
             <div class="info-item">
               <div class="info-label">Current Salary Point</div>
               <div class="info-value">{{ staff.current_salary_point }}</div>
@@ -155,6 +255,10 @@
               <div class="info-value">{{ staff.bank_name }}</div>
             </div>
             <div class="info-item">
+              <div class="info-label">Bank Branch</div>
+              <div class="info-value">{{ staff.bank_account_branch }}</div>
+            </div>
+            <div class="info-item">
               <div class="info-label">Account Number</div>
               <div class="info-value">{{ staff.bank_account_number }}</div>
             </div>
@@ -165,9 +269,48 @@
         <div class="details-card">
           <div class="card-header">
             Additional Information
+
+            
             
           </div>
           <div class="info-grid">
+            <div class="info-item">
+              <div class="info-label">Number Targetes</div>
+              <div class="info-value">{{ staff.number_of_targets || 'Not specified' }}</div>
+            </div>
+
+            <div class="info-item">
+              <div class="info-label">Number Targets Met</div>
+              <div class="info-value">{{ staff.number_of_targets_met || 'Not specified' }}</div>
+            </div>
+
+            <div class="info-item">
+              <div class="info-label">Number Of Targetes Not Met</div>
+              <div class="info-value">{{ staff.number_of_targets_not_met || 'Not specified' }}</div>
+            </div>
+
+            <div class="info-item">
+              <div class="info-label">Number Of Focus Areas</div>
+              <div class="info-value">{{ staff.number_of_focus_areas || 'Not specified' }}</div>
+            </div>
+
+            <div class="info-item">
+              <div class="info-label">Self Assessment Description</div>
+              <div class="info-value">{{ staff.self_assessment_description || 'Not specified' }}</div>
+            </div>
+
+
+            
+
+            <div class="info-item">
+              <div class="info-label">Overall Assessmenet Score</div>
+              <div class="info-value">{{ staff.overall_assessment_score || 'Not specified' }}</div>
+            </div>
+
+            
+
+
+
             <div class="info-item">
               <div class="info-label">Academic Qualification</div>
               <div class="info-value">{{ staff.academic_qualification || 'Not specified' }}</div>
@@ -196,6 +339,11 @@
               <div class="info-label">Accommodation Status</div>
               <div class="info-value">{{ staff.accommodation_status }}</div>
             </div>
+
+            <div class="info-item">
+              <div class="info-label">At POST / On Leave</div>
+              <div class="info-value">{{ staff.at_post_on_leave }}</div>
+            </div>
           </div>
         </div>
       </div>
@@ -216,6 +364,7 @@ const router = useRouter()
 const fetchUserDetails = async () => {
   const id_user = route.params.id;
   const res = await get_user_details(id_user);
+  console.log(res.data)
   user.value = res.data;
 
 };
@@ -231,10 +380,78 @@ onMounted(fetchUserDetails);
 // Dummy staff data (replace with API call later)
 const staff = computed(() => ({
 
-    id: 22,
+  
+
+  at_post_on_leave: user.value?.at_post_on_leave || "-",
+  change_of_grade: user.value?.change_of_grade || "-",
+  date_of_assumption_of_duty: user.value?.date_of_assumption_of_duty || "-",
+  date_of_retirement: user.value?.date_of_retirement || "-",
+  fulltime_contract_staff: user.value?.fulltime_contract_staff || "-",
+  management_unit_cost_centre: user.value?.management_unit_cost_centre || "-",
+  national_effective_date: user.value?.national_effective_date || "-",
+  next_salary_level: user.value?.next_salary_level || "-",
+  professional: user.value?.professional || "-",
+  role: user.value?.role || "-",
+
+  years_on_current_grade: user.value?.years_on_current_grade || "-",
+
+  
+
+  substantive_date: user.value?.substantive_date || "-",
+
+  
+
+  staff_category: user.value?.staff_category || "-",
+
+  
+  single_spine_monthly_salary: user.value?.single_spine_monthly_salary || "-",
+
+
+
+
+  self_assessment_description: user.value?.self_assessment_description || "-",
+
+
+
+
+
+
+  
+  overall_assessment_score: user.value?.overall_assessment_score || "-",
+  
+
+  number_of_targets: user.value?.number_of_targets || "-",
+  number_of_targets_met: user.value?.number_of_targets_met || "-",
+  number_of_targets_not_met: user.value?.number_of_targets_not_met || "-",
+  
+  
+
+  number_of_focus_areas: user.value?.number_of_focus_areas || "-",
+
+ 
+  
+
+  
+
+
+
+  
+  
+
+
+
+  
+  
+  
+
+
+
   full_name: user.value?.full_name || "",
   directorate: user.value?.directorate || "-",
   category: user.value?.category || "-",
+
+  
+
 
   district: user.value?.district || "-",
   region: user.value?.region || "-",
@@ -250,21 +467,24 @@ const staff = computed(() => ({
   date_of_first_appointment: user.value?.date_of_first_appointment || "-",
   date_of_last_promotion: user.value?.date_of_last_promotion || "-",
   number_of_years_in_service: user.value?.number_of_years_in_service || "-",
-  academic_qualification: user.value?.academic_qualificationy || "-",
+  academic_qualification: user.value?.academic_qualification || "-",
   professional_qualification: user.value?.professional_qualification || "-",
   monthly_gross_pay: user.value?.monthly_gross_pay || "-",
-  annual_salary: user.value?.category || "-",
+  annual_salary: user.value?.annual_salary || "-",
   phone_number: user.value?.phone_number || "-",
   ghana_card_number: user.value?.ghana_card_number || "-",
   social_security_number: user.value?.social_security_number || "-",
 
   national_health_insurance_number: user.value?.national_health_insurance_number || "-",
-  bank_name: user.value?.category || "-",
+  bank_name: user.value?.bank_name || "-",
+  bank_account_branch: user.value?.bank_account_branch || "-",
   bank_account_number: user.value?.bank_account_number || "-",
   payroll_status: user.value?.payroll_status || "-",
   accommodation_status: user.value?.accommodation_status|| "-",
   supervisor_name: user.value?.supervisor_name || "-",
   current_grade: user.value?.current_grade || "-",
+  next_grade: user.value?.next_grade || "-",
+  
   photo:
     "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80"
 

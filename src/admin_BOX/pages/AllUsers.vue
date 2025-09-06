@@ -15,6 +15,7 @@ const totalPages = ref(null);
 const currentPage = ref(null);
 const itemsPerPage = ref(null)
 const selectedUser = ref(null)
+const errorMessage = ref("");
 
 
 // function to check loading state
@@ -35,7 +36,13 @@ async function fetchUsers(page = 1) {
     currentPage.value = getCurrentPageFromUrl(response.data.next, response.data.previous);
     next.value = response.data.next;
     previous.value = response.data.previous;
-  } catch (error) {
+  } catch (err) {
+
+     if (err.message.includes("Network Error") || err.code === "ERR_NETWORK") {
+      errorMessage.value = "Please check your internet connection.";
+    } else {
+      errorMessage.value = "Something went wrong while fetching staff data.";
+    }
    
   } finally {
     isLoading.value = false;
@@ -69,11 +76,6 @@ onMounted(async () => {
     totalPages.value = Math.ceil(response.data.count / itemsPerPage.value);
     currentPage.value = getCurrentPageFromUrl(response.data.next, response.data.previous);
 
-    
-
-
-
- 
 
     rows.value = response.data.results
 
@@ -100,7 +102,13 @@ onMounted(async () => {
           </md-card-header>
 
           <md-card-content>
-            <div v-if="checkLoading()">Loading users...</div>
+            <div v-if="checkLoading()"  class="loading-message">Loading users...</div>
+            <!-- Error message -->
+      <div v-else-if="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+
+
             <simple-table
               v-else
               table-header-color="green"
@@ -118,3 +126,26 @@ onMounted(async () => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.error-message {
+  color: red;
+  font-weight: bold;
+  font-size: 1.2rem;
+  text-align: center;
+  margin: 1rem 0;
+}
+.loading-message {
+  font-weight: bold;
+  font-size: 1.5rem;
+  text-align: center;
+  margin: 1rem 0;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.3; }
+  50% { opacity: 1; }
+  100% { opacity: 0.3; }
+}
+</style>

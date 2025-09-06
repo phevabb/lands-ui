@@ -15,18 +15,34 @@ const router = useRouter()
 // define reactive error and success messages
 const backendErrors = ref({});
 const successMessage = ref("");
-
+const isLoading = ref(true);
+const errorMessage = ref("");
 const userFields = ref([])
 
 onMounted(async () => {
+  isLoading.value = true
+  errorMessage.value =""
   try {
     const res = await user_fields()
     userFields.value = res.data
     
   } catch (err) {
+    console.error("Error fetching users per department:", err);
+     if (err.message.includes("Network Error") || err.code === "ERR_NETWORK") {
+      errorMessage.value = "Please check your internet connection.";
+    } else {
+      errorMessage.value = "Something went wrong while fetching staff data.";
+    }
     
   }
+    finally {
+    isLoading.value = false
+  }
 })
+
+// function to check loading state
+const checkLoading = () => isLoading.value
+
 
 const handleFormSubmit = async (formData) => {
   backendErrors.value = {};
@@ -85,7 +101,17 @@ try {
 <template>
   <div class="content">
     <div class="md-layout">
-      <div class="md-layout-item md-medium-size-100 md-size-66">
+      <!-- Show loader while fetching -->
+  <div v-if="checkLoading()" class="loading-message">
+  Loading Form Fields
+</div>
+
+<!-- Error message -->
+      <div v-else-if="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+
+      <div v-else class="md-layout-item md-medium-size-100 md-size-66">
         <EditProfileForm
           data-background-color="green"
           title="New Entry"
@@ -103,3 +129,29 @@ try {
     </div>
   </div>
 </template>
+
+<style scoped>
+
+.error-message {
+  color: red;
+  font-weight: bold;
+  font-size: 1.2rem;
+  text-align: center;
+  margin: 1rem 0;
+}
+.loading-message {
+  font-weight: bold;
+  font-size: 1.5rem;
+  text-align: center;
+  margin: 1rem 0;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.3; }
+  50% { opacity: 1; }
+  100% { opacity: 0.3; }
+}
+
+
+</style>
