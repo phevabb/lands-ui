@@ -7,7 +7,5 @@
 </template>
 
 <script setup>
-defineOptions({
-  name: "nav-tabs-card",
-});
+
 </script>

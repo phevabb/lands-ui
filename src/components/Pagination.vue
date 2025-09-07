@@ -26,23 +26,42 @@ function changePage(page) {
 }
 
 // Computed: smart pagination (no overflow)
+// Computed: smart pagination (no overflow)
 const pages = computed(() => {
   const total = props.totalPages;
   const current = props.currentPage;
   const delta = 2; // how many pages to show around current
   const range = [];
 
-  // Always show first and last
+  // Always show first page
+  range.push(1);
+  
+  // Calculate left and right boundaries
   const left = Math.max(2, current - delta);
   const right = Math.min(total - 1, current + delta);
-
-  range.push(1);
-  if (left > 2) range.push("...");
-  for (let i = left; i <= right; i++) {
-    range.push(i);
+  
+  // Add ellipsis if there's a gap between first page and left boundary
+  if (left > 2) {
+    range.push("...");
   }
-  if (right < total - 1) range.push("...");
-  if (total > 1) range.push(total);
+  
+  // Add page numbers between left and right
+  for (let i = left; i <= right; i++) {
+    // Fix: Ensure we don't add duplicate pages when there are exactly 2 pages
+    if (i !== 1 && i !== total) {
+      range.push(i);
+    }
+  }
+  
+  // Add ellipsis if there's a gap between right boundary and last page
+  if (right < total - 1) {
+    range.push("...");
+  }
+  
+  // Add last page if there is more than one page
+  if (total > 1) {
+    range.push(total);
+  }
 
   return range;
 });

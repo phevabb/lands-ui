@@ -1,13 +1,17 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import * as XLSX from "xlsx";
 import { useRoute, useRouter } from "vue-router/composables";
 import { saveAs } from "file-saver";
 import { users_per_department } from "../../services/api";
+import Pagination from "../../components/Pagination.vue"; 
+
+
+
+
 
 const route = useRoute();
-const router = useRouter();
-
+const router = useRouter()
 const users = ref([]);
 const dept = ref("");
 const searchQuery = ref("");
@@ -16,31 +20,123 @@ const staffid = ref("");
 const isLoading = ref(true);
 const loading = ref(false)
 const errorMessage = ref("");
+const totalCount = ref(0);
+const next = ref("")
+const previous = ref("")
+const totalPages = ref(1);       // default to 1 page
+const currentPage = ref(1);      // start at page 1
+const page_size = 10
 
 
 
-onMounted(async () => {
-  isLoading.value = true
-  errorMessage.value =""
+async function fetchUsers(page = 1) {
+  isLoading.value = true;
+  errorMessage.value = "";
   try {
-    const deptName = route.query.dept
-    if (deptName) {
-      const res = await users_per_department(deptName)
-      users.value = res.data.users
-      dept.value = res.data.dept
-    }
+    const response = await users_per_department(dept.value, { page, page_size });
+
+    console.log("restwo", response);
+    totalCount.value = response.data.count;
+
+    users.value = response.data.results.users || [];
+
+    totalPages.value = Math.ceil(response.data.count / page_size);
+    currentPage.value = getCurrentPageFromUrl(
+      response.data.next,
+      response.data.previous,
+      response.data.count,
+      page_size
+    );
+    next.value = response.data.next;
+    previous.value = response.data.previous;
   } catch (err) {
-    console.error("Error fetching users per department:", err);
-     if (err.message.includes("Network Error") || err.code === "ERR_NETWORK") {
+    console.error(err);
+    if (err.message.includes("Network Error") || err.code === "ERR_NETWORK") {
       errorMessage.value = "Please check your internet connection.";
     } else {
       errorMessage.value = "Something went wrong while fetching staff data.";
     }
-  } 
-  finally {
-    isLoading.value = false
+  } finally {
+    isLoading.value = false;
   }
-})
+}
+
+
+const showingRange = computed(() => {
+  if (totalCount.value === 0) return `Showing 0 of 0`;
+
+  const start = (currentPage.value - 1) * page_size + 1;
+  const end = Math.min(currentPage.value * page_size, totalCount.value);
+  return `Showing ${start}–${end} of ${totalCount.value}`;
+});
+
+
+
+function getCurrentPageFromUrl(next, previous, count, pageSize = 10) {
+  try {
+    // Case: only one page
+    if (!previous && !next) return 1;
+
+    // Extract page numbers from URLs if available
+    const nextPage = next ? parseInt(new URL(next, window.location.origin).searchParams.get("page")) : null;
+    const prevPage = previous ? parseInt(new URL(previous, window.location.origin).searchParams.get("page")) : null;
+
+    // First page
+    if (!previous) return nextPage ? nextPage - 1 : 1;
+
+    // Last page
+    if (!next) {
+      const totalPages = Math.ceil(count / pageSize);
+      return totalPages;
+    }
+
+    // Middle pages
+    if (nextPage !== null && prevPage !== null) {
+      if (nextPage - prevPage === 2) return prevPage + 1; // handle 2-page edge case
+      return nextPage - 1; // normal case
+    }
+
+    return 1; // fallback
+  } catch (e) {
+    console.warn("getCurrentPageFromUrl failed:", { next, previous, count, pageSize }, e);
+    return 1;
+  }
+}
+
+onMounted(async () => {
+  isLoading.value = true;
+  errorMessage.value = "";
+  try {
+    const deptName = route.query.dept;
+    if (deptName) {
+      const res = await users_per_department(deptName);
+      console.log("resa", res);
+
+      totalPages.value = Math.ceil(res.data.count / page_size);
+      next.value = res.data.next;
+      previous.value = res.data.previous;
+      currentPage.value = getCurrentPageFromUrl(
+        res.data.next,
+        res.data.previous,
+        res.data.count,
+        page_size
+      );
+      console.log("current pate:", currentPage)
+
+      users.value = res.data.results.users;
+      dept.value = res.data.results.dept;
+    }
+  } catch (err) {
+    console.error("Error fetching users per department:", err);
+    if (err.message.includes("Network Error") || err.code === "ERR_NETWORK") {
+      errorMessage.value = "Please check your internet connection.";
+    } else {
+      errorMessage.value = "Something went wrong while fetching staff data.";
+    }
+  } finally {
+    isLoading.value = false;
+  }
+});
 
 // function to check loading state
 const checkLoading = () => isLoading.value
@@ -117,32 +213,51 @@ function exportExcel() {
 
       <!-- Show table after loading -->
       <table v-else class="premium-table">
-        <thead>
-          <tr>
-            <th>Staff ID</th>
-            <th>Full Name</th>
-            <th>Contact</th>
-            <th>Supervisor's Name</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="staff in users.filter(
-              (s) =>
-                s.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                s.user_id?.toLowerCase().includes(searchQuery.toLowerCase())
-            )"
-            :key="staff.id"
-            @click="selectRow(staff)"
-            :class="{ 'row-selected': selectedRow?.id === staff.id }"
-          >
-            <td>{{ staff.user_id }}</td>
-            <td>{{ staff.full_name }}</td>
-            <td>{{ staff.phone_number }}</td>
-            <td>{{ staff.supervisor_name }}</td>
-          </tr>
-        </tbody>
-      </table>
+  <thead>
+    <tr>
+      <th>Staff ID</th>
+      <th>Full Name</th>
+      <th>Contact</th>
+      <th>Supervisor's Name</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr
+      v-for="staff in users.filter(
+        (s) =>
+          s.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          s.user_id?.toLowerCase().includes(searchQuery.toLowerCase())
+      )"
+      :key="staff.id"
+      @click="selectRow(staff)"
+      :class="{ 'row-selected': selectedRow?.id === staff.id }"
+    >
+      <td>{{ staff.user_id }}</td>
+      <td>{{ staff.full_name }}</td>
+      <td>{{ staff.phone_number }}</td>
+      <td>{{ staff.supervisor_name }}</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- Pagination + Range -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px;">
+  <pagination
+    :current-page="currentPage"
+    :total-pages="totalPages"
+    @page-changed="page => fetchUsers(page)"
+  ></pagination>
+
+  <div style="font-size: 14px; color: #7f8c8d;">
+    {{ showingRange }}
+  </div>
+</div>
+
+
+
+
+            
+
     </div>
 
     

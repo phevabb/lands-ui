@@ -29,10 +29,12 @@ async function fetchUsers(page = 1) {
   try {
     const response = await all_users({ page });
 
-    rows.value = response.data.results;
+
+
+    rows.value = response.data.results
     
-    itemsPerPage.value = response.data.page_size
-    totalPages.value = Math.ceil(response.data.count / itemsPerPage.value);
+    itemsPerPage.value = 10
+    totalPages.value = Math.ceil(response.data.count / 10);
     currentPage.value = getCurrentPageFromUrl(response.data.next, response.data.previous);
     next.value = response.data.next;
     previous.value = response.data.previous;
@@ -71,9 +73,10 @@ onMounted(async () => {
   fetchUsers(1);
   try {
     const response = await all_users({ page: 1  })
-    itemsPerPage.value = response.data.page_size
+    console.log("rosa", response)
+    itemsPerPage.value = 10
 
-    totalPages.value = Math.ceil(response.data.count / itemsPerPage.value);
+    totalPages.value = Math.ceil(response.data.count / 10 );
     currentPage.value = getCurrentPageFromUrl(response.data.next, response.data.previous);
 
 
