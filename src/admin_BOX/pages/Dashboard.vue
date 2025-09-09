@@ -86,7 +86,7 @@ function getCurrentPageFromUrl(next, previous, count, pageSize = 10) {
 
     return 1; // fallback
   } catch (e) {
-    console.warn("getCurrentPageFromUrl failed:", { next, previous, count, pageSize }, e);
+
     return 1;
   }
 }

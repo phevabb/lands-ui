@@ -50,7 +50,7 @@ async function fetchUsers(page = 1) {
     next.value = response.data.next;
     previous.value = response.data.previous;
   } catch (err) {
-    console.error(err);
+
     if (err.message.includes("Network Error") || err.code === "ERR_NETWORK") {
       errorMessage.value = "Please check your internet connection.";
     } else {
@@ -108,7 +108,7 @@ function getCurrentPageFromUrl(next, previous, count, pageSize = 10) {
 
     return 1; // fallback
   } catch (e) {
-    console.warn("getCurrentPageFromUrl failed:", { next, previous, count, pageSize }, e);
+
     return 1;
   }
 }
@@ -137,7 +137,7 @@ onMounted(async () => {
       dept.value = res.data.results.dept;
     }
   } catch (err) {
-    console.error("Error fetching users per department:", err);
+
     if (err.message.includes("Network Error") || err.code === "ERR_NETWORK") {
       errorMessage.value = "Please check your internet connection.";
     } else {

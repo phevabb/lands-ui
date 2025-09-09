@@ -29,7 +29,7 @@ onMounted(async () => {
     userFields.value = res.data
     
   } catch (err) {
-    console.error("Error fetching users per department:", err);
+
      if (err.message.includes("Network Error") || err.code === "ERR_NETWORK") {
       errorMessage.value = "Please check your internet connection.";
     } else {

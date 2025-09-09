@@ -31,7 +31,7 @@ import axios from 'axios';
        return config;
      },
      (error) => {
-       console.error('Axios request error:', error);
+
        return Promise.reject(error);
      }
    );

@@ -29,7 +29,7 @@ onMounted(async () => {
     userData.value = userDetailsRes.data || {};
 
   } catch (err) {
-    console.error("Error fetching data:", err);
+
     backendErrors.value = { general: ["Failed to load user data"] };
   }
 });
@@ -62,7 +62,7 @@ const handleFormSubmit = async (formData) => {
       router.push("/allusers");
     }, 1500);
   } catch (err) {
-    console.error("Error in patch_user:", err.response?.data || err);
+
     backendErrors.value = err.response?.data || {
       general: ["Failed to update user"],
     };

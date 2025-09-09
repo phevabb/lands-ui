@@ -182,11 +182,11 @@ onMounted(async () => {
     if (Array.isArray(res.data)) {
       rows2.value = res.data;
     } else {
-      console.warn('Invalid data from all_users_to_excel:', res.data);
+
       emit('export-error', 'Invalid data received from server');
     }
   } catch (error) {
-    console.error('Failed to fetch data:', error);
+
     emit('export-error', 'Failed to fetch data for table');
   }
 });
