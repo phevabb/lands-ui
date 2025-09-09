@@ -25,7 +25,7 @@ onMounted(async () => {
   try {
     const res = await user_fields()
 
-    console.log("from new entry:", res)
+   
     userFields.value = res.data
     
   } catch (err) {

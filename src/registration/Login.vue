@@ -116,7 +116,7 @@ const handleLogin = async () => {
   loading.value = true
   try{
     const {data} = await login(form)
-    console.log("logins:", JSON.stringify(data, null, 2));
+
 
  
     localStorage.setItem('token', data.token) // save token

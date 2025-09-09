@@ -143,11 +143,11 @@
          if (fileInput.value) fileInput.value.value = '';
          return;
        }
-       console.log('Selected file:', file);
+
        formData.profile_picture = file;
        profilePicturePreview.value = URL.createObjectURL(file);
      } else {
-       console.log('No file selected');
+
        formData.profile_picture = null;
        profilePicturePreview.value =
          props.formValues.profile_picture
@@ -158,7 +158,7 @@
    };
 
    const clearFile = () => {
-     console.log('Clearing profile picture');
+
      formData.profile_picture = null;
      profilePicturePreview.value =
        props.formValues.profile_picture
@@ -168,18 +168,18 @@
    };
 
    const handleSubmit = () => {
-     console.log('formData before submit:', JSON.parse(JSON.stringify(formData)));
+
      const formDataToSend = new FormData();
      for (const [key, value] of Object.entries(formData)) {
        if (key === 'profile_picture') {
          if (value instanceof File) {
-           console.log(`Appending file ${key}:`, value);
+
            formDataToSend.append(key, value, value.name);
          } else {
-           console.log(`Skipping ${key}: not a file or null`);
+
          }
        } else if (value !== null && value !== '') {
-         console.log(`Appending ${key}:`, value);
+
          if (props.backformdata.find((f) => f.field_name === key)?.field_type === 'ForeignKey') {
            formDataToSend.append(key, Number(value));
          } else {
@@ -192,9 +192,9 @@
      for (let [key, value] of formDataToSend.entries()) {
        finalFormData.append(key, value);
      }
-     console.log('FormData to send:', finalFormData);
+
      for (let [key, value] of finalFormData.entries()) {
-       console.log(`FormData entry - ${key}:`, value);
+
      }
      emit('submitForm', finalFormData);
    };
@@ -236,7 +236,7 @@
    watch(
      () => formData.profile_picture,
      (newFile) => {
-       console.log('formData.profile_picture changed:', newFile);
+
      }
    );
    </script>

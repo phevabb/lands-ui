@@ -35,7 +35,7 @@ async function fetchUsers(page = 1) {
   try {
     const response = await users_per_department(dept.value, { page, page_size });
 
-    console.log("restwo", response);
+
     totalCount.value = response.data.count;
 
     users.value = response.data.results.users || [];
@@ -120,7 +120,7 @@ onMounted(async () => {
     const deptName = route.query.dept;
     if (deptName) {
       const res = await users_per_department(deptName);
-      console.log("resa", res);
+
 
       totalPages.value = Math.ceil(res.data.count / page_size);
       next.value = res.data.next;
@@ -131,7 +131,7 @@ onMounted(async () => {
         res.data.count,
         page_size
       );
-      console.log("current pate:", currentPage)
+
 
       users.value = res.data.results.users;
       dept.value = res.data.results.dept;

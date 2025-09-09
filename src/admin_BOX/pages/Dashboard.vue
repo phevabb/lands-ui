@@ -117,7 +117,6 @@ onMounted(async () => {
 
     ]);
 
-    // console.log("Region API response:", regData);
   
     
     

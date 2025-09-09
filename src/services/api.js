@@ -9,10 +9,10 @@ import axios from 'axios';
 
    api.interceptors.request.use(
      (config) => {
-       console.log('Axios request config:', config);
+
        if (config.data instanceof FormData) {
          for (let [key, value] of config.data.entries()) {
-           console.log(`API FormData entry - ${key}:`, value);
+
          }
          // Ensure Content-Type is unset for FormData
          config.headers['Content-Type'] = 'multipart/form-data';
@@ -66,16 +66,16 @@ import axios from 'axios';
    export const get_user_details = (userId) => api.get(`superadmin/api/v1/users/${userId}`);
    export const update_user = (userId) => api.get(`superadmin/api/v1/user-update/${userId}/`);
    export const put_user = (userId, payload) => {
-     console.log("Sending FormData to API:", payload);
+
      for (let [key, value] of payload.entries()) {
-       console.log(`API FormData entry - ${key}:`, value);
+
      }
      return api.put(`superadmin/api/v1/user-update/${userId}/`, payload);
    };
    export const patch_user = (userId, payload) => {
-     console.log("Sending FormData to API:", payload);
+
      for (let [key, value] of payload.entries()) {
-       console.log(`API FormData entry - ${key}:`, value);
+
      }
      return api.patch(`superadmin/api/v1/user-update/${userId}/`, payload);
    };

@@ -304,8 +304,7 @@ const fetchUserDetails = async () => {
   try {
     const id_user = route.params.id;
     const res = await get_user_details(id_user);
-    console.log('API Responseee:', res.data);
-    console.log('API Responseee:', res.data);
+
     user.value = res.data;
   } catch (error) {
     console.error('Error fetching user details:', error);

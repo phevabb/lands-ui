@@ -23,11 +23,7 @@
    const profilePictureFile = ref(null);
 
    const personalInfoFields = computed(() => {
-     console.log('backformdata:', props.backformdata.map(f => ({
-       field_name: f.field_name,
-       field_type: f.field_type,
-       value: f.value
-     })));
+   
      return props.backformdata.filter((field) => {
        const fieldName = field.field_name ? field.field_name.toLowerCase() : '';
        return (
@@ -54,24 +50,19 @@
      )
    );
 
-   const otherFields = computed(() => {
-     const personal = personalInfoFields.value.map((f) => f.field_name);
-     const financial = financialFields.value.map((f) => f.field_name);
-     const dates = dateFields.value.map((f) => f.field_name);
-     console.log('otherFields:', props.backformdata.filter(
-       (field) => !personal.includes(field.field_name) &&
-         !financial.includes(field.field_name) &&
-         !dates.includes(field.field_name) &&
-         field.field_name !== 'profile_picture'
-     ).map(f => ({ field_name: f.field_name, field_type: f.field_type, value: f.value })));
-     return props.backformdata.filter(
-       (field) =>
-         !personal.includes(field.field_name) &&
-         !financial.includes(field.field_name) &&
-         !dates.includes(field.field_name) &&
-         field.field_name !== 'profile_picture'
-     );
-   });
+const otherFields = computed(() => {
+  const personal = personalInfoFields.value.map((f) => f.field_name);
+  const financial = financialFields.value.map((f) => f.field_name);
+  const dates = dateFields.value.map((f) => f.field_name);
+
+  return props.backformdata.filter(
+    (field) =>
+      !personal.includes(field.field_name) &&
+      !financial.includes(field.field_name) &&
+      !dates.includes(field.field_name) &&
+      field.field_name !== 'profile_picture'
+  );
+});
 
    const profilePictureField = computed(() =>
      props.backformdata.find((field) => field.field_name === 'profile_picture')
@@ -98,7 +89,7 @@
    watch(
      () => props.formValues,
      (newValues) => {
-       console.log('formValues:', newValues);
+   
        if (newValues && Object.keys(newValues).length > 0) {
          for (const key in formData) {
            if (newValues[key] !== undefined) {
@@ -153,12 +144,12 @@
          if (fileInput.value) fileInput.value.value = '';
          return;
        }
-       console.log('Selected file:', file);
+
        formData.profile_picture = file;
        profilePictureFile.value = file;
        profilePicturePreview.value = URL.createObjectURL(file);
      } else {
-       console.log('No file selected');
+
        formData.profile_picture = null;
        profilePictureFile.value = null;
        profilePicturePreview.value = DEFAULT_AVATAR;
@@ -167,7 +158,7 @@
    };
 
    const clearFile = () => {
-     console.log('Clearing profile picture');
+
      formData.profile_picture = null;
      profilePictureFile.value = null;
      profilePicturePreview.value = DEFAULT_AVATAR;
@@ -175,23 +166,23 @@
    };
 
    const handleSubmit = () => {
-     console.log('formData before submit:', JSON.parse(JSON.stringify(formData)));
+
      const formDataToSend = new FormData();
      if (profilePictureFile.value instanceof File) {
-       console.log(`Appending file profile_picture:`, profilePictureFile.value);
+
        formDataToSend.append('profile_picture', profilePictureFile.value, profilePictureFile.value.name);
      } else {
-       console.log('Skipping profile_picture: not a file or null');
+
      }
      for (const [key, value] of Object.entries(formData)) {
        if (key !== 'profile_picture' && value !== null && value !== '') {
-         console.log(`Appending ${key}:`, value);
+
          formDataToSend.append(key, value);
        }
      }
-     console.log('FormData to send:', formDataToSend);
+
      for (let [key, value] of formDataToSend.entries()) {
-       console.log(`FormData entry - ${key}:`, value);
+
      }
      emit('submitForm', formDataToSend);
    };
