@@ -6,17 +6,17 @@
         <button class="btn btn-outline" @click="goBack">
           <i class="fas fa-arrow-left"></i> Back to List
         </button>
-
         <button class="btn btn-primary" @click="editStaff">
           <i class="fas fa-edit"></i> Edit Profile
         </button>
-
       </div>
     </div>
 
     <div class="profile-container">
       <div class="profile-card">
-        <img :src="staff.photo" :alt="staff.full_name" class="profile-image" />
+
+        <img :src="staff.profile_picture" :alt="staff.full_name || 'Profile Image'" class="profile-image" />
+        
         <h2 class="profile-name">{{ staff.title }} {{ staff.full_name }}</h2>
         <p class="profile-title">Staff ID: {{ staff.user_id }}</p>
         <span class="profile-department">{{ staff.directorate }}</span>
@@ -55,48 +55,37 @@
             </div>
             <div>{{ staff.district }}, {{ staff.region }}</div>
           </div>
-
           <div class="contact-item">
             <div class="contact-icon">
               <i class="fas fa-building"></i>
             </div>
             <div>{{ staff.management_unit_cost_centre }}</div>
           </div>
-
           <div class="contact-item">
             <div class="contact-icon">
               <i class="fas fa-user-tie"></i>
             </div>
             <div>{{ staff.professional }}</div>
           </div>
-
           <div class="contact-item">
             <div class="contact-icon">
               <i class="fas fa-user-tag"></i>
             </div>
             <div>{{ staff.role }}</div>
           </div>
-
           <div class="contact-item">
             <div class="contact-icon">
               <i class="fas fa-users"></i>
             </div>
             <div>{{ staff.staff_category }}</div>
           </div>
-
-          
-
-          
         </div>
       </div>
 
       <div class="details-section">
         <!-- Personal Info -->
         <div class="details-card">
-          <div class="card-header">
-            Personal Information
-            
-          </div>
+          <div class="card-header">Personal Information</div>
           <div class="info-grid">
             <div class="info-item">
               <div class="info-label">Full Name</div>
@@ -127,10 +116,7 @@
 
         <!-- Employment -->
         <div class="details-card">
-          <div class="card-header">
-            Employment Details
-            
-          </div>
+          <div class="card-header">Employment Details</div>
           <div class="info-grid">
             <div class="info-item">
               <div class="info-label">Directorate</div>
@@ -144,32 +130,22 @@
               <div class="info-label">Supervisor</div>
               <div class="info-value">{{ staff.supervisor_name || 'Not specified' }}</div>
             </div>
-
             <div class="info-item">
               <div class="info-label">Substantive Date</div>
               <div class="info-value">{{ formatDate(staff.substantive_date) }}</div>
             </div>
-
-
             <div class="info-item">
               <div class="info-label">Date Of First Appointment</div>
               <div class="info-value">{{ formatDate(staff.date_of_first_appointment) }}</div>
             </div>
-
             <div class="info-item">
               <div class="info-label">Notional Effective Date</div>
               <div class="info-value">{{ formatDate(staff.national_effective_date) }}</div>
             </div>
-
-            
-
-            
             <div class="info-item">
               <div class="info-label">Date Of Assumption Of Duty</div>
               <div class="info-value">{{ formatDate(staff.date_of_assumption_of_duty) }}</div>
             </div>
-
-
             <div class="info-item">
               <div class="info-label">Date Of Last Promotion</div>
               <div class="info-value">{{ formatDate(staff.date_of_last_promotion) }}</div>
@@ -178,66 +154,45 @@
               <div class="info-label">Years In Service</div>
               <div class="info-value">{{ staff.number_of_years_in_service }} years</div>
             </div>
-
             <div class="info-item">
               <div class="info-label">Fulltime / Contract</div>
               <div class="info-value">{{ staff.fulltime_contract_staff }}</div>
             </div>
-
-           
             <div class="info-item">
               <div class="info-label">Change Of Grade</div>
-              <div class="info-value">{{ staff.change_of_grade }} </div>
+              <div class="info-value">{{ staff.change_of_grade }}</div>
             </div>
-
             <div class="info-item">
               <div class="info-label">Current Grade</div>
-              <div class="info-value">{{ staff.current_grade }} </div>
+              <div class="info-value">{{ staff.current_grade }}</div>
             </div>
-
             <div class="info-item">
               <div class="info-label">Years On Current Grade</div>
-              <div class="info-value">{{ staff.years_on_current_grade }} </div>
+              <div class="info-value">{{ staff.years_on_current_grade }}</div>
             </div>
-
-            
             <div class="info-item">
               <div class="info-label">Next Grade</div>
-              <div class="info-value">{{ staff.next_grade }} </div>
+              <div class="info-value">{{ staff.next_grade }}</div>
             </div>
-
-            
-
-
           </div>
         </div>
 
         <!-- Compensation -->
         <div class="details-card">
-          <div class="card-header">
-            Compensation & Benefits
-            
-          </div>
+          <div class="card-header">Compensation & Benefits</div>
           <div class="info-grid">
-
-
             <div class="info-item">
               <div class="info-label">Single Spine</div>
               <div class="info-value">{{ staff.single_spine_monthly_salary }}</div>
             </div>
-
-
             <div class="info-item">
               <div class="info-label">Current Salary Level</div>
               <div class="info-value">{{ staff.current_salary_level }}</div>
             </div>
-
             <div class="info-item">
               <div class="info-label">Next Salary Level</div>
               <div class="info-value">{{ staff.next_salary_level }}</div>
             </div>
-
-
             <div class="info-item">
               <div class="info-label">Current Salary Point</div>
               <div class="info-value">{{ staff.current_salary_point }}</div>
@@ -267,50 +222,32 @@
 
         <!-- Additional -->
         <div class="details-card">
-          <div class="card-header">
-            Additional Information
-
-            
-            
-          </div>
+          <div class="card-header">Additional Information</div>
           <div class="info-grid">
             <div class="info-item">
-              <div class="info-label">Number Targetes</div>
+              <div class="info-label">Number Targets</div>
               <div class="info-value">{{ staff.number_of_targets || 'Not specified' }}</div>
             </div>
-
             <div class="info-item">
               <div class="info-label">Number Targets Met</div>
               <div class="info-value">{{ staff.number_of_targets_met || 'Not specified' }}</div>
             </div>
-
             <div class="info-item">
-              <div class="info-label">Number Of Targetes Not Met</div>
+              <div class="info-label">Number Of Targets Not Met</div>
               <div class="info-value">{{ staff.number_of_targets_not_met || 'Not specified' }}</div>
             </div>
-
             <div class="info-item">
               <div class="info-label">Number Of Focus Areas</div>
               <div class="info-value">{{ staff.number_of_focus_areas || 'Not specified' }}</div>
             </div>
-
             <div class="info-item">
               <div class="info-label">Self Assessment Description</div>
               <div class="info-value">{{ staff.self_assessment_description || 'Not specified' }}</div>
             </div>
-
-
-            
-
             <div class="info-item">
-              <div class="info-label">Overall Assessmenet Score</div>
+              <div class="info-label">Overall Assessment Score</div>
               <div class="info-value">{{ staff.overall_assessment_score || 'Not specified' }}</div>
             </div>
-
-            
-
-
-
             <div class="info-item">
               <div class="info-label">Academic Qualification</div>
               <div class="info-value">{{ staff.academic_qualification || 'Not specified' }}</div>
@@ -339,7 +276,6 @@
               <div class="info-label">Accommodation Status</div>
               <div class="info-value">{{ staff.accommodation_status }}</div>
             </div>
-
             <div class="info-item">
               <div class="info-label">At POST / On Leave</div>
               <div class="info-value">{{ staff.at_post_on_leave }}</div>
@@ -352,174 +288,135 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue";
-import { useRoute, useRouter } from "vue-router/composables";
-import { get_user_details } from "../../services/api";
 
+import { ref, onMounted, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router/composables';
+import { get_user_details, api, DEFAULT_AVATAR } from '../../services/api';
+
+// Base URL for the backend (use environment variable in production)
+
+// Initialize user ref
 const user = ref(null);
 const route = useRoute();
-const router = useRouter()
-
+const router = useRouter();
 
 const fetchUserDetails = async () => {
-  const id_user = route.params.id;
-  const res = await get_user_details(id_user);
-  console.log(res.data)
-  user.value = res.data;
-
+  try {
+    const id_user = route.params.id;
+    const res = await get_user_details(id_user);
+    console.log('API Responseee:', res.data);
+    console.log('API Responseee:', res.data);
+    user.value = res.data;
+  } catch (error) {
+    console.error('Error fetching user details:', error);
+  }
 };
+
+
 
 const editStaff = () => {
-  router.push({ name: "Staff Update", params: { id: user.value.id } });
+  router.push({ name: 'Staff Update', params: { id: user.value?.id } });
 };
 
-
+const goBack = () => {
+  router.push('/allusers');
+};
 
 onMounted(fetchUserDetails);
 
-// Dummy staff data (replace with API call later)
+// https://phevab1.pythonanywhere.com/
+// http://127.0.0.1:8000/
+
+
 const staff = computed(() => ({
-
-  
-
-  at_post_on_leave: user.value?.at_post_on_leave || "-",
-  change_of_grade: user.value?.change_of_grade || "-",
-  date_of_assumption_of_duty: user.value?.date_of_assumption_of_duty || "-",
-  date_of_retirement: user.value?.date_of_retirement || "-",
-  fulltime_contract_staff: user.value?.fulltime_contract_staff || "-",
-  management_unit_cost_centre: user.value?.management_unit_cost_centre || "-",
-  national_effective_date: user.value?.national_effective_date || "-",
-  next_salary_level: user.value?.next_salary_level || "-",
-  professional: user.value?.professional || "-",
-  role: user.value?.role || "-",
-
-  years_on_current_grade: user.value?.years_on_current_grade || "-",
-
-  
-
-  substantive_date: user.value?.substantive_date || "-",
-
-  
-
-  staff_category: user.value?.staff_category || "-",
-
-  
-  single_spine_monthly_salary: user.value?.single_spine_monthly_salary || "-",
-
-
-
-
-  self_assessment_description: user.value?.self_assessment_description || "-",
+  profile_picture: user.value?.profile_picture
+  ? `https://phevab1.pythonanywhere.com/${user.value.profile_picture.replace(/^\/+/, '')}`
+  : DEFAULT_AVATAR,
 
 
 
 
 
-
-  
-  overall_assessment_score: user.value?.overall_assessment_score || "-",
-  
-
-  number_of_targets: user.value?.number_of_targets || "-",
-  number_of_targets_met: user.value?.number_of_targets_met || "-",
-  number_of_targets_not_met: user.value?.number_of_targets_not_met || "-",
-  
-  
-
-  number_of_focus_areas: user.value?.number_of_focus_areas || "-",
-
- 
-  
-
-  
-
-
-
-  
-  
-
-
-
-  
-  
-  
-
-
-
-  full_name: user.value?.full_name || "",
-  directorate: user.value?.directorate || "-",
-  category: user.value?.category || "-",
-
-  
-
-
-  district: user.value?.district || "-",
-  region: user.value?.region || "-",
-  email: user.value?.email || "-",
-  user_id: user.value?.user_id || "-",
-  title: user.value?.title || "-",
-  gender: user.value?.gender || "-",
-  date_of_birth: user.value?.date_of_birth || "-",
-  age: user.value?.age || "-",
-  marital_status: user.value?.marital_status || "-",
-  current_salary_level: user.value?.current_salary_level || "-",
-  current_salary_point: user.value?.current_salary_point || "-",
-  date_of_first_appointment: user.value?.date_of_first_appointment || "-",
-  date_of_last_promotion: user.value?.date_of_last_promotion || "-",
-  number_of_years_in_service: user.value?.number_of_years_in_service || "-",
-  academic_qualification: user.value?.academic_qualification || "-",
-  professional_qualification: user.value?.professional_qualification || "-",
-  monthly_gross_pay: user.value?.monthly_gross_pay || "-",
-  annual_salary: user.value?.annual_salary || "-",
-  phone_number: user.value?.phone_number || "-",
-  ghana_card_number: user.value?.ghana_card_number || "-",
-  social_security_number: user.value?.social_security_number || "-",
-
-  national_health_insurance_number: user.value?.national_health_insurance_number || "-",
-  bank_name: user.value?.bank_name || "-",
-  bank_account_branch: user.value?.bank_account_branch || "-",
-  bank_account_number: user.value?.bank_account_number || "-",
-  payroll_status: user.value?.payroll_status || "-",
-  accommodation_status: user.value?.accommodation_status|| "-",
-  supervisor_name: user.value?.supervisor_name || "-",
-  current_grade: user.value?.current_grade || "-",
-  next_grade: user.value?.next_grade || "-",
-  
-  photo:
-    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80"
-
-
-
+  at_post_on_leave: user.value?.at_post_on_leave || '-',
+  change_of_grade: user.value?.change_of_grade || '-',
+  date_of_assumption_of_duty: user.value?.date_of_assumption_of_duty || '-',
+  date_of_retirement: user.value?.date_of_retirement || '-',
+  fulltime_contract_staff: user.value?.fulltime_contract_staff || '-',
+  management_unit_cost_centre: user.value?.management_unit_cost_centre || '-',
+  national_effective_date: user.value?.national_effective_date || '-',
+  next_salary_level: user.value?.next_salary_level || '-',
+  professional: user.value?.professional || '-',
+  role: user.value?.role || '-',
+  years_on_current_grade: user.value?.years_on_current_grade || '-',
+  substantive_date: user.value?.substantive_date || '-',
+  staff_category: user.value?.staff_category || '-',
+  single_spine_monthly_salary: user.value?.single_spine_monthly_salary || '-',
+  self_assessment_description: user.value?.self_assessment_description || '-',
+  overall_assessment_score: user.value?.overall_assessment_score || '-',
+  number_of_targets: user.value?.number_of_targets || '-',
+  number_of_targets_met: user.value?.number_of_targets_met || '-',
+  number_of_targets_not_met: user.value?.number_of_targets_not_met || '-',
+  number_of_focus_areas: user.value?.number_of_focus_areas || '-',
+  full_name: user.value?.full_name || '',
+  directorate: user.value?.directorate || '-',
+  category: user.value?.category || '-',
+  district: user.value?.district || '-',
+  region: user.value?.region || '-',
+  email: user.value?.email || '-',
+  user_id: user.value?.user_id || '-',
+  title: user.value?.title || '-',
+  gender: user.value?.gender || '-',
+  date_of_birth: user.value?.date_of_birth || '-',
+  age: user.value?.age || '-',
+  marital_status: user.value?.marital_status || '-',
+  current_salary_level: user.value?.current_salary_level || '-',
+  current_salary_point: user.value?.current_salary_point || '-',
+  date_of_first_appointment: user.value?.date_of_first_appointment || '-',
+  date_of_last_promotion: user.value?.date_of_last_promotion || '-',
+  number_of_years_in_service: user.value?.number_of_years_in_service || '-',
+  academic_qualification: user.value?.academic_qualification || '-',
+  professional_qualification: user.value?.professional_qualification || '-',
+  monthly_gross_pay: user.value?.monthly_gross_pay || '-',
+  annual_salary: user.value?.annual_salary || '-',
+  phone_number: user.value?.phone_number || '-',
+  ghana_card_number: user.value?.ghana_card_number || '-',
+  social_security_number: user.value?.social_security_number || '-',
+  national_health_insurance_number: user.value?.national_health_insurance_number || '-',
+  bank_name: user.value?.bank_name || '-',
+  bank_account_branch: user.value?.bank_account_branch || '-',
+  bank_account_number: user.value?.bank_account_number || '-',
+  payroll_status: user.value?.payroll_status || '-',
+  accommodation_status: user.value?.accommodation_status || '-',
+  supervisor_name: user.value?.supervisor_name || '-',
+  current_grade: user.value?.current_grade || '-',
+  next_grade: user.value?.next_grade || '-',
+  photo: 'https://unsplash.com/photos/a-close-up-of-a-flag-with-a-star-on-it-H1v0E9fiBdg?utm_content=creditShareLink&utm_medium=referral&utm_source=unsplash',
 }));
 
 
 const formatDate = (dateString) => {
-  if (!dateString) return "Not specified";
-  const options = { year: "numeric", month: "long", day: "numeric" };
-  return new Date(dateString).toLocaleDateString("en-US", options);
+  if (!dateString || dateString === '-') return 'Not specified';
+  const options = { year: 'numeric', month: 'long', day: 'numeric' };
+  return new Date(dateString).toLocaleDateString('en-US', options);
 };
 
 const formatCurrency = (amount) => {
-  if (!amount) return "0.00";
-  return parseFloat(amount).toLocaleString("en-US", {
+  if (!amount || amount === '-') return '0.00';
+  return parseFloat(amount).toLocaleString('en-US', {
     minimumFractionDigits: 2,
-    maximumFractionDigits: 2
+    maximumFractionDigits: 2,
   });
 };
 
 const getStatusClass = (status) => {
-  if (status && status.includes("ACTIVE")) return "badge-success";
-  if (status && status.includes("LEAVE")) return "badge-warning";
-  return "badge-info";
-};
-
-const goBack = () => {
-
-  router.push("/allusers")
-
-  // In a real app, use router.go(-1) or router.push()
+  if (status && status.includes('ACTIVE')) return 'badge-success';
+  if (status && status.includes('LEAVE')) return 'badge-warning';
+  return 'badge-info';
 };
 </script>
+
+
+
 
 <style scoped>
 /* Keep your styles unchanged — pasted from original */
@@ -535,6 +432,14 @@ const goBack = () => {
   margin-bottom: 30px;
   padding-bottom: 15px;
   border-bottom: 1px solid #e1e4e8;
+}
+
+.profile-image {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid #ccc; /* Added for debugging visibility */
 }
 .header h1 {
   font-weight: 600;

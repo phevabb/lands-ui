@@ -5,6 +5,8 @@ import { SimpleTable } from "@/components"
 import StaffDetails from "./StaffDetails.vue"
 import { useRouter } from "vue-router/composables";
 
+
+
 const router = useRouter();
 
 const isLoading = ref(true)
@@ -55,7 +57,7 @@ async function fetchUsers(page = 1) {
 function getCurrentPageFromUrl(next, previous) {
   if (previous === null) return 1; // first page
   if (next === null) {
-    // last page: extract ?page=X from previous and +1
+   
     const prevPage = new URL(previous).searchParams.get("page");
     return parseInt(prevPage) + 1;
   }
@@ -73,7 +75,7 @@ onMounted(async () => {
   fetchUsers(1);
   try {
     const response = await all_users({ page: 1  })
-    console.log("rosa", response)
+ 
     itemsPerPage.value = 10
 
     totalPages.value = Math.ceil(response.data.count / 10 );

@@ -30,13 +30,13 @@ const page_size = 10
 
 async function fetchUsers(tab, apiFunc, page, name_) {
 
-  console.log("Fetching:", name_, " | Page:", page);
+
  
   isLoading.value = true;
   try {
     const { data } = await apiFunc({ page });
 
-    console.log("datussssssss", data)
+
 
     // Update the specific tab, not a global rows.value
     tab.users = data.results.map(d => ({

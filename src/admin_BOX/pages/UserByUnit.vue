@@ -6,8 +6,8 @@ import { saveAs } from "file-saver";
 import { users_per_department } from "../../services/api";
 import Pagination from "../../components/Pagination.vue"; 
 
-
-
+import api from "../../services/api";
+import { DEFAULT_AVATAR } from "../../services/api";
 
 
 const route = useRoute();
@@ -61,6 +61,16 @@ async function fetchUsers(page = 1) {
   }
 }
 
+
+const getProfilePictureSrc = (profilePicture) => {
+  if (profilePicture && profilePicture !== '-') {
+    if (profilePicture.startsWith('http')) {
+      return profilePicture;
+    }
+    return `${api.defaults.baseURL}${profilePicture.replace(/^\/+/, '')}`;
+  }
+  return DEFAULT_AVATAR;
+};
 
 const showingRange = computed(() => {
   if (totalCount.value === 0) return `Showing 0 of 0`;
@@ -168,9 +178,7 @@ function exportExcel() {
     </div>
 
     <div class="table-footer">
-      <div class="rows-info">
-        Showing {{ users.length }} staff members
-      </div>
+      
 
       <!-- Modern Export Button -->
     
@@ -190,14 +198,7 @@ function exportExcel() {
 
 
 
-      <div class="search-box">
-        <i class="material-icons">search</i>
-        <input
-          type="text"
-          v-model="searchQuery"
-          placeholder="Search staff members..."
-        />
-      </div>
+      
     </div>
 
     <div class="table-container">
@@ -215,6 +216,7 @@ function exportExcel() {
       <table v-else class="premium-table">
   <thead>
     <tr>
+      <th>picture</th>
       <th>Staff ID</th>
       <th>Full Name</th>
       <th>Contact</th>
@@ -232,6 +234,11 @@ function exportExcel() {
       @click="selectRow(staff)"
       :class="{ 'row-selected': selectedRow?.id === staff.id }"
     >
+      <img
+        :src="getProfilePictureSrc(staff.profile_picture)"
+        :alt="staff.full_name || 'Profile Image'"
+        class="profile-image"
+      />
       <td>{{ staff.user_id }}</td>
       <td>{{ staff.full_name }}</td>
       <td>{{ staff.phone_number }}</td>
@@ -305,6 +312,14 @@ function exportExcel() {
   gap: 10px;
   box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
   transition: all 0.3s ease;
+}
+
+.profile-image {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 1px solid #ccc;
 }
 
 .export-btn:hover {

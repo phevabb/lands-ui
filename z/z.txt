@@ -24,3 +24,12 @@ const proTab = {
       currentPage: getCurrentPageFromUrl(classData.next, classData.previous),
       totalPages: Math.ceil(classData.count / classData.page_size),
     };
+
+
+update the :
+
+http://127.0.0.1:8000/   in the staffdetails
+with:
+the pythonanywheres url:
+
+https://phevab1.pythonanywhere.com/

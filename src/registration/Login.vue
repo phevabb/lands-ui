@@ -116,10 +116,12 @@ const handleLogin = async () => {
   loading.value = true
   try{
     const {data} = await login(form)
+    console.log("logins:", JSON.stringify(data, null, 2));
+
  
     localStorage.setItem('token', data.token) // save token
     localStorage.setItem('user', data.user.full_name) // save user info
-
+      
     const v = data.user.role
     const name = data.user.full_name
     

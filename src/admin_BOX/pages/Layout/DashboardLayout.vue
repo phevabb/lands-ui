@@ -158,6 +158,8 @@ const handleLogout = async () => {
     await logout();
     localStorage.removeItem("token"); // Remove token before redirect
     localStorage.removeItem("user");
+   
+
     router.push("/login");
   } catch (error) {
 

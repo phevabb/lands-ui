@@ -6,29 +6,21 @@
     :style="sidebarStyle"
   >
     <div class="logo">
-      <a href="#" class="simple-text logo-mini">
-        <div class="logo-img">
-          <img :src="imgLogo" alt="" />
-        </div>
-      </a>
-
       <router-link
-  to="/dashboard"
-  class="simple-text logo-normal"
-  style="font-size: 0.9rem; color: rgba(255, 255, 255, 0.9);"
->
-  Welcome, <strong style="color: #fff;">{{ fullName || title }}</strong>
-</router-link>
+        to="/dashboard"
+        class="welcome-text"
+      >
+        Welcome, <strong>{{ fullName || title }}</strong>
+      </router-link>
     </div>
 
     <div class="sidebar-wrapper">
       <slot name="content"></slot>
-
     </div>
-
-
   </div>
 </template>
+
+
 
 <script setup>
 import { computed, provide } from "vue"
@@ -87,6 +79,25 @@ const sidebarStyle = computed(() => ({
 
 .nav {
   text-align: left; /* text aligned left */
+}
+
+.logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 12px;
+}
+
+.welcome-text {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.9);
+  text-align: center;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.welcome-text strong {
+  color: #fff;
 }
 
 .nav .md-list-item,
