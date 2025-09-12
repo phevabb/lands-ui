@@ -14,9 +14,11 @@
 
     <div class="profile-container">
       <div class="profile-card">
-
-        <img :src="staff.profile_picture" :alt="staff.full_name || 'Profile Image'" class="profile-image" />
-        
+        <img
+          :src="staff.profile_picture"
+          :alt="staff.full_name || 'Profile Image'"
+          class="profile-image"
+        />
         <h2 class="profile-name">{{ staff.title }} {{ staff.full_name }}</h2>
         <p class="profile-title">Staff ID: {{ staff.user_id }}</p>
         <span class="profile-department">{{ staff.directorate }}</span>
@@ -31,7 +33,7 @@
             <div class="stat-label">Years in Service</div>
           </div>
           <div class="stat">
-            <div class="stat-value">{{ staff.date_of_retirement }}</div>
+            <div class="stat-value">{{ formatDate(staff.date_of_retirement) }}</div>
             <div class="stat-label">Retirement Date</div>
           </div>
         </div>
@@ -160,19 +162,19 @@
             </div>
             <div class="info-item">
               <div class="info-label">Change Of Grade</div>
-              <div class="info-value">{{ staff.change_of_grade }}</div>
+              <div class="info-value">{{ staff.change_of_grade || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Current Grade</div>
-              <div class="info-value">{{ staff.current_grade }}</div>
+              <div class="info-value">{{ staff.current_grade || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Years On Current Grade</div>
-              <div class="info-value">{{ staff.years_on_current_grade }}</div>
+              <div class="info-value">{{ staff.years_on_current_grade || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Next Grade</div>
-              <div class="info-value">{{ staff.next_grade }}</div>
+              <div class="info-value">{{ staff.next_grade || 'Not specified' }}</div>
             </div>
           </div>
         </div>
@@ -183,19 +185,19 @@
           <div class="info-grid">
             <div class="info-item">
               <div class="info-label">Single Spine</div>
-              <div class="info-value">{{ staff.single_spine_monthly_salary }}</div>
+              <div class="info-value">{{ staff.single_spine_monthly_salary || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Current Salary Level</div>
-              <div class="info-value">{{ staff.current_salary_level }}</div>
+              <div class="info-value">{{ staff.current_salary_level || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Next Salary Level</div>
-              <div class="info-value">{{ staff.next_salary_level }}</div>
+              <div class="info-value">{{ staff.next_salary_level || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Current Salary Point</div>
-              <div class="info-value">{{ staff.current_salary_point }}</div>
+              <div class="info-value">{{ staff.current_salary_point || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Monthly Gross Pay</div>
@@ -207,15 +209,15 @@
             </div>
             <div class="info-item">
               <div class="info-label">Bank Name</div>
-              <div class="info-value">{{ staff.bank_name }}</div>
+              <div class="info-value">{{ staff.bank_name || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Bank Branch</div>
-              <div class="info-value">{{ staff.bank_account_branch }}</div>
+              <div class="info-value">{{ staff.bank_account_branch || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Account Number</div>
-              <div class="info-value">{{ staff.bank_account_number }}</div>
+              <div class="info-value">{{ staff.bank_account_number || 'Not specified' }}</div>
             </div>
           </div>
         </div>
@@ -248,37 +250,69 @@
               <div class="info-label">Overall Assessment Score</div>
               <div class="info-value">{{ staff.overall_assessment_score || 'Not specified' }}</div>
             </div>
-            <div class="info-item">
-              <div class="info-label">Academic Qualification</div>
-              <div class="info-value">{{ staff.academic_qualification || 'Not specified' }}</div>
-            </div>
-            <div class="info-item">
-              <div class="info-label">Professional Qualification</div>
-              <div class="info-value">{{ staff.professional_qualification || 'Not specified' }}</div>
-            </div>
+           
+
+  <!-- Academic Qualifications (styled with inline CSS) -->
+<!-- Academic Qualifications (styled with inline CSS) -->
+<div class="info-item" style="margin-bottom: 12px; display:flex; flex-direction:column;">
+  <div class="info-label" style="font-weight:600; color:#2b2b2b; margin-bottom:6px;">
+    Academic Qualifications
+  </div>
+
+  <div class="info-value" style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
+    <!-- When there are qualifications -->
+    <template v-if="staff.academic_qualifications && staff.academic_qualifications.length">
+      <span
+        v-for="qual in staff.academic_qualifications"
+        :key="qual.id"
+        :title="qual.name"
+        style="
+          display:inline-block;
+          padding:6px 10px;
+          background:linear-gradient(180deg, #ffffff, #f3f7ff);
+          border:1px solid rgba(25, 112, 255, 0.12);
+          color:#10307a;
+          font-size:13px;
+          border-radius:14px;
+          box-shadow:0 1px 2px rgba(16,48,122,0.06);
+          white-space:nowrap;
+        "
+      >
+        {{ qual.name }}
+      </span>
+    </template>
+
+    <!-- When none specified -->
+    <template v-else>
+      <span style="color:#6b7280; font-size:14px;">Not specified</span>
+    </template>
+  </div>
+</div>
+
+
             <div class="info-item">
               <div class="info-label">SSNIT Number</div>
-              <div class="info-value">{{ staff.social_security_number }}</div>
+              <div class="info-value">{{ staff.social_security_number || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">NHIS Number</div>
-              <div class="info-value">{{ staff.national_health_insurance_number }}</div>
+              <div class="info-value">{{ staff.national_health_insurance_number || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Payroll Status</div>
               <div class="info-value">
                 <span class="badge" :class="getStatusClass(staff.payroll_status)">
-                  {{ staff.payroll_status }}
+                  {{ staff.payroll_status || 'Not specified' }}
                 </span>
               </div>
             </div>
             <div class="info-item">
               <div class="info-label">Accommodation Status</div>
-              <div class="info-value">{{ staff.accommodation_status }}</div>
+              <div class="info-value">{{ staff.accommodation_status || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">At POST / On Leave</div>
-              <div class="info-value">{{ staff.at_post_on_leave }}</div>
+              <div class="info-value">{{ staff.at_post_on_leave || 'Not specified' }}</div>
             </div>
           </div>
         </div>
@@ -288,125 +322,131 @@
 </template>
 
 <script setup>
-
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router/composables';
-import { get_user_details, api, DEFAULT_AVATAR } from '../../services/api';
-
-// Base URL for the backend (use environment variable in production)
+import { get_user_details, DEFAULT_AVATAR } from '@/services/api';
 
 // Initialize user ref
 const user = ref(null);
 const route = useRoute();
 const router = useRouter();
 
+// Fetch user details from API
 const fetchUserDetails = async () => {
   try {
     const id_user = route.params.id;
     const res = await get_user_details(id_user);
-
+   
     user.value = res.data;
   } catch (error) {
-
+    
   }
 };
 
-
-
+// Navigate to edit page
 const editStaff = () => {
   router.push({ name: 'Staff Update', params: { id: user.value?.id } });
 };
 
+// Navigate back to list
 const goBack = () => {
   router.push('/allusers');
 };
 
 onMounted(fetchUserDetails);
 
+// Computed property for staff details
 // https://phevab1.pythonanywhere.com/
 // http://127.0.0.1:8000/
-
-
 const staff = computed(() => ({
   profile_picture: user.value?.profile_picture
-  ? `https://phevab1.pythonanywhere.com/${user.value.profile_picture.replace(/^\/+/, '')}`
-  : DEFAULT_AVATAR,
-
-
-
-
-
-  at_post_on_leave: user.value?.at_post_on_leave || '-',
-  change_of_grade: user.value?.change_of_grade || '-',
-  date_of_assumption_of_duty: user.value?.date_of_assumption_of_duty || '-',
-  date_of_retirement: user.value?.date_of_retirement || '-',
-  fulltime_contract_staff: user.value?.fulltime_contract_staff || '-',
-  management_unit_cost_centre: user.value?.management_unit_cost_centre || '-',
-  national_effective_date: user.value?.national_effective_date || '-',
-  next_salary_level: user.value?.next_salary_level || '-',
-  professional: user.value?.professional || '-',
-  role: user.value?.role || '-',
-  years_on_current_grade: user.value?.years_on_current_grade || '-',
-  substantive_date: user.value?.substantive_date || '-',
-  staff_category: user.value?.staff_category || '-',
-  single_spine_monthly_salary: user.value?.single_spine_monthly_salary || '-',
-  self_assessment_description: user.value?.self_assessment_description || '-',
-  overall_assessment_score: user.value?.overall_assessment_score || '-',
-  number_of_targets: user.value?.number_of_targets || '-',
-  number_of_targets_met: user.value?.number_of_targets_met || '-',
-  number_of_targets_not_met: user.value?.number_of_targets_not_met || '-',
-  number_of_focus_areas: user.value?.number_of_focus_areas || '-',
-  full_name: user.value?.full_name || '',
-  directorate: user.value?.directorate || '-',
-  category: user.value?.category || '-',
-  district: user.value?.district || '-',
-  region: user.value?.region || '-',
-  email: user.value?.email || '-',
-  user_id: user.value?.user_id || '-',
-  title: user.value?.title || '-',
-  gender: user.value?.gender || '-',
-  date_of_birth: user.value?.date_of_birth || '-',
-  age: user.value?.age || '-',
-  marital_status: user.value?.marital_status || '-',
-  current_salary_level: user.value?.current_salary_level || '-',
-  current_salary_point: user.value?.current_salary_point || '-',
-  date_of_first_appointment: user.value?.date_of_first_appointment || '-',
-  date_of_last_promotion: user.value?.date_of_last_promotion || '-',
-  number_of_years_in_service: user.value?.number_of_years_in_service || '-',
-  academic_qualification: user.value?.academic_qualification || '-',
-  professional_qualification: user.value?.professional_qualification || '-',
-  monthly_gross_pay: user.value?.monthly_gross_pay || '-',
-  annual_salary: user.value?.annual_salary || '-',
-  phone_number: user.value?.phone_number || '-',
-  ghana_card_number: user.value?.ghana_card_number || '-',
-  social_security_number: user.value?.social_security_number || '-',
-  national_health_insurance_number: user.value?.national_health_insurance_number || '-',
-  bank_name: user.value?.bank_name || '-',
-  bank_account_branch: user.value?.bank_account_branch || '-',
-  bank_account_number: user.value?.bank_account_number || '-',
-  payroll_status: user.value?.payroll_status || '-',
-  accommodation_status: user.value?.accommodation_status || '-',
-  supervisor_name: user.value?.supervisor_name || '-',
-  current_grade: user.value?.current_grade || '-',
-  next_grade: user.value?.next_grade || '-',
+    ? `https://phevab1.pythonanywhere.com/${user.value.profile_picture.replace(/^\/+/, '')}`
+    : DEFAULT_AVATAR,
+  at_post_on_leave: user.value?.at_post_on_leave || 'Not specified',
+  change_of_grade: user.value?.change_of_grade || 'Not specified',
+  date_of_assumption_of_duty: user.value?.date_of_assumption_of_duty || 'Not specified',
+  date_of_retirement: user.value?.date_of_retirement || 'Not specified',
+  fulltime_contract_staff: user.value?.fulltime_contract_staff || 'Not specified',
+  management_unit_cost_centre: user.value?.management_unit_cost_centre || 'Not specified',
+  national_effective_date: user.value?.national_effective_date || 'Not specified',
+  next_salary_level: user.value?.next_salary_level || 'Not specified',
+  professional: user.value?.professional || 'Not specified',
+  role: user.value?.role || 'Not specified',
+  years_on_current_grade: user.value?.years_on_current_grade || 'Not specified',
+  substantive_date: user.value?.substantive_date || 'Not specified',
+  staff_category: user.value?.staff_category || 'Not specified',
+  single_spine_monthly_salary: user.value?.single_spine_monthly_salary || 'Not specified',
+  self_assessment_description: user.value?.self_assessment_description || 'Not specified',
+  overall_assessment_score: user.value?.overall_assessment_score || 'Not specified',
+  number_of_targets: user.value?.number_of_targets || 'Not specified',
+  number_of_targets_met: user.value?.number_of_targets_met || 'Not specified',
+  number_of_targets_not_met: user.value?.number_of_targets_not_met || 'Not specified',
+  number_of_focus_areas: user.value?.number_of_focus_areas || 'Not specified',
+  full_name: user.value?.full_name || 'Not specified',
+  directorate: user.value?.directorate || 'Not specified',
+  category: user.value?.category || 'Not specified',
+  district: user.value?.district || 'Not specified',
+  region: user.value?.region || 'Not specified',
+  email: user.value?.email || 'No email provided',
+  user_id: user.value?.user_id || 'Not specified',
+  title: user.value?.title || 'Not specified',
+  gender: user.value?.gender || 'Not specified',
+  date_of_birth: user.value?.date_of_birth || 'Not specified',
+  age: user.value?.age || 'Not specified',
+  marital_status: user.value?.marital_status || 'Not specified',
+  current_salary_level: user.value?.current_salary_level || 'Not specified',
+  current_salary_point: user.value?.current_salary_point || 'Not specified',
+  date_of_first_appointment: user.value?.date_of_first_appointment || 'Not specified',
+  date_of_last_promotion: user.value?.date_of_last_promotion || 'Not specified',
+  number_of_years_in_service: user.value?.number_of_years_in_service || 'Not specified',
+  academic_qualifications: user.value?.academic_qualifications || [],
+  academic_qualifications_details: user.value?.academic_qualifications_details || [],
+  professional_qualification: user.value?.professional_qualification || 'Not specified',
+  monthly_gross_pay: user.value?.monthly_gross_pay || '0.00',
+  annual_salary: user.value?.annual_salary || '0.00',
+  phone_number: user.value?.phone_number || 'No phone provided',
+  ghana_card_number: user.value?.ghana_card_number || 'Not specified',
+  social_security_number: user.value?.social_security_number || 'Not specified',
+  national_health_insurance_number: user.value?.national_health_insurance_number || 'Not specified',
+  bank_name: user.value?.bank_name || 'Not specified',
+  bank_account_branch: user.value?.bank_account_branch || 'Not specified',
+  bank_account_number: user.value?.bank_account_number || 'Not specified',
+  payroll_status: user.value?.payroll_status || 'Not specified',
+  accommodation_status: user.value?.accommodation_status || 'Not specified',
+  supervisor_name: user.value?.supervisor_name || 'Not specified',
+  current_grade: user.value?.current_grade || 'Not specified',
+  next_grade: user.value?.next_grade || 'Not specified',
   photo: 'https://unsplash.com/photos/a-close-up-of-a-flag-with-a-star-on-it-H1v0E9fiBdg?utm_content=creditShareLink&utm_medium=referral&utm_source=unsplash',
 }));
 
+// Format academic qualifications as a comma-separated list
+const formatQualifications = (qualifications) => {
+  if (!qualifications || !Array.isArray(qualifications) || qualifications.length === 0) {
+    return 'Not specified';
+  }
+  return qualifications
+    .map((q) => q.name || 'Unknown')
+    .filter((name) => name !== 'Unknown')
+    .join(', ');
+};
 
+// Format date
 const formatDate = (dateString) => {
-  if (!dateString || dateString === '-') return 'Not specified';
+  if (!dateString || dateString === 'Not specified') return 'Not specified';
   const options = { year: 'numeric', month: 'long', day: 'numeric' };
   return new Date(dateString).toLocaleDateString('en-US', options);
 };
 
+// Format currency
 const formatCurrency = (amount) => {
-  if (!amount || amount === '-') return '0.00';
+  if (!amount || amount === 'Not specified' || amount === '0.00') return '0.00';
   return parseFloat(amount).toLocaleString('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
 };
 
+// Get status class for badge
 const getStatusClass = (status) => {
   if (status && status.includes('ACTIVE')) return 'badge-success';
   if (status && status.includes('LEAVE')) return 'badge-warning';
@@ -414,11 +454,7 @@ const getStatusClass = (status) => {
 };
 </script>
 
-
-
-
 <style scoped>
-/* Keep your styles unchanged — pasted from original */
 .staff-details-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -432,13 +468,12 @@ const getStatusClass = (status) => {
   padding-bottom: 15px;
   border-bottom: 1px solid #e1e4e8;
 }
-
 .profile-image {
   width: 100px;
   height: 100px;
   object-fit: cover;
   border-radius: 50%;
-  border: 2px solid #ccc; /* Added for debugging visibility */
+  border: 2px solid #ccc;
 }
 .header h1 {
   font-weight: 600;

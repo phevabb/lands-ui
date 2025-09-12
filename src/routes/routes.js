@@ -70,7 +70,7 @@ const routes = [
 
       {
         path: "users-per-department",
-        name: "Users Per Department",
+        name: "Staff Per Department",
         component: UserByUnit,
         meta: { requiresAuth: true }
       },

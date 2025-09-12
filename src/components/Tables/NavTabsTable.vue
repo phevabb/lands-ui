@@ -25,7 +25,7 @@ const emit = defineEmits(["page-changed"])
 function onSelect(items) {
   if (items && items.length > 0) {
     const deptName = items[0].name
-    router.push({ name: "Users Per Department", query: { dept: deptName } })
+    router.push({ name: "Staff Per Department", query: { dept: deptName } })
   }
 }
 

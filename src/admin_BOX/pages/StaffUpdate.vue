@@ -1,5 +1,6 @@
+
 <script setup>
-import { user_fields, get_user_details, put_user, patch_user } from "../../services/api";
+import { user_fields, get_user_details, patch_user } from "../../services/api";
 import { ref, onMounted, computed } from "vue";
 import EditProfileForm from "@/admin_BOX/pages/UserProfile/EditProfileForm_update.vue";
 import UserCard from "@/admin_BOX/pages/UserProfile/UserCard.vue";
@@ -18,16 +19,27 @@ const userData = ref({});
 // Fetch data
 onMounted(async () => {
   try {
-
     // Fetch form fields
     const fieldsRes = await user_fields();
     userFields.value = Array.isArray(fieldsRes.data) ? fieldsRes.data : [];
-
+   
 
     // Fetch user details
     const userDetailsRes = await get_user_details(userId);
-    userData.value = userDetailsRes.data || {};
+   
 
+    // Map academic_qualifications from academic_qualifications_details if empty or undefined
+    const academicQualifications = Array.isArray(userDetailsRes.data.academic_qualifications) &&
+      userDetailsRes.data.academic_qualifications.every(id => id !== undefined)
+      ? userDetailsRes.data.academic_qualifications
+      : (Array.isArray(userDetailsRes.data.academic_qualifications_details)
+        ? userDetailsRes.data.academic_qualifications_details.map(q => q.id)
+        : []);
+
+    userData.value = {
+      ...userDetailsRes.data,
+      academic_qualifications: academicQualifications,
+    };
   } catch (err) {
 
     backendErrors.value = { general: ["Failed to load user data"] };
@@ -35,39 +47,30 @@ onMounted(async () => {
 });
 
 // Handle form submit
-// Handle form submit
 const handleFormSubmit = async (formData) => {
-  // If formData is already FormData from child component, no need to recreate
-  const newFormData = new FormData();
-
-  for (let [key, value] of formData.entries()) {
-    if (key === "profile_picture") {
-      if (value instanceof File) {
-        // ✅ Only append if it's a real File upload
-        newFormData.append(key, value);
-      }
-      // else: skip, don’t send old URL/path
-    } else {
-      newFormData.append(key, value);
-    }
-  }
-
   try {
-    // ✅ Use PATCH for partial updates
-    const res = await patch_user(userId, newFormData);
-  
+    // ✅ Transform ManyToMany fields (academic_qualifications) into a list of IDs
+    if (Array.isArray(formData.academic_qualifications)) {
+      formData.academic_qualifications = formData.academic_qualifications.map(item =>
+        typeof item === "object" ? item.id : item
+      )
+    }
 
-    successMessage.value = "User updated successfully!";
+    // Use PATCH for partial updates
+    const res = await patch_user(userId, formData)
+
+
+    successMessage.value = "User updated successfully!"
     setTimeout(() => {
-      router.push("/allusers");
-    }, 1500);
+      router.push("/allusers")
+    }, 1500)
   } catch (err) {
 
     backendErrors.value = err.response?.data || {
       general: ["Failed to update user"],
-    };
+    }
   }
-};
+}
 
 
 // Title
@@ -77,8 +80,6 @@ const formTitle = computed(() => {
     : "Staff Update";
 });
 </script>
-
-
 
 <template>
   <div class="content">
@@ -102,4 +103,3 @@ const formTitle = computed(() => {
     </div>
   </div>
 </template>
-
