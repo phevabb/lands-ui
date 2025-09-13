@@ -80,11 +80,21 @@ import axios from 'axios';
      return api.patch(`superadmin/api/v1/user-update/${userId}/`, payload);
    };
    export const all_users_to_excel = () => api.get("superadmin/api/v1/all-users-to-excel");
+   
+   
+   
    export const users_per_department = (dept, params = {}) => {
      return api.get("superadmin/api/v1/users-per-department/", {
        params: { dept, ...params },
      });
    };
+
+
+    export const users_per_department_no_pages = (dept) => {
+      return api.get("superadmin/api/v1/users-per-department-no-pages/", {
+        params: { dept },
+      });
+    };
 
    export default api;
    

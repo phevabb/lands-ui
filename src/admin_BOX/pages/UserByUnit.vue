@@ -3,7 +3,7 @@ import { ref, onMounted, computed } from "vue";
 import * as XLSX from "xlsx";
 import { useRoute, useRouter } from "vue-router/composables";
 import { saveAs } from "file-saver";
-import { users_per_department } from "../../services/api";
+import { users_per_department, users_per_department_no_pages } from "../../services/api";
 import Pagination from "../../components/Pagination.vue"; 
 
 import api from "../../services/api";
@@ -13,6 +13,7 @@ import { DEFAULT_AVATAR } from "../../services/api";
 const route = useRoute();
 const router = useRouter()
 const users = ref([]);
+const users_no_pages = ref([]);
 const dept = ref("");
 const searchQuery = ref("");
 const selectedRow = ref(null);
@@ -119,7 +120,11 @@ onMounted(async () => {
   try {
     const deptName = route.query.dept;
     if (deptName) {
-      const res = await users_per_department(deptName);
+      const [res, res2] = await Promise.all([
+  users_per_department(deptName),
+  users_per_department_no_pages(deptName)
+]);
+
 
 
       totalPages.value = Math.ceil(res.data.count / page_size);
@@ -134,6 +139,8 @@ onMounted(async () => {
 
 
       users.value = res.data.results.users;
+      users_no_pages.value = res2.data.users;
+
       dept.value = res.data.results.dept;
     }
   } catch (err) {
@@ -159,7 +166,7 @@ function selectRow(staff) {
 }
 
 function exportExcel() {
-  const ws = XLSX.utils.json_to_sheet(users.value);
+  const ws = XLSX.utils.json_to_sheet(users_no_pages.value);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Staff");
   const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
