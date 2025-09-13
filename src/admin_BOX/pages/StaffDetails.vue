@@ -2,13 +2,47 @@
   <div class="staff-details-container">
     <div class="header">
       <h1>Staff Details</h1>
+      
       <div class="actions">
+        <button class="btn btn-danger" @click="openRemoveModal">
+          <i class="fas fa-user-times"></i> Remove Staff
+        </button>
         <button class="btn btn-outline" @click="goBack">
           <i class="fas fa-arrow-left"></i> Back to List
         </button>
         <button class="btn btn-primary" @click="editStaff">
           <i class="fas fa-edit"></i> Edit Profile
         </button>
+      </div>
+
+      <!-- Remove Modal -->
+      <div v-if="showRemoveModal" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 2000;">
+        <div style="background: white; padding: 20px; border-radius: 8px; width: 400px; max-width: 90%; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);">
+          <h3 style="margin-top: 0; font-size: 1.5em;">Remove Staff</h3>
+          <p>Please select a reason for removing this staff member:</p>
+          <div style="margin: 15px 0;">
+            <label style="display: block; margin-bottom: 10px;">
+              <input type="radio" v-model="reason" value="Resigned" style="margin-right: 5px;">
+              Resigned
+            </label>
+            <label style="display: block; margin-bottom: 10px;">
+              <input type="radio" v-model="reason" value="Retired" style="margin-right: 5px;">
+              Retired
+            </label>
+            <label style="display: block; margin-bottom: 10px;">
+              <input type="radio" v-model="reason" value="Terminated" style="margin-right: 5px;">
+              Terminated
+            </label>
+            <label style="display: block; margin-bottom: 10px;">
+              <input type="radio" v-model="reason" value="Other" style="margin-right: 5px;">
+              Other
+            </label>
+          </div>
+          <div style="display: flex; justify-content: flex-end; gap: 10px;">
+            <button class="btn btn-outline" @click="showRemoveModal = false" style="padding: 8px 16px;">Cancel</button>
+            <button class="btn btn-danger" @click="removeUser" :disabled="!reason" style="padding: 8px 16px;">Confirm</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -250,46 +284,36 @@
               <div class="info-label">Overall Assessment Score</div>
               <div class="info-value">{{ staff.overall_assessment_score || 'Not specified' }}</div>
             </div>
-           
-
-  <!-- Academic Qualifications (styled with inline CSS) -->
-<!-- Academic Qualifications (styled with inline CSS) -->
-<div class="info-item" style="margin-bottom: 12px; display:flex; flex-direction:column;">
-  <div class="info-label" style="font-weight:600; color:#2b2b2b; margin-bottom:6px;">
-    Academic Qualifications
-  </div>
-
-  <div class="info-value" style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
-    <!-- When there are qualifications -->
-    <template v-if="staff.academic_qualifications && staff.academic_qualifications.length">
-      <span
-        v-for="qual in staff.academic_qualifications"
-        :key="qual.id"
-        :title="qual.name"
-        style="
-          display:inline-block;
-          padding:6px 10px;
-          background:linear-gradient(180deg, #ffffff, #f3f7ff);
-          border:1px solid rgba(25, 112, 255, 0.12);
-          color:#10307a;
-          font-size:13px;
-          border-radius:14px;
-          box-shadow:0 1px 2px rgba(16,48,122,0.06);
-          white-space:nowrap;
-        "
-      >
-        {{ qual.name }}
-      </span>
-    </template>
-
-    <!-- When none specified -->
-    <template v-else>
-      <span style="color:#6b7280; font-size:14px;">Not specified</span>
-    </template>
-  </div>
-</div>
-
-
+            <div class="info-item" style="margin-bottom: 12px; display:flex; flex-direction:column;">
+              <div class="info-label" style="font-weight:600; color:#2b2b2b; margin-bottom:6px;">
+                Academic Qualifications
+              </div>
+              <div class="info-value" style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
+                <template v-if="staff.academic_qualifications && staff.academic_qualifications.length">
+                  <span
+                    v-for="qual in staff.academic_qualifications"
+                    :key="qual.id"
+                    :title="qual.name"
+                    style="
+                      display:inline-block;
+                      padding:6px 10px;
+                      background:linear-gradient(180deg, #ffffff, #f3f7ff);
+                      border:1px solid rgba(25, 112, 255, 0.12);
+                      color:#10307a;
+                      font-size:13px;
+                      border-radius:14px;
+                      box-shadow:0 1px 2px rgba(16,48,122,0.06);
+                      white-space:nowrap;
+                    "
+                  >
+                    {{ qual.name }}
+                  </span>
+                </template>
+                <template v-else>
+                  <span style="color:#6b7280; font-size:14px;">Not specified</span>
+                </template>
+              </div>
+            </div>
             <div class="info-item">
               <div class="info-label">SSNIT Number</div>
               <div class="info-value">{{ staff.social_security_number || 'Not specified' }}</div>
@@ -324,22 +348,72 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router/composables';
-import { get_user_details, DEFAULT_AVATAR } from '@/services/api';
+import axios from 'axios';
+import Swal from 'sweetalert2';
+import { get_user_details, remove_user, DEFAULT_AVATAR } from '@/services/api';
 
-// Initialize user ref
+// Initialize refs
 const user = ref(null);
 const route = useRoute();
 const router = useRouter();
+const showRemoveModal = ref(false);
+const reason = ref('');
+
+// Open the remove modal
+const openRemoveModal = () => {
+  reason.value = ''; // Reset reason when opening modal
+  showRemoveModal.value = true;
+};
+
+// Remove user with selected reason
+
+
+const removeUser = async () => {
+  const id_user = route.params.id;
+
+  try {
+    const res = await remove_user({
+      user_id: id_user,
+      reason: reason.value,
+    });
+
+    if (res.status === 200) {
+  Swal.fire({
+    icon: "success",
+    title: "User Removed",
+    text: `Reason: ${reason.value}`,
+    timer: 2000,
+    showConfirmButton: false,
+  });
+
+  showRemoveModal.value = false;
+
+  // wait 2 seconds (same as Swal timer) before redirect
+  setTimeout(() => {
+    router.push("/allusers");
+  }, 2000);
+}
+
+  } catch (error) {
+    //console.error("Error removing user:", error);
+
+    Swal.fire({
+      icon: "error",
+      title: "Failed",
+      text: "Failed to remove user. Please try again.",
+    });
+  }
+};
+
 
 // Fetch user details from API
 const fetchUserDetails = async () => {
   try {
     const id_user = route.params.id;
     const res = await get_user_details(id_user);
-   
     user.value = res.data;
   } catch (error) {
-    
+    ///console.error('Error fetching user details:', error);
   }
 };
 
@@ -356,11 +430,9 @@ const goBack = () => {
 onMounted(fetchUserDetails);
 
 // Computed property for staff details
-// https://phevab1.pythonanywhere.com/
-// http://127.0.0.1:8000/
 const staff = computed(() => ({
   profile_picture: user.value?.profile_picture
-    ? `https://phevab1.pythonanywhere.com/${user.value.profile_picture.replace(/^\/+/, '')}`
+    ? `http://127.0.0.1:8000/${user.value.profile_picture.replace(/^\/+/, '')}`
     : DEFAULT_AVATAR,
   at_post_on_leave: user.value?.at_post_on_leave || 'Not specified',
   change_of_grade: user.value?.change_of_grade || 'Not specified',
@@ -453,7 +525,6 @@ const getStatusClass = (status) => {
   return 'badge-info';
 };
 </script>
-
 <style scoped>
 .staff-details-container {
   max-width: 1200px;

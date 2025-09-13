@@ -4,7 +4,7 @@ import axios from 'axios';
 // http://127.0.0.1:8000/
 
    const api = axios.create({
-     baseURL: 'https://phevab1.pythonanywhere.com/',
+     baseURL: 'http://127.0.0.1:8000/',
    });
 
    api.interceptors.request.use(
@@ -62,6 +62,9 @@ import axios from 'axios';
 
    // Users
    export const create_user = (payload) => api.post("superadmin/api/v1/users/create", payload);
+   export const remove_user = (payload) => api.post("superadmin/api/v1/remove-user", payload);
+  
+   
    export const user_fields = () => api.get("superadmin/api/v1/user-fields");
    export const get_user_details = (userId) => api.get(`superadmin/api/v1/users/${userId}`);
    export const update_user = (userId) => api.get(`superadmin/api/v1/user-update/${userId}/`);
