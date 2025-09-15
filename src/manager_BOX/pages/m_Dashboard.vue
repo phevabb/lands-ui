@@ -12,7 +12,7 @@ import {
   manager_gender_stats,
   manager_senior_stats,
   manager_directorate_stats,
-  manager_region_stats,
+  
   manager_class_stats,
   manager_management_stats,
 } from "../../services/api";
@@ -48,7 +48,7 @@ async function fetchUsers(tab, apiFunc, page, name_) {
         d.age_range ||
         d.salary_range ||
         d.staff_category ||
-        d.region ||
+     
         d.contract_type ||
         d.leave_type ||
         d.name ||
@@ -107,7 +107,7 @@ onMounted(async () => {
       { data: leaData },
       { data: classData },
       { data: dirData },
-      { data: regData },
+
       { data: manData },
       { data: senData },
       { data: genData },
@@ -120,7 +120,7 @@ onMounted(async () => {
       manager_leave_stats({ region }),
       manager_class_stats({ region }),
       manager_directorate_stats({ region }),
-      manager_region_stats({ region }),
+      
       manager_management_stats({ region }),
       manager_senior_stats({ region }),
       manager_gender_stats({ region }),
@@ -220,22 +220,7 @@ onMounted(async () => {
       apiFunc: manager_directorate_stats,
     };
 
-    const regionTab = {
-      id: "tab-reg",
-      label: "Regions",
-      icon: "account_balance",
-      users: (regData.results ?? []).map((d) => ({
-        name: d.region,
-        count: d.count,
-      })),
-      total: regData.count,
-      next: regData.next,
-      previous: regData.previous,
-      currentPage: getCurrentPageFromUrl(regData.next, regData.previous, regData.count),
-      totalPages: Math.ceil(regData.count / page_size),
-      name_: "Region",
-      apiFunc: manager_region_stats,
-    };
+   
 
     const manTab = {
       id: "tab-man",
@@ -322,11 +307,11 @@ onMounted(async () => {
       apiFunc: manager_salary_stats,
     };
 
-    table_1.value = [classTab, conTab, proTab, senTab];
+    table_1.value = [classTab, conTab, proTab, ];
     table_2.value = [manTab, ageTab];
     table_3.value = [directorateTab, leaTab];
     table_4.value = [salTab, proTab];
-    table_5.value = [regionTab, genTab];
+    table_5.value = [senTab, genTab];
   } catch (err) {
     if (err.message.includes("Network Error") || err.code === "ERR_NETWORK") {
       errorMessage.value = "Please check your internet connection.";
