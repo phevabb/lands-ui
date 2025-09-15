@@ -5,13 +5,10 @@
     :data-image="sidebarBackgroundImage"
     :style="sidebarStyle"
   >
-    <div class="logo">
-      <router-link
-        to="/dashboard"
-        class="welcome-text"
-      >
+    <div class="logo welcome-text">
+      
         Welcome, <strong>{{ fullName || title }}</strong>
-      </router-link>
+     
     </div>
 
     <div class="sidebar-wrapper">

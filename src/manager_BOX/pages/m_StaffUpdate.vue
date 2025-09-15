@@ -2,7 +2,7 @@
 <script setup>
 import { user_fields, get_user_details, patch_user } from "../../services/api";
 import { ref, onMounted, computed } from "vue";
-import EditProfileForm from "@/admin_BOX/pages/UserProfile/EditProfileForm_update.vue";
+import EditProfileForm from "../box/EditProfileForm.vue";
 import UserCard from "@/admin_BOX/pages/UserProfile/UserCard.vue";
 import { useRouter, useRoute } from "vue-router/composables";
 
@@ -19,28 +19,35 @@ const userData = ref({});
 // Fetch data
 onMounted(async () => {
   try {
-    // Fetch form fields (static options for other dropdowns)
+    // Fetch form fields
     const fieldsRes = await user_fields();
     userFields.value = Array.isArray(fieldsRes.data) ? fieldsRes.data : [];
+   
 
     // Fetch user details
     const userDetailsRes = await get_user_details(userId);
+   
 
-    // Directly use the IDs returned by backend
+    // Map academic_qualifications from academic_qualifications_details if empty or undefined
+    const academicQualifications = Array.isArray(userDetailsRes.data.academic_qualifications) &&
+      userDetailsRes.data.academic_qualifications.every(id => id !== undefined)
+      ? userDetailsRes.data.academic_qualifications
+      : (Array.isArray(userDetailsRes.data.academic_qualifications_details)
+        ? userDetailsRes.data.academic_qualifications_details.map(q => q.id)
+        : []);
+
     userData.value = {
       ...userDetailsRes.data,
-      academic_qualifications: Array.isArray(userDetailsRes.data.academic_qualifications)
-        ? userDetailsRes.data.academic_qualifications.map(q => q.id ?? q) // handles both ID list or object list
-        : [],
+      academic_qualifications: academicQualifications,
     };
   } catch (err) {
+
     backendErrors.value = { general: ["Failed to load user data"] };
   }
 });
 
 // Handle form submit
 const handleFormSubmit = async (formData) => {
-  console.log("formdata", formData)
   try {
     // ✅ Transform ManyToMany fields (academic_qualifications) into a list of IDs
     if (Array.isArray(formData.academic_qualifications)) {
@@ -51,12 +58,11 @@ const handleFormSubmit = async (formData) => {
 
     // Use PATCH for partial updates
     const res = await patch_user(userId, formData)
-    console.log("e", res)
 
 
     successMessage.value = "User updated successfully!"
     setTimeout(() => {
-      router.push("/allusers")
+      router.push("/manager/allusers")
     }, 1500)
   } catch (err) {
 

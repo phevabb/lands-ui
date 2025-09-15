@@ -84,6 +84,9 @@
 import { ref, reactive } from 'vue'
 import {login} from '@/services/api'
 const loading = ref(false)
+import { useRouter } from "vue-router/composables";
+
+const router = useRouter();
 
 
 const messages = ref([])
@@ -114,46 +117,46 @@ const togglePassword = () => {
 
 const handleLogin = async () => {
   loading.value = true
-  try{
-    const {data} = await login(form)
+  try {
+const { data } = await login(form);
+console.log("datalogin", JSON.stringify(data, null, 2));
+
+// Ensure region_id is stored as string
+const region = data.user.region || "";
+const regionId = data.user.region_id != null ? String(data.user.region_id) : "";
+
+localStorage.setItem("region", region);
+localStorage.setItem("region_id", regionId);
+localStorage.setItem("token", data.token);
+localStorage.setItem("user", data.user.full_name);
 
 
- 
-    localStorage.setItem('token', data.token) // save token
-    localStorage.setItem('user', data.user.full_name) // save user info
-      
-    const v = data.user.role
-    const name = data.user.full_name
-    
 
 
-    if (data.user.role === "Admin") {
-      window.location.href ='/dashboard'
+
+    const role = data.user.role
+
+    if (role === "Admin") {
+      router.push({ path: "/dashboard" })
+    } else if (role === "Manager") {
+      router.push({ path: "/manager/dashboard" })
+    } else {
+      router.push({ path: "/dashboard_staff" })
     }
-    else if(data.user.role === "Manager"){
-      window.location.href ='/dashboard_manager'
-    }
+  } catch (err) {
+    const message =
+      err?.response?.data?.non_field_errors?.[0] ||
+      err?.response?.data?.staff_department?.[0] ||
+      err?.response?.data?.user_ID?.[0] ||
+      err?.response?.data?.password?.[0] ||
+      "Please check your internet connection"
 
-    else {window.location.href ='/dashboard_staff'}
-  }catch (err) {
-  const message =
-    err?.response?.data?.non_field_errors?.[0] ||
-    err?.response?.data?.staff_department?.[0] ||
-    err?.response?.data?.user_ID?.[0] ||
-    err?.response?.data?.password?.[0] ||
-    'Please check your internet connection';
-
-  insert_message(message);
-
-}
-
- finally{
+    insert_message(message)
+  } finally {
     loading.value = false
   }
-
-
-
 }
+
 </script>
 
 <style scoped>

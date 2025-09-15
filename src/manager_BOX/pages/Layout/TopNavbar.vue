@@ -2,7 +2,8 @@
   <md-toolbar md-elevation="0" class="md-transparent">
     <div class="md-toolbar-row">
       <div class="md-toolbar-section-start">
-        <h3 class="md-title">{{ $route.name }}</h3>
+        <!-- Prepend region before route name -->
+        <h3 class="md-title">{{ region }} {{ $route.name }}</h3>
       </div>
       <div class="md-toolbar-section-end">
         <md-button
@@ -18,40 +19,35 @@
         <div class="md-collapse">
           
 
-
           <md-list>
             <md-list-item href="/dashboard">
               <i class="material-icons">dashboard</i>
               <p class="hidden-lg hidden-md">Dashboard</p>
             </md-list-item>
 
-            
-           
-
             <!-- Profile Dropdown -->
-<div>
-  <md-menu>
-    <!-- Trigger list-item styled like your Dashboard link -->
-    <md-list-item md-menu-trigger class="profile-trigger" >
-      <i class="material-icons">person</i>
-      <p class="hidden-lg hidden-md">Profile</p>
-    </md-list-item>
+            <div>
+              <md-menu>
+                <!-- Trigger list-item styled like your Dashboard link -->
+                <md-list-item md-menu-trigger class="profile-trigger">
+                  <i class="material-icons">person</i>
+                  <p class="hidden-lg hidden-md">Profile</p>
+                </md-list-item>
 
-    <!-- Dropdown content -->
-    <md-menu-content>
-      <md-menu-item @click="$router.push('/change-password')">
-        <i class="material-icons">lock</i>
-        Change Password
-      </md-menu-item>
+                <!-- Dropdown content -->
+                <md-menu-content>
+                  <md-menu-item @click="$router.push('/change-password')">
+                    <i class="material-icons">lock</i>
+                    Change Password
+                  </md-menu-item>
 
-      <md-menu-item @click="logout">
-        <i class="material-icons">exit_to_app</i>
-        Logout
-      </md-menu-item>
-    </md-menu-content>
-  </md-menu>
-</div>
-
+                  <md-menu-item @click="logout">
+                    <i class="material-icons">exit_to_app</i>
+                    Logout
+                  </md-menu-item>
+                </md-menu-content>
+              </md-menu>
+            </div>
           </md-list>
         </div>
       </div>
@@ -61,26 +57,28 @@
 
 <script>
 export default {
-  
-  
-
-
-
+  data() {
+    return {
+      region: localStorage.getItem("region") || "", // load region once
+      selectedEmployee: null,
+      employees: []
+    };
+  },
   methods: {
     toggleSidebar() {
       this.$sidebar.displaySidebar(!this.$sidebar.showSidebar);
     },
     logout() {
-  localStorage.removeItem("token");
-  localStorage.removeItem("user");
-  localStorage.removeItem("region");
- localStorage.removeItem("region_id");
-  window.location.href = "/login"; // or use router.push
-}
-    
-  },
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      localStorage.removeItem("region");
+      localStorage.removeItem("region_id");
+      window.location.href = "/login"; // or use router.push
+    }
+  }
 };
 </script>
+
 
 <style scoped>  
 .dropdown-menu {

@@ -33,3 +33,113 @@ with:
 the pythonanywheres url:
 
 https://phevab1.pythonanywhere.com/
+
+
+
+<script setup>
+import { user_fields, get_user_details, patch_user, manager_patch_user } from "../../services/api";
+import { ref, onMounted, computed } from "vue";
+import EditProfileForm from "../box/EditProfileForm.vue";
+import UserCard from "@/admin_BOX/pages/UserProfile/UserCard.vue";
+import { useRouter, useRoute } from "vue-router/composables";
+
+const route = useRoute();
+const router = useRouter();
+const userId = route.params.id;
+
+// Reactive states
+const backendErrors = ref({});
+const successMessage = ref("");
+const userFields = ref([]);
+const userData = ref({});
+
+// Fetch data
+onMounted(async () => {
+  try {
+    // Fetch form fields
+    const fieldsRes = await user_fields();
+    userFields.value = Array.isArray(fieldsRes.data) ? fieldsRes.data : [];
+   
+
+    // Fetch user details
+    const userDetailsRes = await get_user_details(userId);
+   
+
+    // Map academic_qualifications from academic_qualifications_details if empty or undefined
+    const academicQualifications = Array.isArray(userDetailsRes.data.academic_qualifications) &&
+      userDetailsRes.data.academic_qualifications.every(id => id !== undefined)
+      ? userDetailsRes.data.academic_qualifications
+      : (Array.isArray(userDetailsRes.data.academic_qualifications_details)
+        ? userDetailsRes.data.academic_qualifications_details.map(q => q.id)
+        : []);
+
+    userData.value = {
+      ...userDetailsRes.data,
+      academic_qualifications: academicQualifications,
+    };
+  } catch (err) {
+
+    backendErrors.value = { general: ["Failed to load user data"] };
+  }
+});
+
+// Handle form submit
+const handleFormSubmit = async (formData) => {
+  try {
+    // ✅ Transform ManyToMany fields (academic_qualifications) into a list of IDs
+    if (Array.isArray(formData.academic_qualifications)) {
+      formData.academic_qualifications = formData.academic_qualifications.map(item =>
+        typeof item === "object" ? item.id : item
+      )
+    }
+
+    // Use PATCH for partial updates
+    
+const plainFormData = JSON.parse(JSON.stringify(formData));
+
+const res = await manager_patch_user(plainFormData);
+
+
+    successMessage.value = "User updated successfully!"
+    setTimeout(() => {
+      router.push("/manager/allusers")
+    }, 1500)
+  } catch (err) {
+
+    backendErrors.value = err.response?.data || {
+      general: ["Failed to update user"],
+    }
+  }
+}
+
+
+// Title
+const formTitle = computed(() => {
+  return userData.value?.full_name
+    ? `${userData.value.title || ""} ${userData.value.full_name}`
+    : "Staff Update";
+});
+</script>
+
+<template>
+  <div class="content">
+    <div class="md-layout">
+      <div class="md-layout-item md-medium-size-100 md-size-66">
+        <EditProfileForm
+          data-background-color="green"
+          :title="formTitle"
+          sub_title="Update Staff data"
+          button_name="Update Staff"
+          :backformdata="userFields"
+          :formValues="userData"
+          :backendErrors="backendErrors"
+          :successMessage="successMessage"
+          @submitForm="handleFormSubmit"
+        />
+      </div>
+      <div class="md-layout-item md-medium-size-100 md-size-33">
+        <UserCard />
+      </div>
+    </div>
+  </div>
+</template>

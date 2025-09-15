@@ -13,7 +13,7 @@
         <SidebarLink
           :link="{
           name: 'Dashboard',
-          path: '/dashboard',
+          path: '/manager/dashboard',
           }"
           class="sidebar-link"
         >
@@ -32,7 +32,7 @@
         <SidebarLink
           :link="{
           name: 'All Users',
-          path: '/allusers',
+          path: '/manager/allusers',
           }"
           class="sidebar-link">
           <span class="sidebar-item">
@@ -47,7 +47,7 @@
         <SidebarLink
           :link="{
           name: 'New Entry',
-          path: '/new-entry',
+          path: '/manager/new-entry',
           }"
           class="sidebar-link">
           <span class="sidebar-item">
@@ -150,7 +150,7 @@ const toggleAccountDropdown = () => {
 };
 
 const goToChangePassword = () => {
-  router.push("/change-password"); // Make sure this route exists
+  router.push("/manage/change-password"); // Make sure this route exists
 };
 
 const handleLogout = async () => {
@@ -160,8 +160,6 @@ const handleLogout = async () => {
     localStorage.removeItem("user");
     localStorage.removeItem("region");
     localStorage.removeItem("region_id");
-
-    
    
 
     router.push("/login");

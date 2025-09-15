@@ -17,6 +17,18 @@ import NewEntry from "../admin_BOX/pages/NewEntry.vue";
 import StaffDetails from "../admin_BOX/pages/StaffDetails.vue"; 
 import StaffUpdate from "../admin_BOX/pages/StaffUpdate.vue"; 
 import UserByUnit from "../admin_BOX/pages/UserByUnit.vue"; 
+import m_DashboardLayout from "../manager_BOX/pages/Layout/m_DashboardLayout.vue";
+import m_Dashboard from "../manager_BOX/pages/m_Dashboard.vue"
+import m_UserByUnit from "../manager_BOX/pages/m_UserByUnit.vue"
+import m_StaffDetails from "../manager_BOX/pages/m_StaffDetails.vue"
+
+import m_StaffUpdate from "../manager_BOX/pages/m_StaffUpdate.vue"
+import m_UserProfile from "../manager_BOX/pages/m_UserProfile.vue"
+import m_NewEntry from "../manager_BOX/pages/m_NewEntry.vue"
+import m_AllUsers from "../manager_BOX/pages/m_AllUsers.vue"
+import m_ChangePassword from "../registration/ChangePassword.vue";
+
+
 
 
 const routes = [
@@ -136,7 +148,94 @@ const routes = [
       
     ],
 
+  },
+
+
+
+
+  {
+    path: "/manager/",
+    component: m_DashboardLayout,
+    children: [
+
+      {
+        path: "dashboard",
+        name: " Manager Dashboard",
+        component: m_Dashboard,
+        meta: { requiresAuth: true }
+      },
+
+      {
+        path: "users-per-department",
+        name: "Staff Per Department In Region",
+        component: m_UserByUnit,
+        meta: { requiresAuth: true }
+      },
+
+      {
+        path: "staff-details/:id",
+        name: "Manager Staff Details",
+        component: m_StaffDetails,
+        meta: { requiresAuth: true }
+      },
+
+      {
+        path: "staff-update/:id",
+        name: "Manager Staff Update",
+        component: m_StaffUpdate,
+        meta: { requiresAuth: true }
+      },
+
+      
+
+      
+      {
+        path: "user",
+        name: "m_User Profile",
+        component: m_UserProfile,
+        meta: { requiresAuth: true }
+      },
+      {
+        path: "new-entry",
+        name: "New Entry",
+        component: m_NewEntry,
+        meta: { requiresAuth: true }
+      },
+      {
+        path: "table",
+        name: "m_Table List",
+        component: TableList,
+        meta: { requiresAuth: true }
+      },
+      {
+        path: "allusers",
+        name: "All Users",
+        component: m_AllUsers,
+        meta: { requiresAuth: true }
+      },
+      {
+        path: "typography",
+        name: "m_Typography",
+        component: Typography,
+        meta: { requiresAuth: true }
+      },
+      {
+        path: "icons",
+        name: "m_Icons",
+        component: Icons,
+        meta: { requiresAuth: true }
+      },
+      {
+        path: "change-password",
+        name: "change-password",
+        component: m_ChangePassword,
+        meta: { requiresAuth: true }
+      },
+      
+    ],
+
   }
+
 
 ];
 

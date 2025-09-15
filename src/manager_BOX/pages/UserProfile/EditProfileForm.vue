@@ -1,3 +1,4 @@
+
 <script setup>
 import { reactive, watch, computed, ref } from 'vue';
 import Swal from 'sweetalert2';
@@ -137,8 +138,10 @@ watch(
         if (newValues[key] !== undefined) {
           const fieldConfig = props.backformdata.find((f) => f.field_name === key);
           if (fieldConfig && fieldConfig.field_type === 'ManyToManyField') {
+            // Handle ManyToManyField: Ensure it's an array of IDs
             formData[key] = Array.isArray(newValues[key]) ? newValues[key] : [];
           } else if (fieldConfig && (fieldConfig.items || fieldConfig.choices)) {
+            // Handle ForeignKey or CharField with choices
             const options = fieldConfig.items || fieldConfig.choices;
             let match = options.find(
               (opt) => opt.id === newValues[key] || opt[0] === newValues[key]
@@ -212,20 +215,18 @@ const clearFile = () => {
 // Handle form submission
 const handleSubmit = () => {
   const formDataToSend = new FormData();
-
   if (profilePictureFile.value instanceof File) {
     formDataToSend.append('profile_picture', profilePictureFile.value, profilePictureFile.value.name);
   }
   for (const [key, value] of Object.entries(formData)) {
     if (key !== 'profile_picture' && value !== null && value !== '') {
       if (Array.isArray(value)) {
-         value.forEach((val) => formDataToSend.append(key, val));
+        value.forEach((val) => formDataToSend.append(`${key}[]`, val));
       } else {
         formDataToSend.append(key, value);
       }
     }
   }
-
   emit('submitForm', formDataToSend);
 };
 
@@ -471,30 +472,15 @@ watch(
           </div>
         </div>
 
-        <!-- Other Information Section -->
+        <!-- Other Information Section (includes academic_qualifications) -->
         <div class="form-section" v-if="hasOtherInfo">
           <div class="section-header"><i class="fas fa-info-circle"></i> Other Information</div>
           <div class="section-content">
             <div class="form-grid">
               <div v-for="field in otherFields" :key="field.field_name" class="form-field">
                 <label class="form-label">{{ formatLabel(field.field_name) }}</label>
-                <!-- Academic Qualifications (ManyToManyField) -->
-                <template v-if="field.field_name === 'academic_qualifications' && field.field_type === 'ManyToManyField' && field.items">
-                  <div class="premium-checkbox-group">
-                    <label v-for="item in field.items" :key="item.id" class="premium-checkbox-label">
-                      <input
-                        type="checkbox"
-                        :value="item.id"
-                        v-model="formData[field.field_name]"
-                        :checked="Array.isArray(formData[field.field_name]) && formData[field.field_name].includes(item.id)"
-                        class="premium-checkbox"
-                      />
-                      <span class="premium-checkbox-text">{{ item.name }}</span>
-                    </label>
-                  </div>
-                </template>
-                <!-- Other ManyToManyField (excluding academic_qualifications) -->
-                <template v-else-if="field.field_type === 'ManyToManyField' && field.items && field.field_name !== 'academic_qualifications'">
+                <!-- ManyToManyField -->
+                <template v-if="field.field_type === 'ManyToManyField' && field.items">
                   <select class="form-select" v-model="formData[field.field_name]" multiple>
                     <option value="" disabled>Select options</option>
                     <option v-for="item in field.items" :key="item.id" :value="item.id">
@@ -704,49 +690,6 @@ watch(
   width: 16px;
   height: 16px;
   animation: spin 1s linear infinite;
-}
-
-/* Premium Checkbox Group */
-.premium-checkbox-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 8px;
-}
-
-.premium-checkbox-label {
-  display: flex;
-  align-items: center;
-  background: #f9fafb; /* subtle background */
-  border: 2px solid #e5e7eb; /* light gray */
-  border-radius: 12px;
-  padding: 10px 16px;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.premium-checkbox-label:hover {
-  background: #f3f4f6;
-  border-color: #6366f1; /* Indigo highlight */
-  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.15);
-}
-
-.premium-checkbox {
-  margin-right: 10px;
-  accent-color: #6366f1; /* modern indigo color */
-  width: 18px;
-  height: 18px;
-}
-
-.premium-checkbox-text {
-  color: #111827;
-}
-
-.premium-checkbox:checked + .premium-checkbox-text {
-  font-weight: 600;
-  color: #4f46e5; /* darker indigo */
 }
 
 @keyframes spin {
