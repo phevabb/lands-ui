@@ -358,10 +358,13 @@ const goBack = () => {
 
 onMounted(fetchUserDetails);
 
+// https://phevab1.pythonanywhere.com/
+// http://127.0.0.1:8000/
+
 // Computed property for staff details
 const staff = computed(() => ({
   profile_picture: user.value?.profile_picture
-    ? `http://127.0.0.1:8000/${user.value.profile_picture.replace(/^\/+/, '')}`
+    ? `https://phevab1.pythonanywhere.com/${user.value.profile_picture.replace(/^\/+/, '')}`
     : DEFAULT_AVATAR,
   at_post_on_leave: user.value?.at_post_on_leave || 'Not specified',
   change_of_grade: user.value?.change_of_grade || 'Not specified',

@@ -51,7 +51,7 @@ const handleFormSubmit = async (formData) => {
 
     // Use PATCH for partial updates
     const res = await patch_user(userId, formData)
-    console.log("e", res)
+
 
 
     successMessage.value = "User updated successfully!"
