@@ -36,7 +36,7 @@
 
                 <!-- Dropdown content -->
                 <md-menu-content>
-                  <md-menu-item @click="$router.push('/change-password')">
+                  <md-menu-item @click="$router.push('/manager/change-password')">
                     <i class="material-icons">lock</i>
                     Change Password
                   </md-menu-item>

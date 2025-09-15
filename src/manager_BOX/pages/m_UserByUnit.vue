@@ -167,7 +167,7 @@ const checkLoading = () => isLoading.value
 function selectRow(staff) {
   selectedRow.value = staff;
   staffid.value = staff.id;
-  router.push({ name: "Staff Details", params: { id: staff.id } });
+  router.push({ name: "Manager Staff Details", params: { id: staff.id } });
 }
 
 function exportExcel() {

@@ -544,6 +544,8 @@ const getStatusClass = (status) => {
   return 'badge-info';
 };
 </script>
+
+
 <style scoped>
 .staff-details-container {
   max-width: 1200px;
