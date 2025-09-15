@@ -1,38 +1,39 @@
-todo.
-fix all paginations
-fix all isLoading
+// Handle image loading errors
+const handleImageError = (event) => {
+  event.target.src = DEFAULT_AVATAR; // Fallback to default avatar
+};
 
-search feature
-pagination
-image 
+// Construct profile picture URL
+const getProfilePictureSrc = (profilePicture) => {
+  if (profilePicture && profilePicture !== '-') {
+    if (profilePicture.startsWith('http')) {
+      return profilePicture;
+    }
+    return `${api.defaults.baseURL}/${profilePicture.replace(/^\/+/, '')}`;
+  }
+  return DEFAULT_AVATAR;
+};
+
+up script
 
 
-const proTab = {
-      id: "tab-pro",
-      label: "Professionals and Sub Professionals",
-      icon: "school",
-      users: (proData.table_data ?? []).map(d => ({
-        name: d.professional,   // adjust field name if different
-        count: d.count,
-      })),
-      total: proData.num_of_pros,
-      name_: proData.name_,
+<img
+          :src="getProfilePictureSrc(staff.profile_picture)"
+          :alt="staff.full_name || 'Profile Image'"
+          class="profile-image"
+          @error="handleImageError"
+        /> 
 
-       // Pagination
-      next: classData.next,
-      previous: classData.previous,
-      currentPage: getCurrentPageFromUrl(classData.next, classData.previous),
-      totalPages: Math.ceil(classData.count / classData.page_size),
-    };
+        temp up in img
+
+profile_picture: user.value?.profile_picture || null,
+
+right under computed
+
+
 
 
 update the :
-
-http://127.0.0.1:8000/   in the staffdetails
-with:
-the pythonanywheres url:
-
-https://phevab1.pythonanywhere.com/
 
 
 

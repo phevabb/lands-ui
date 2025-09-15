@@ -49,10 +49,12 @@
     <div class="profile-container">
       <div class="profile-card">
         <img
-          :src="staff.profile_picture"
+          :src="getProfilePictureSrc(staff.profile_picture)"
           :alt="staff.full_name || 'Profile Image'"
           class="profile-image"
-        />
+          @error="handleImageError"
+        /> 
+
         <h2 class="profile-name">{{ staff.title }} {{ staff.full_name }}</h2>
         <p class="profile-title">Staff ID: {{ staff.user_id }}</p>
         <span class="profile-department">{{ staff.directorate }}</span>
@@ -359,6 +361,24 @@ const router = useRouter();
 const showRemoveModal = ref(false);
 const reason = ref('');
 
+
+// Handle image loading errors
+const handleImageError = (event) => {
+  event.target.src = DEFAULT_AVATAR; // Fallback to default avatar
+};
+
+// Construct profile picture URL
+const getProfilePictureSrc = (profilePicture) => {
+  if (profilePicture && profilePicture !== '-') {
+    if (profilePicture.startsWith('http')) {
+      return profilePicture;
+    }
+    return `${api.defaults.baseURL}/${profilePicture.replace(/^\/+/, '')}`;
+  }
+  return DEFAULT_AVATAR;
+};
+
+
 // Open the remove modal
 const openRemoveModal = () => {
   reason.value = ''; // Reset reason when opening modal
@@ -431,12 +451,8 @@ onMounted(fetchUserDetails);
 // Computed property for staff details
 const staff = computed(() => ({
 
-  // https://phevab1.pythonanywhere.com/
-  // http://127.0.0.1:8000/
-  
-  profile_picture: user.value?.profile_picture
-    ? `https://phevab1.pythonanywhere.com/${user.value.profile_picture.replace(/^\/+/, '')}`
-    : DEFAULT_AVATAR,
+  profile_picture: user.value?.profile_picture || null,
+
   at_post_on_leave: user.value?.at_post_on_leave || 'Not specified',
   change_of_grade: user.value?.change_of_grade || 'Not specified',
   date_of_assumption_of_duty: user.value?.date_of_assumption_of_duty || 'Not specified',
