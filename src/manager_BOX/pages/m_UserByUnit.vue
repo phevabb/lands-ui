@@ -37,7 +37,7 @@ async function fetchUsers(page = 1) {
     const region = localStorage.getItem("region") || "";
 
     const response = await manager_users_per_department(dept.value, { page, page_size, region });
-    console.log("blue", JSON.stringify(response, null, 2));
+
 
 
     totalCount.value = response.data.count;

@@ -342,7 +342,7 @@ const fetchUserDetails = async () => {
     const res = await get_user_details(id_user);
     user.value = res.data;
   } catch (error) {
-    ///console.error('Error fetching user details:', error);
+
   }
 };
 

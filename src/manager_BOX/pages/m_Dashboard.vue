@@ -39,7 +39,7 @@ async function fetchUsers(tab, apiFunc, page, name_) {
   try {
     const region = localStorage.getItem("region") || "";
     const { data } = await apiFunc({ page, region }); // Send region as query param
-    console.log("d", JSON.stringify(data, null, 2));
+
 
     tab.users = data.results.map((d) => ({
       name:

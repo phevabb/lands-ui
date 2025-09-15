@@ -40,7 +40,7 @@ onMounted(async () => {
 
 // Handle form submit
 const handleFormSubmit = async (formData) => {
-  console.log("formdata", formData)
+
   try {
     // ✅ Transform ManyToMany fields (academic_qualifications) into a list of IDs
     if (Array.isArray(formData.academic_qualifications)) {

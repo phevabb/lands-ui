@@ -119,7 +119,7 @@ const handleLogin = async () => {
   loading.value = true
   try {
 const { data } = await login(form);
-console.log("datalogin", JSON.stringify(data, null, 2));
+
 
 // Ensure region_id is stored as string
 const region = data.user.region || "";
