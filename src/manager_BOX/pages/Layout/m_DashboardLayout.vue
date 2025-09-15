@@ -150,7 +150,7 @@ const toggleAccountDropdown = () => {
 };
 
 const goToChangePassword = () => {
-  router.push("/manage/change-password"); // Make sure this route exists
+  router.push("/manager/change-password"); // Make sure this route exists
 };
 
 const handleLogout = async () => {
