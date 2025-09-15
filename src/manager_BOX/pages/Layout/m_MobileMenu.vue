@@ -11,7 +11,7 @@
       <router-link
         to="/dashboard"
         class="dropdown-toggle"
-        :class="{ active: $route.path === '/dashboard' }"
+        :class="{ active: $route.path === '/manager/dashboard' }"
       >
         <i class="material-icons">dashboard</i>
         <p>Dashboard</p>
