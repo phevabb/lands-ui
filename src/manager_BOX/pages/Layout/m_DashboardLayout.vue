@@ -158,7 +158,9 @@ const handleLogout = async () => {
     await logout();
     localStorage.removeItem("token"); // Remove token before redirect
     localStorage.removeItem("user");
+        localStorage.removeItem("user_id");
     localStorage.removeItem("region");
+    
     localStorage.removeItem("region_id");
    
 

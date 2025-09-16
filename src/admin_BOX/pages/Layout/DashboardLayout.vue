@@ -160,6 +160,10 @@ const handleLogout = async () => {
     localStorage.removeItem("user");
     localStorage.removeItem("region");
     localStorage.removeItem("region_id");
+    localStorage.removeItem("user_id");
+
+ 
+
 
     
    

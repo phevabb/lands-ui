@@ -71,7 +71,9 @@ export default {
   localStorage.removeItem("token");
   localStorage.removeItem("user");
   localStorage.removeItem("region");
+   localStorage.removeItem("user_id");
  localStorage.removeItem("region_id");
+ 
   window.location.href = "/login"; // or use router.push
 }
     

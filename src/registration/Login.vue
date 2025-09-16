@@ -118,31 +118,30 @@ const togglePassword = () => {
 const handleLogin = async () => {
   loading.value = true
   try {
-const { data } = await login(form);
+    const { data } = await login(form);
 
+    // Ensure region_id is stored as string
+    const region = data.user.region || "";
+    const regionId = data.user.region_id != null ? String(data.user.region_id) : "";
 
-// Ensure region_id is stored as string
-const region = data.user.region || "";
-const regionId = data.user.region_id != null ? String(data.user.region_id) : "";
-
-localStorage.setItem("region", region);
-localStorage.setItem("region_id", regionId);
-localStorage.setItem("token", data.token);
-localStorage.setItem("user", data.user.full_name);
-
-
-
+    localStorage.setItem("region", region);
+    localStorage.setItem("region_id", regionId);
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", data.user.full_name);
+    localStorage.setItem("user_id", data.user.id)  // store staff id
 
 
     const role = data.user.role
+    const id = data.user.id
 
     if (role === "Admin") {
       router.push({ path: "/dashboard" })
     } else if (role === "Manager") {
       router.push({ path: "/manager/dashboard" })
-    } else {
-      router.push({ path: "/dashboard_staff" })
+    } else if (role === "Staff") {
+      router.push({ path: `/staff/staff-details/${id}` }) // pass id in the route
     }
+
   } catch (err) {
     const message =
       err?.response?.data?.non_field_errors?.[0] ||

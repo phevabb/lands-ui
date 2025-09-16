@@ -17,6 +17,9 @@ import NewEntry from "../admin_BOX/pages/NewEntry.vue";
 import StaffDetails from "../admin_BOX/pages/StaffDetails.vue"; 
 import StaffUpdate from "../admin_BOX/pages/StaffUpdate.vue"; 
 import UserByUnit from "../admin_BOX/pages/UserByUnit.vue"; 
+
+
+
 import m_DashboardLayout from "../manager_BOX/pages/Layout/m_DashboardLayout.vue";
 import m_Dashboard from "../manager_BOX/pages/m_Dashboard.vue"
 import m_UserByUnit from "../manager_BOX/pages/m_UserByUnit.vue"
@@ -29,7 +32,10 @@ import m_AllUsers from "../manager_BOX/pages/m_AllUsers.vue"
 import m_ChangePassword from "../registration/ChangePassword.vue";
 
 
+import s_ChangePassword from "../registration/ChangePassword.vue";
 
+import s_DashboardLayout from "../staff_BOX/pages/Layout/s_DashboardLayout.vue";
+import s_StaffDetails from "../staff_BOX/pages/s_StaffDetails.vue"; 
 
 const routes = [
   {
@@ -68,6 +74,8 @@ const routes = [
     name: "password-reset-done",
     component: ResetPasswordDone,
   },
+
+
   {
     path: "/",
     component: DashboardLayout,
@@ -234,7 +242,37 @@ const routes = [
       
     ],
 
+  },
+
+  
+  {
+    path: "/staff/",
+    component: s_DashboardLayout,
+    children: [
+
+     
+     
+
+      {
+        path: "staff-details/:id",
+        name: "My Details",
+        component: s_StaffDetails,
+        meta: { requiresAuth: true }
+      },
+      
+      
+      
+      {
+        path: "change-password",
+        name: "staff-change-password",
+        component: s_ChangePassword,
+        meta: { requiresAuth: true }
+      },
+      
+    ],
+
   }
+
 
 
 ];
