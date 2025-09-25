@@ -5,7 +5,7 @@ import axios from 'axios';
 // https://hr-phevabb2997-ms1ofiew.leapcell.dev/
 
 const api = axios.create({
-  baseURL: 'https://hr-phevabb2997-ms1ofiew.leapcell.dev/',
+  baseURL: 'https://phevab1.pythonanywhere.com/',
 });
 
 api.interceptors.request.use(
