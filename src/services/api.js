@@ -2,10 +2,11 @@ import axios from 'axios';
 // https://phevab1.pythonanywhere.com/
 // http://127.0.0.1:8000/
 
-// https://hr-phevabb2997-ms1ofiew.leapcell.dev/
+// https://hr-phevabb2997-bydwn27j.leapcell.dev/
+
 
 const api = axios.create({
-  baseURL: 'https://phevab1.pythonanywhere.com/',
+  baseURL: 'https://hr-phevabb2997-bydwn27j.leapcell.dev/',
 });
 
 api.interceptors.request.use(
