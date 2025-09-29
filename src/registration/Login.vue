@@ -120,6 +120,8 @@ const handleLogin = async () => {
   try {
     const { data } = await login(form);
 
+    
+
     // Ensure region_id is stored as string
     const region = data.user.region || "";
     const regionId = data.user.region_id != null ? String(data.user.region_id) : "";
@@ -143,11 +145,13 @@ const handleLogin = async () => {
     }
 
   } catch (err) {
+
     const message =
       err?.response?.data?.non_field_errors?.[0] ||
       err?.response?.data?.staff_department?.[0] ||
       err?.response?.data?.user_ID?.[0] ||
       err?.response?.data?.password?.[0] ||
+      err?.response?.data?.error ||
       "Please check your internet connection"
 
     insert_message(message)
