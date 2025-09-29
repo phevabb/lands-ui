@@ -158,11 +158,10 @@ async function handleSubmit() {
 
   try {
     const payload = {
-      uidb64,
-      token,
-      new_password1: password1.value,
-      new_password2: password2.value,
-    };
+    uid: uidb64,
+    token,
+    new_password: password1.value,
+  };
 
     const response = await resetpasswordconfirm(payload);
 
