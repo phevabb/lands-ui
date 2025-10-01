@@ -6,10 +6,10 @@
         Your password has been successfully changed.
       </p>
       <router-link
-        to="/dashboard"
+        to="/login"
         class="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition"
       >
-        Go to Dashboard
+        Please log in with your new password
       </router-link>
     </div>
   </div>
