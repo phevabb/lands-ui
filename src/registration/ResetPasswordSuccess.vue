@@ -10,7 +10,7 @@
       <h1 class="title">Password Reset Successful</h1>
       
       <!-- Message -->
-      <p class="message">
+      <p class="message"> 
         Your password has been reset successfully. You can now log in with your new password.
       </p>
       

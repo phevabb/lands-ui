@@ -8,7 +8,7 @@
       
       <!-- Title -->
       <h1 class="title">Reset your password</h1>
-      
+       
       <!-- Message -->
       <p class="message">
         We've emailed you instructions for setting your password.

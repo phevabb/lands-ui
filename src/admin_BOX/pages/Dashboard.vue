@@ -43,11 +43,13 @@ async function fetchUsers(tab, apiFunc, page, name_) {
       name: d.professional || d.gender || d.age_range || d.salary_range|| d.staff_category|| d.region || d.contract_type || d.leave_type || d.name || d.department || d.class || d.management_unit, // adjust per API
       count: d.count,
     }));
+
     tab.total = data.count;
     tab.currentPage = getCurrentPageFromUrl(data.next, data.previous, data.count);
     tab.totalPages = Math.ceil(data.count / page_size);
     tab.next = data.next;
     tab.previous = data.previous;
+    
   } catch (err) {
     if (err.message.includes("Network Error") || err.code === "ERR_NETWORK") {
       errorMessage.value = "Please check your internet connection.";

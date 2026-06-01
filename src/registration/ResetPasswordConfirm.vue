@@ -13,7 +13,7 @@
       </h1>
 
       <div v-if="validLink">
-        <p class="form-description">
+        <p class="form-description"> 
           Create a new secure password to protect your account. Make sure it's strong and unique.
         </p>
 
