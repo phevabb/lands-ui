@@ -2,7 +2,7 @@ import axios from 'axios';
 const api = axios.create({
 
   // baseURL: 'http://127.0.0.1:8000/',
-  //baseURL: 'https://hr-phevabb2997-bydwn27j.leapcell.dev', // no more
+
   baseURL: 'https://hr-production-415c.up.railway.app/',
 
   
