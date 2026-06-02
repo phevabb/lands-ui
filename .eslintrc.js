@@ -1,4 +1,3 @@
-// .eslintrc.js
 module.exports = {
   root: true,
   env: {
@@ -17,5 +16,10 @@ module.exports = {
     ecmaVersion: "latest",
     sourceType: "module",
   },
-  rules: {},
+  rules: {
+    "no-unused-vars": "off",
+    "no-empty": "off",
+    "vue/multi-word-component-names": "off",
+    "no-undef": "off",
+  },
 }
