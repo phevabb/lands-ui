@@ -3,9 +3,9 @@ const api = axios.create({
 
   // baseURL: 'http://127.0.0.1:8000/',
 
-   baseURL: 'https://hr-production-415c.up.railway.app/',
+    baseURL: 'https://hr-production-415c.up.railway.app/',
 
-  // baseURL: 'https://humanresourcebackend-7ritgqhp.b4a.run/',
+ //  baseURL: 'https://humanresourcebackend-7ritgqhp.b4a.run/',
 
   
 
