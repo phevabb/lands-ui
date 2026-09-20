@@ -37,6 +37,19 @@ import s_ChangePassword from "../registration/ChangePassword.vue";
 import s_DashboardLayout from "../staff_BOX/pages/Layout/s_DashboardLayout.vue";
 import s_StaffDetails from "../staff_BOX/pages/s_StaffDetails.vue"; 
 
+
+
+
+
+
+import super_DashboardLayout from "../SUPERADMIN_BOX/pages/Layout/DashboardLayout.vue";
+import super_Dashboard from "../SUPERADMIN_BOX/pages/superdashboard.vue";
+import super_AcademicQualifications from "../SUPERADMIN_BOX/pages/super_AcademicQualifications.vue";
+import super_Classes from "../SUPERADMIN_BOX/pages/super_Classes.vue";
+
+
+
+
 const routes = [
   {
   path: "/",
@@ -157,6 +170,145 @@ const routes = [
     ],
 
   },
+
+
+
+
+
+{
+  path: "/superadmin/",
+  component: super_DashboardLayout,
+  meta: {
+    requiresAuth: false,
+    allowedRoles: [],
+    requiresSuperuser: false
+  },
+  children: [
+    {
+      path: "",
+      redirect: "dashboard"
+    },
+    {
+      path: "dashboard",
+      name: "Superadmin Dashboard",
+      component: super_Dashboard,
+      meta: {
+        title: "Dashboard",
+        requiresAuth: false,
+        allowedRoles: [],
+        requiresSuperuser: false
+      }
+    },
+
+
+    {
+      path: "academic-qualifications",
+      name: "Academic Qualifications",
+      component: super_AcademicQualifications,
+      meta: {
+        title: "Dashboard",
+        requiresAuth: false,
+        allowedRoles: [],
+        requiresSuperuser: false
+      }
+    },
+     {
+      path: "staff-classes",
+      name: "Staff Classes",
+      component: super_Classes,
+      meta: {
+        title: "Super Classes",
+        requiresAuth: false,
+        allowedRoles: [],
+        requiresSuperuser: false
+      }
+    },
+
+
+
+    
+
+    {
+      path: "allusers",
+      name: "Superadmin All Users",
+      component: AllUsers,
+      meta: {
+        title: "All Users",
+        requiresAuth: false,
+        allowedRoles: [],
+        requiresSuperuser: false
+      }
+    },
+    {
+      path: "new-entry",
+      name: "Superadmin New Entry",
+      component: NewEntry,
+      meta: {
+        title: "New Entry",
+        requiresAuth: false,
+        allowedRoles: [],
+        requiresSuperuser: false
+      }
+    },
+    {
+      path: "users-per-department",
+      name: "Superadmin Staff Per Department",
+      component: UserByUnit,
+      meta: {
+        title: "Staff Per Department",
+        requiresAuth: false,
+        allowedRoles: [],
+        requiresSuperuser: false
+      }
+    },
+    {
+      path: "staff-details/:id",
+      name: "Superadmin Staff Details",
+      component: StaffDetails,
+      meta: {
+        title: "Staff Details",
+        requiresAuth: false,
+        allowedRoles: [],
+        requiresSuperuser: false
+      }
+    },
+    {
+      path: "staff-update/:id",
+      name: "Superadmin Staff Update",
+      component: StaffUpdate,
+      meta: {
+        title: "Staff Update",
+        requiresAuth: false,
+        allowedRoles: [],
+        requiresSuperuser: false
+      }
+    },
+    {
+      path: "user",
+      name: "Superadmin User Profile",
+      component: UserProfile,
+      meta: {
+        title: "My Profile",
+        requiresAuth: false,
+        allowedRoles: [],
+        requiresSuperuser: false
+      }
+    },
+    {
+      path: "change-password",
+      name: "Superadmin Change Password",
+      component: ChangePassword,
+      meta: {
+        title: "Change Password",
+        requiresAuth: false,
+        allowedRoles: [],
+        requiresSuperuser: false
+      }
+    }
+  ]
+},
+
+
 
 
 
