@@ -1,40 +1,39 @@
 <template>
   <div class="classes-page">
     <!-- Premium page header -->
-    <section class="page-header">
-      <div class="page-header-decoration decoration-one" />
-      <div class="page-header-decoration decoration-two" />
+   <section class="sc-header">
+  <div class="sc-header-content">
+    <div class="sc-header-icon">
+      <md-icon>category</md-icon>
+    </div>
 
-      <div class="page-header-content">
-        <div class="page-header-icon">
-          <md-icon>category</md-icon>
-        </div>
+    <div class="sc-header-text">
+      <span class="sc-header-label">
+        SYSTEM CONFIGURATION
+      </span>
 
-        <div class="page-header-text">
-          <span class="page-header-label">
-            SYSTEM CONFIGURATION
-          </span>
+      <h1 class="sc-header-title">
+        Staff Classes
+      </h1>
 
-          <h1>Staff Classes</h1>
+      <p class="sc-header-description">
+        Create, update, search, and manage the staff classification
+        records used when creating and updating accounts.
+      </p>
+    </div>
+  </div>
 
-          <p>
-            Create, update, search, and manage the staff classification
-            records used when creating and updating accounts.
-          </p>
-        </div>
-      </div>
+  <button
+    type="button"
+    class="sc-header-button"
+    :disabled="loading"
+    @click="openCreateModal"
+  >
+    <md-icon>add_circle</md-icon>
 
-      <button
-        type="button"
-        class="header-add-button"
-        :disabled="loading"
-        @click="openCreateModal"
-      >
-        <md-icon>add_circle</md-icon>
-        <span>Add Staff Class</span>
-      </button>
-    </section>
-
+    <span>Add Staff Class</span>
+  </button>
+</section>
     <!-- Statistics -->
     <section class="statistics-grid">
       <div class="statistic-card">
@@ -923,7 +922,7 @@ export default {
         html: `
           <div style="
             color: #64748b;
-            font-size: 13px;
+            font-size: 16px;
             line-height: 1.6;
           ">
             Are you sure you want to delete
@@ -1103,133 +1102,274 @@ export default {
 
 /* Header */
 
-.page-header {
-  position: relative;
-  min-height: 190px;
+
+.sc-header {
+  position: relative !important;
+  inset: auto !important;
+
+  width: 100%;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+
   display: flex;
   align-items: center;
-  margin-bottom: 22px;
-  padding: 31px 36px;
+  gap: 16px;
+
+  margin: 0 0 18px !important;
+  padding: 12px 16px !important;
+
   overflow: hidden;
-  color: #ffffff;
-  border-radius: 19px;
+  box-sizing: border-box;
+
+  color: #1f2937;
+
+  border: 1px solid #e3e1f3;
+  border-left: 4px solid #6366f1;
+  border-radius: 12px;
+
   background:
     radial-gradient(
-      circle at 88% 15%,
-      rgba(255, 255, 255, 0.18),
-      transparent 25%
+      circle at 87% 0%,
+      rgba(99, 102, 241, 0.06),
+      transparent 30%
     ),
     linear-gradient(
       135deg,
-      #312e81 0%,
-      #4f46e5 45%,
-      #7c3aed 100%
+      #ffffff 0%,
+      #fdfdff 70%,
+      #f5f3ff 100%
     );
-  box-shadow: 0 17px 38px rgba(79, 70, 229, 0.24);
+
+  box-shadow: 0 5px 16px rgba(15, 23, 42, 0.055);
 }
 
-.page-header-content {
+.sc-header::before {
+  content: "";
+  position: absolute;
+  top: -52px;
+  right: 120px;
+
+  width: 115px;
+  height: 115px;
+
+  border: 18px solid rgba(99, 102, 241, 0.035);
+  border-radius: 50%;
+
+  pointer-events: none;
+}
+
+.sc-header-content {
   position: relative;
-  z-index: 3;
-  display: flex;
-  align-items: center;
+  z-index: 2;
+
   min-width: 0;
+
+  display: flex;
+  flex: 1;
+  align-items: center;
 }
 
-.page-header-icon {
-  min-width: 67px;
-  width: 67px;
-  height: 67px;
+.sc-header-icon {
+  min-width: 44px;
+  width: 44px;
+  height: 44px;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 19px;
-  background: rgba(255, 255, 255, 0.14);
-  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.16);
+
+  margin-right: 13px;
+
+  border-radius: 11px;
+
+  background: linear-gradient(
+    135deg,
+    #4f46e5,
+    #7c3aed
+  );
+
+  box-shadow: 0 6px 14px rgba(79, 70, 229, 0.22);
 }
 
-.page-header-icon .md-icon {
+.sc-header-icon .md-icon {
+  width: auto !important;
+  min-width: 0 !important;
+  height: auto !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
   color: #ffffff !important;
-  font-size: 37px !important;
+  font-size: 24px !important;
+  line-height: 1 !important;
 }
 
-.page-header-text {
+.sc-header-text {
   min-width: 0;
+  flex: 1;
 }
 
-.page-header-label {
-  color: rgba(255, 255, 255, 0.78);
+.sc-header-label {
+  display: block;
+
+  margin: 0 0 2px;
+  padding: 0;
+
+  color: #4f46e5;
+
   font-size: 9px;
   font-weight: 800;
-  letter-spacing: 1.3px;
+  line-height: 1.2;
+  letter-spacing: 1px;
+  text-transform: uppercase;
 }
 
-.page-header h1 {
-  margin: 7px 0;
-  color: #ffffff;
-  font-size: 28px;
-  font-weight: 800;
-}
+.sc-header-title {
+  margin: 0 !important;
+  padding: 0 !important;
 
-.page-header p {
-  max-width: 640px;
-  margin: 0;
-  color: rgba(255, 255, 255, 0.79);
-  font-size: 11px;
-  line-height: 1.6;
-}
+  color: #172033;
 
-.header-add-button {
-  position: relative;
-  z-index: 3;
-  min-height: 45px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-left: auto;
-  padding: 0 18px;
-  color: #4f46e5;
-  font-size: 10px;
-  font-weight: 800;
-  border: 0;
-  border-radius: 11px;
-  background: #ffffff;
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.2);
-  cursor: pointer;
-}
-
-.header-add-button:hover:not(:disabled) {
-  transform: translateY(-2px);
-}
-
-.header-add-button .md-icon {
-  color: #4f46e5 !important;
   font-size: 20px !important;
+  font-weight: 800;
+  line-height: 1.25 !important;
+  letter-spacing: -0.2px;
 }
 
-.page-header-decoration {
-  position: absolute;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 50%;
+.sc-header-description {
+  max-width: 620px;
+
+  margin: 3px 0 0 !important;
+  padding: 0 !important;
+
+  color: #64748b;
+
+  font-size: 12px !important;
+  font-weight: 400;
+  line-height: 1.4 !important;
 }
 
-.decoration-one {
-  top: -90px;
-  right: 190px;
-  width: 210px;
-  height: 210px;
+.sc-header-button {
+  position: relative;
+  z-index: 2;
+
+  min-width: 0;
+  min-height: 38px;
+  height: 38px;
+
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  margin: 0 0 0 auto !important;
+  padding: 0 14px !important;
+
+  color: #ffffff;
+
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+
+  border: 0;
+  border-radius: 9px;
+  outline: none;
+
+  background: linear-gradient(
+    135deg,
+    #4f46e5,
+    #7c3aed
+  );
+
+  box-shadow: 0 6px 14px rgba(79, 70, 229, 0.22);
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
 }
 
-.decoration-two {
-  right: -55px;
-  bottom: -105px;
-  width: 250px;
-  height: 250px;
-  border-width: 36px;
+.sc-header-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 9px 18px rgba(79, 70, 229, 0.28);
+}
+
+.sc-header-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.sc-header-button:focus-visible {
+  box-shadow:
+    0 0 0 4px rgba(99, 102, 241, 0.14),
+    0 6px 14px rgba(79, 70, 229, 0.22);
+}
+
+.sc-header-button:disabled {
+  cursor: not-allowed;
   opacity: 0.55;
 }
+
+.sc-header-button .md-icon {
+  width: auto !important;
+  min-width: 0 !important;
+  height: auto !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  color: #ffffff !important;
+  font-size: 18px !important;
+  line-height: 1 !important;
+}
+
+@media (max-width: 991px) {
+  .sc-header {
+    min-height: 0 !important;
+    padding: 11px 14px !important;
+  }
+
+  .sc-header-description {
+    max-width: 430px;
+  }
+}
+
+@media (max-width: 767px) {
+  .sc-header {
+    display: block;
+
+    height: auto !important;
+    min-height: 0 !important;
+
+    padding: 13px !important;
+  }
+
+  .sc-header-content {
+    align-items: flex-start;
+  }
+
+  .sc-header-button {
+    width: 100%;
+    height: 40px;
+
+    margin: 12px 0 0 !important;
+  }
+}
+
+@media (max-width: 575px) {
+  .sc-header {
+    margin-bottom: 14px !important;
+    padding: 11px !important;
+    border-radius: 11px;
+  }
+}
+
+
+
 
 /* Statistics */
 
@@ -1295,7 +1435,7 @@ export default {
 .statistic-label {
   margin-top: 4px;
   color: #94a3b8;
-  font-size: 9px;
+  font-size: 16px;
   font-weight: 600;
 }
 
@@ -1319,14 +1459,14 @@ export default {
 .records-toolbar h2 {
   margin: 0;
   color: #111827;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 800;
 }
 
 .records-toolbar p {
   margin: 5px 0 0;
   color: #94a3b8;
-  font-size: 9px;
+  font-size: 16px;
 }
 
 .toolbar-actions {
@@ -1362,7 +1502,7 @@ export default {
   flex: 1;
   margin-left: 8px;
   color: #334155;
-  font-size: 10px;
+  font-size: 16px;
   border: 0;
   outline: none;
   background: transparent;
@@ -1388,7 +1528,7 @@ export default {
   gap: 7px;
   padding: 0 13px;
   color: #4f46e5;
-  font-size: 9px;
+  font-size: 16px;
   font-weight: 700;
   border: 1px solid #c7d2fe;
   border-radius: 10px;
@@ -1435,19 +1575,19 @@ export default {
 }
 
 .error-banner-content strong {
-  font-size: 10px;
+  font-size: 16px;
 }
 
 .error-banner-content span {
   margin-top: 3px;
-  font-size: 9px;
+  font-size: 16px;
 }
 
 .error-banner button {
   margin-left: auto;
   padding: 7px 11px;
   color: #ffffff;
-  font-size: 9px;
+  font-size: 16px;
   border: 0;
   border-radius: 8px;
   background: #dc2626;
@@ -1473,7 +1613,7 @@ export default {
   height: 52px;
   padding: 0 20px;
   color: #64748b;
-  font-size: 9px;
+  font-size: 16px;
   font-weight: 800;
   text-align: left;
   text-transform: uppercase;
@@ -1484,7 +1624,7 @@ export default {
   height: 69px;
   padding: 10px 20px;
   color: #475569;
-  font-size: 10px;
+  font-size: 16px;
   border-bottom: 1px solid #edf2f7;
 }
 
@@ -1513,7 +1653,7 @@ export default {
   align-items: center;
   justify-content: center;
   color: #4f46e5;
-  font-size: 10px;
+  font-size: 16px;
   font-weight: 800;
   border: 1px solid #c7d2fe;
   border-radius: 9px;
@@ -1549,21 +1689,21 @@ export default {
 
 .class-name {
   color: #1f2937;
-  font-size: 11px;
+  font-size: 16px;
   font-weight: 700;
 }
 
 .class-description {
   margin-top: 4px;
   color: #94a3b8;
-  font-size: 8px;
+  font-size: 16px;
 }
 
 .record-id {
   display: inline-block;
   padding: 5px 8px;
   color: #475569;
-  font-size: 9px;
+  font-size: 16px;
   font-weight: 700;
   border-radius: 8px;
   background: #f1f5f9;
@@ -1646,14 +1786,14 @@ export default {
 .empty-state h3 {
   margin: 15px 0 0;
   color: #475569;
-  font-size: 13px;
+  font-size: 16px;
 }
 
 .loading-state p,
 .empty-state p {
   margin: 6px 0 15px;
   color: #94a3b8;
-  font-size: 9px;
+  font-size: 16px;
 }
 
 .empty-state-icon {
@@ -1675,7 +1815,7 @@ export default {
 .empty-secondary-button {
   min-height: 38px;
   padding: 0 13px;
-  font-size: 9px;
+  font-size: 16px;
   font-weight: 700;
   border-radius: 9px;
   cursor: pointer;
@@ -1701,7 +1841,7 @@ export default {
   align-items: center;
   padding: 12px 20px;
   color: #64748b;
-  font-size: 9px;
+  font-size: 16px;
   background: #f8fafc;
 }
 
@@ -1789,7 +1929,7 @@ export default {
 }
 
 .modal-label {
-  font-size: 8px;
+  font-size: 16px;
   font-weight: 800;
   letter-spacing: 1px;
 }
@@ -1803,7 +1943,7 @@ export default {
 .modal-heading p {
   margin: 0;
   color: rgba(255, 255, 255, 0.75);
-  font-size: 9px;
+  font-size: 16px;
 }
 
 .modal-close-button {
@@ -1821,7 +1961,7 @@ export default {
   display: block;
   margin-bottom: 8px;
   color: #374151;
-  font-size: 10px;
+  font-size: 16px;
   font-weight: 700;
 }
 
@@ -1867,7 +2007,7 @@ export default {
 
 .form-error {
   color: #dc2626;
-  font-size: 8px;
+  font-size: 16px;
   visibility: hidden;
 }
 
@@ -1878,7 +2018,7 @@ export default {
 .character-count {
   margin-left: auto;
   color: #94a3b8;
-  font-size: 8px;
+  font-size: 16px;
 }
 
 .form-hint {
@@ -1886,7 +2026,7 @@ export default {
   margin-top: 6px;
   padding: 10px 11px;
   color: #64748b;
-  font-size: 8px;
+  font-size: 16px;
   border: 1px solid #e0e7ff;
   border-radius: 9px;
   background: #f5f3ff;
@@ -1901,7 +2041,7 @@ export default {
   margin-top: 13px;
   padding: 10px;
   color: #991b1b;
-  font-size: 9px;
+  font-size: 16px;
   background: #fef2f2;
 }
 
@@ -1917,7 +2057,7 @@ export default {
 .save-button {
   min-height: 40px;
   padding: 0 16px;
-  font-size: 9px;
+  font-size: 16px;
   font-weight: 700;
   border-radius: 9px;
 }

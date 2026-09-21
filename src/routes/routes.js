@@ -42,11 +42,18 @@ import s_StaffDetails from "../staff_BOX/pages/s_StaffDetails.vue";
 
 
 
+
 import super_DashboardLayout from "../SUPERADMIN_BOX/pages/Layout/DashboardLayout.vue";
 import super_Dashboard from "../SUPERADMIN_BOX/pages/superdashboard.vue";
 import super_AcademicQualifications from "../SUPERADMIN_BOX/pages/super_AcademicQualifications.vue";
 import super_Classes from "../SUPERADMIN_BOX/pages/super_Classes.vue";
-
+import super_CurrentGrades from "../SUPERADMIN_BOX/pages/super_CurrentGrades.vue";
+import super_NextGrades from "../SUPERADMIN_BOX/pages/super_NextGrades.vue";
+import super_ChangeOfGrades from "../SUPERADMIN_BOX/pages/super_ChangeOfGrade.vue";
+import super_Departments from "../SUPERADMIN_BOX/pages/super_Departments.vue";
+import super_Districts from "../SUPERADMIN_BOX/pages/super_Districts.vue";
+import super_Regions from "../SUPERADMIN_BOX/pages/super_Regions.vue";
+import super_ManagementUnits from "../SUPERADMIN_BOX/pages/super_ManagementUnits.vue"
 
 
 
@@ -188,6 +195,72 @@ const routes = [
       path: "",
       redirect: "dashboard"
     },
+
+    {
+      path: "management-units",
+      name: "Superadmin Mgt",
+      component: super_ManagementUnits,
+      meta: {
+        title: "Management Units",
+        requiresAuth: false,
+        allowedRoles: [],
+        requiresSuperuser: false
+      }
+    },
+
+
+
+
+    {
+      path: "regions",
+      name: "Superadmin Regions",
+      component: super_Regions,
+      meta: {
+        title: "Regions",
+        requiresAuth: false,
+        allowedRoles: [],
+        requiresSuperuser: false
+      }
+    },
+
+    {
+      path: "districts",
+      name: "Superadmin Districts",
+      component: super_Districts,
+      meta: {
+        title: "Districts",
+        requiresAuth: false,
+        allowedRoles: [],
+        requiresSuperuser: false
+      }
+    },
+
+
+
+    {
+      path: "departments",
+      name: "Superadmin Departments",
+      component: super_Departments,
+      meta: {
+        title: "Departments",
+        requiresAuth: false,
+        allowedRoles: [],
+        requiresSuperuser: false
+      }
+    },
+
+     {
+      path: "change-of-grades",
+      name: "Superadmin Change of Grades",
+      component: super_ChangeOfGrades,
+      meta: {
+        title: "Change of Grades",
+        requiresAuth: false,
+        allowedRoles: [],
+        requiresSuperuser: false
+      }
+    },
+
     {
       path: "dashboard",
       name: "Superadmin Dashboard",
@@ -223,6 +296,31 @@ const routes = [
         requiresSuperuser: false
       }
     },
+    {
+      path: "current-grades",
+      name: "Current Grades",
+      component: super_CurrentGrades,
+      meta: {
+        title: "Current Grades",
+        requiresAuth: false,
+        allowedRoles: [],
+        requiresSuperuser: false
+      }
+    },
+     {
+      path: "next-grades",
+      name: "Next Grades",
+      component: super_NextGrades,
+      meta: {
+        title: "Next Grades",
+        requiresAuth: false,
+        allowedRoles: [],
+        requiresSuperuser: false
+      }
+    },
+
+
+    
 
 
 

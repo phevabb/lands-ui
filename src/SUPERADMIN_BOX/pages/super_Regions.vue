@@ -1,54 +1,51 @@
 <template>
-  <div class="academic-qualifications-page">
-    <!-- Page heading -->
-    <section class="aq-header">
-  <div class="aq-header-content">
-    <div class="aq-header-icon">
-      <md-icon>school</md-icon>
-    </div>
+  <div class="regions-page">
+    <section class="region-header">
+      <div class="region-header-content">
+        <div class="region-header-icon">
+          <md-icon>public</md-icon>
+        </div>
 
-    <div class="aq-header-text">
-      
+        <div class="region-header-text">
+          <span class="region-header-label">
+            SYSTEM CONFIGURATION
+          </span>
 
-      <h1 class="aq-header-title">
-        Academic Qualifications
-      </h1>
+          <h1 class="region-header-title">
+            Regions
+          </h1>
 
-      <p class="aq-header-description">
-        Create, update, search, and manage academic qualification
-        records used by staff accounts.
-      </p>
-    </div>
-  </div>
+          <p class="region-header-description">
+            Create, update, search, and manage the regions available
+            when creating and updating staff accounts.
+          </p>
+        </div>
+      </div>
 
-  <button
-    type="button"
-    class="aq-header-button"
-    :disabled="loading"
-    @click="openCreateModal"
-  >
-    <md-icon>add_circle</md-icon>
+      <button
+        type="button"
+        class="region-header-button"
+        :disabled="loading"
+        @click="openCreateModal"
+      >
+        <md-icon>add_location_alt</md-icon>
+        <span>Add Region</span>
+      </button>
+    </section>
 
-    <span>
-      Add Qualification
-    </span>
-  </button>
-</section>
-
-    <!-- Statistics -->
     <section class="statistics-grid">
       <div class="statistic-card">
         <div class="statistic-icon statistic-icon-primary">
-          <md-icon>school</md-icon>
+          <md-icon>public</md-icon>
         </div>
 
         <div class="statistic-content">
           <span class="statistic-value">
-            {{ qualifications.length }}
+            {{ regions.length }}
           </span>
 
           <span class="statistic-label">
-            Total Qualifications
+            Total Regions
           </span>
         </div>
       </div>
@@ -60,7 +57,7 @@
 
         <div class="statistic-content">
           <span class="statistic-value">
-            {{ filteredQualifications.length }}
+            {{ filteredRegions.length }}
           </span>
 
           <span class="statistic-label">
@@ -75,7 +72,7 @@
         </div>
 
         <div class="statistic-content">
-          <span class="statistic-value">
+          <span class="statistic-value statistic-time">
             {{ lastUpdatedLabel }}
           </span>
 
@@ -86,17 +83,13 @@
       </div>
     </section>
 
-    <!-- Main card -->
     <section class="records-card">
-      <!-- Controls -->
       <div class="records-toolbar">
-        <div>
-          <h2>
-            Qualification Records
-          </h2>
+        <div class="records-heading">
+          <h2>Region Records</h2>
 
           <p>
-            Manage all available academic qualifications.
+            Manage all geographical regions available in the HR system.
           </p>
         </div>
 
@@ -107,8 +100,8 @@
             <input
               v-model.trim="search"
               type="text"
-              placeholder="Search qualifications..."
-              aria-label="Search academic qualifications"
+              placeholder="Search regions..."
+              aria-label="Search regions"
             />
 
             <button
@@ -125,23 +118,24 @@
           <button
             type="button"
             class="refresh-button"
-            :disabled="loading"
-            @click="loadQualifications"
+            :disabled="loading || refreshing"
+            @click="refreshRegions"
           >
-            <md-icon :class="{ rotating: loading }">
+            <md-icon
+              :class="{
+                rotating: loading || refreshing
+              }"
+            >
               refresh
             </md-icon>
 
-            <span>
-              Refresh
-            </span>
+            <span>Refresh</span>
           </button>
         </div>
       </div>
 
       <div class="records-divider" />
 
-      <!-- Error state -->
       <div
         v-if="errorMessage"
         class="error-banner"
@@ -150,70 +144,50 @@
           <md-icon>error_outline</md-icon>
 
           <div>
-            <strong>
-              Unable to load records
-            </strong>
-
-            <span>
-              {{ errorMessage }}
-            </span>
+            <strong>Unable to load regions</strong>
+            <span>{{ errorMessage }}</span>
           </div>
         </div>
 
         <button
           type="button"
-          @click="loadQualifications"
+          @click="loadRegions"
         >
           Try Again
         </button>
       </div>
 
-      <!-- Loading state -->
       <div
-        v-if="loading && !qualifications.length"
+        v-if="loading && !regions.length"
         class="loading-state"
       >
         <div class="loading-spinner" />
 
-        <h3>
-          Loading qualifications
-        </h3>
+        <h3>Loading regions</h3>
 
         <p>
-          Please wait while the records are retrieved.
+          Please wait while the region records are retrieved.
         </p>
       </div>
 
-      <!-- Table -->
       <div
-        v-else-if="paginatedQualifications.length"
+        v-else-if="paginatedRegions.length"
         class="table-responsive"
       >
         <table class="records-table">
           <thead>
             <tr>
-              <th class="number-column">
-                #
-              </th>
-
-              <th>
-                Qualification
-              </th>
-
-              <th class="identifier-column">
-                Record ID
-              </th>
-
-              <th class="actions-column">
-                Actions
-              </th>
+              <th class="number-column">#</th>
+              <th>Region</th>
+              <th class="identifier-column">Record ID</th>
+              <th class="actions-column">Actions</th>
             </tr>
           </thead>
 
           <tbody>
             <tr
-              v-for="(qualification, index) in paginatedQualifications"
-              :key="qualification.id"
+              v-for="(regionItem, index) in paginatedRegions"
+              :key="regionItem.id"
             >
               <td>
                 <span class="row-number">
@@ -222,18 +196,18 @@
               </td>
 
               <td>
-                <div class="qualification-cell">
-                  <div class="qualification-icon">
-                    <md-icon>school</md-icon>
+                <div class="region-cell">
+                  <div class="region-icon">
+                    <md-icon>public</md-icon>
                   </div>
 
-                  <div class="qualification-information">
-                    <span class="qualification-name">
-                      {{ qualification.name }}
+                  <div class="region-information">
+                    <span class="region-name">
+                      {{ regionItem.region }}
                     </span>
 
-                    <span class="qualification-description">
-                      Academic qualification record
+                    <span class="region-description">
+                      Geographical region record
                     </span>
                   </div>
                 </div>
@@ -241,7 +215,7 @@
 
               <td>
                 <span class="record-id">
-                  #{{ qualification.id }}
+                  #{{ regionItem.id }}
                 </span>
               </td>
 
@@ -250,8 +224,9 @@
                   <button
                     type="button"
                     class="record-action-button edit-button"
-                    title="Edit qualification"
-                    @click="openEditModal(qualification)"
+                    title="Edit region"
+                    :disabled="deletingId === regionItem.id"
+                    @click="openEditModal(regionItem)"
                   >
                     <md-icon>edit</md-icon>
                   </button>
@@ -259,10 +234,18 @@
                   <button
                     type="button"
                     class="record-action-button delete-button"
-                    title="Delete qualification"
-                    @click="deleteQualification(qualification)"
+                    title="Delete region"
+                    :disabled="deletingId === regionItem.id"
+                    @click="deleteRegion(regionItem)"
                   >
-                    <md-icon>delete_outline</md-icon>
+                    <span
+                      v-if="deletingId === regionItem.id"
+                      class="small-spinner"
+                    />
+
+                    <md-icon v-else>
+                      delete_outline
+                    </md-icon>
                   </button>
                 </div>
               </td>
@@ -271,30 +254,29 @@
         </table>
       </div>
 
-      <!-- Empty state -->
       <div
         v-else
         class="empty-state"
       >
         <div class="empty-state-icon">
           <md-icon>
-            {{ search ? "search_off" : "school" }}
+            {{ search ? "search_off" : "public" }}
           </md-icon>
         </div>
 
         <h3>
           {{
             search
-              ? "No matching qualification found"
-              : "No academic qualifications yet"
+              ? "No matching region found"
+              : "No regions created"
           }}
         </h3>
 
         <p>
           {{
             search
-              ? "Try searching with a different qualification name."
-              : "Create the first academic qualification record."
+              ? "Try searching with a different region name."
+              : "Create the first region for the HR system."
           }}
         </p>
 
@@ -314,13 +296,12 @@
           @click="openCreateModal"
         >
           <md-icon>add</md-icon>
-          Add Qualification
+          <span>Add Region</span>
         </button>
       </div>
 
-      <!-- Pagination -->
       <div
-        v-if="filteredQualifications.length"
+        v-if="filteredRegions.length"
         class="pagination-footer"
       >
         <div class="pagination-information">
@@ -329,35 +310,24 @@
           to
           <strong>{{ paginationEnd }}</strong>
           of
-          <strong>{{ filteredQualifications.length }}</strong>
+          <strong>{{ filteredRegions.length }}</strong>
           records
         </div>
 
         <div class="pagination-controls">
-          <label for="academic-page-size">
+          <label for="regions-page-size">
             Rows:
           </label>
 
           <select
-            id="academic-page-size"
+            id="regions-page-size"
             v-model.number="pageSize"
             @change="handlePageSizeChange"
           >
-            <option :value="5">
-              5
-            </option>
-
-            <option :value="10">
-              10
-            </option>
-
-            <option :value="20">
-              20
-            </option>
-
-            <option :value="50">
-              50
-            </option>
+            <option :value="5">5</option>
+            <option :value="10">10</option>
+            <option :value="20">20</option>
+            <option :value="50">50</option>
           </select>
 
           <button
@@ -387,7 +357,6 @@
       </div>
     </section>
 
-    <!-- Create/Edit modal -->
     <transition name="modal-fade">
       <div
         v-if="showModal"
@@ -395,7 +364,7 @@
         @click.self="closeModal"
       >
         <div
-          class="qualification-modal"
+          class="region-modal"
           role="dialog"
           aria-modal="true"
           :aria-label="modalTitle"
@@ -403,26 +372,21 @@
           <div class="modal-header">
             <div class="modal-header-icon">
               <md-icon>
-                {{ editingId ? "edit" : "add_circle" }}
+                {{
+                  editingId !== null
+                    ? "edit_location_alt"
+                    : "add_location_alt"
+                }}
               </md-icon>
             </div>
 
             <div class="modal-heading">
               <span class="modal-label">
-                ACADEMIC QUALIFICATION
+                REGION
               </span>
 
-              <h2>
-                {{ modalTitle }}
-              </h2>
-
-              <p>
-                {{
-                  editingId
-                    ? "Update the selected qualification record."
-                    : "Enter a new qualification for staff accounts."
-                }}
-              </p>
+              <h2>{{ modalTitle }}</h2>
+              <p>{{ modalDescription }}</p>
             </div>
 
             <button
@@ -436,32 +400,32 @@
             </button>
           </div>
 
-          <form @submit.prevent="saveQualification">
+          <form @submit.prevent="saveRegion">
             <div class="modal-body">
               <label
                 class="form-label"
-                for="qualification-name"
+                for="region-name"
               >
-                Qualification Name
+                Region Name
                 <span>*</span>
               </label>
 
               <div
                 class="form-input-wrapper"
                 :class="{
-                  invalid: formSubmitted && nameError
+                  invalid: formSubmitted && regionError
                 }"
               >
-                <md-icon>school</md-icon>
+                <md-icon>public</md-icon>
 
                 <input
-                  id="qualification-name"
-                  ref="nameInput"
-                  v-model="form.name"
+                  id="region-name"
+                  ref="regionInput"
+                  v-model="form.region"
                   type="text"
-                  maxlength="100"
+                  maxlength="120"
                   autocomplete="off"
-                  placeholder="Example: Bachelor's Degree"
+                  placeholder="Example: Greater Accra Region"
                   :disabled="saving"
                   @input="clearFormError"
                 />
@@ -471,14 +435,14 @@
                 <span
                   class="form-error"
                   :class="{
-                    visible: formSubmitted && nameError
+                    visible: formSubmitted && regionError
                   }"
                 >
-                  {{ nameError || " " }}
+                  {{ regionError || " " }}
                 </span>
 
                 <span class="character-count">
-                  {{ form.name.length }} / 100
+                  {{ form.region.length }} / 120
                 </span>
               </div>
 
@@ -486,8 +450,8 @@
                 <md-icon>info_outline</md-icon>
 
                 <span>
-                  Qualification names must be unique and cannot exceed
-                  100 characters.
+                  Enter a region name with no more than 120 characters.
+                  Duplicate region names are not allowed.
                 </span>
               </div>
 
@@ -496,10 +460,7 @@
                 class="modal-error"
               >
                 <md-icon>error_outline</md-icon>
-
-                <span>
-                  {{ formError }}
-                </span>
+                <span>{{ formError }}</span>
               </div>
             </div>
 
@@ -524,18 +485,10 @@
                 />
 
                 <md-icon v-else>
-                  {{ editingId ? "save" : "add" }}
+                  {{ editingId !== null ? "save" : "add" }}
                 </md-icon>
 
-                <span>
-                  {{
-                    saving
-                      ? "Saving..."
-                      : editingId
-                        ? "Update Qualification"
-                        : "Create Qualification"
-                  }}
-                </span>
+                <span>{{ submitButtonText }}</span>
               </button>
             </div>
           </form>
@@ -545,19 +498,15 @@
   </div>
 </template>
 
-
-
 <script>
 import axios from "axios";
 import Swal from "sweetalert2";
 
 // Production API
-
-// Local/testing API
- const API_BASE_URL = "http://127.0.0.1:8888/api";
+const API_BASE_URL = "http://127.0.0.1:8888/api";
 
 export default {
-  name: "SuperAcademicQualifications",
+  name: "SuperRegions",
 
   data() {
     return {
@@ -574,51 +523,55 @@ export default {
       errorMessage: "",
       formError: "",
 
-      qualifications: [],
+      regions: [],
 
       currentPage: 1,
       pageSize: 10,
-
       lastUpdated: null,
 
       form: {
-        name: ""
+        region: ""
       }
     };
   },
 
   computed: {
-    filteredQualifications() {
+    filteredRegions() {
       const searchValue = this.search
         ? this.search.trim().toLowerCase()
         : "";
 
       if (!searchValue) {
-        return this.qualifications;
+        return this.regions;
       }
 
-      return this.qualifications.filter(qualification => {
-        const name = qualification.name || "";
+      return this.regions.filter(regionItem => {
+        const regionName =
+          regionItem.region || "";
 
-        return name
+        return regionName
           .trim()
           .toLowerCase()
           .includes(searchValue);
       });
     },
 
-    sortedQualifications() {
-      return [...this.filteredQualifications].sort(
+    sortedRegions() {
+      return [...this.filteredRegions].sort(
         (first, second) => {
-          const firstName = first.name
-            ? first.name.trim().toLowerCase()
-            : "";
+          const firstRegion =
+            first.region
+              ? first.region.trim().toLowerCase()
+              : "";
 
-          const secondName = second.name
-            ? second.name.trim().toLowerCase()
-            : "";
+          const secondRegion =
+            second.region
+              ? second.region.trim().toLowerCase()
+              : "";
 
-          return firstName.localeCompare(secondName);
+          return firstRegion.localeCompare(
+            secondRegion
+          );
         }
       );
     },
@@ -627,28 +580,25 @@ export default {
       return Math.max(
         1,
         Math.ceil(
-          this.sortedQualifications.length /
+          this.sortedRegions.length /
             this.pageSize
         )
       );
     },
 
-    paginatedQualifications() {
+    paginatedRegions() {
       const start =
         (this.currentPage - 1) *
         this.pageSize;
 
-      const end =
-        start + this.pageSize;
-
-      return this.sortedQualifications.slice(
+      return this.sortedRegions.slice(
         start,
-        end
+        start + this.pageSize
       );
     },
 
     paginationStart() {
-      if (!this.sortedQualifications.length) {
+      if (!this.sortedRegions.length) {
         return 0;
       }
 
@@ -662,72 +612,71 @@ export default {
     paginationEnd() {
       return Math.min(
         this.currentPage * this.pageSize,
-        this.sortedQualifications.length
+        this.sortedRegions.length
       );
     },
 
     modalTitle() {
-      return this.editingId
-        ? "Edit Qualification"
-        : "Add Qualification";
+      return this.editingId !== null
+        ? "Edit Region"
+        : "Add Region";
     },
 
     modalDescription() {
-      return this.editingId
-        ? "Update the selected academic qualification."
-        : "Create a new academic qualification for staff accounts.";
+      return this.editingId !== null
+        ? "Update the selected region record."
+        : "Create a new region for staff accounts.";
     },
 
     submitButtonText() {
       if (this.saving) {
-        return this.editingId
+        return this.editingId !== null
           ? "Updating..."
           : "Creating...";
       }
 
-      return this.editingId
-        ? "Update Qualification"
-        : "Create Qualification";
+      return this.editingId !== null
+        ? "Update Region"
+        : "Create Region";
     },
 
-    nameError() {
-      const name = this.form.name
-        ? this.form.name.trim()
+    regionError() {
+      const region = this.form.region
+        ? this.form.region.trim()
         : "";
 
-      if (!name) {
-        return "Qualification name is required.";
+      if (!region) {
+        return "Region name is required.";
       }
 
-      if (name.length < 2) {
-        return "Qualification name must contain at least 2 characters.";
+      if (region.length < 2) {
+        return "Region name must contain at least 2 characters.";
       }
 
-      if (name.length > 100) {
-        return "Qualification name cannot exceed 100 characters.";
+      if (region.length > 120) {
+        return "Region name cannot exceed 120 characters.";
       }
 
-      const duplicate =
-        this.qualifications.some(
-          qualification => {
-            const qualificationName =
-              qualification.name
-                ? qualification.name
-                    .trim()
-                    .toLowerCase()
-                : "";
+      const duplicate = this.regions.some(
+        regionItem => {
+          const existingRegion =
+            regionItem.region
+              ? regionItem.region
+                  .trim()
+                  .toLowerCase()
+              : "";
 
-            return (
-              qualification.id !==
-                this.editingId &&
-              qualificationName ===
-                name.toLowerCase()
-            );
-          }
-        );
+          return (
+            Number(regionItem.id) !==
+              Number(this.editingId) &&
+            existingRegion ===
+              region.toLowerCase()
+          );
+        }
+      );
 
       if (duplicate) {
-        return "This academic qualification already exists.";
+        return "This region already exists.";
       }
 
       return "";
@@ -744,13 +693,6 @@ export default {
           hour: "2-digit",
           minute: "2-digit"
         }
-      );
-    },
-
-    hasSearch() {
-      return Boolean(
-        this.search &&
-          this.search.trim()
       );
     }
   },
@@ -773,7 +715,7 @@ export default {
   },
 
   created() {
-    this.loadQualifications();
+    this.loadRegions();
   },
 
   beforeDestroy() {
@@ -784,12 +726,8 @@ export default {
     getRequestConfig() {
       const token =
         localStorage.getItem("token") ||
-        localStorage.getItem(
-          "accessToken"
-        ) ||
-        localStorage.getItem(
-          "access_token"
-        );
+        localStorage.getItem("accessToken") ||
+        localStorage.getItem("access_token");
 
       const headers = {
         Accept: "application/json",
@@ -806,20 +744,49 @@ export default {
       };
     },
 
-    async loadQualifications() {
+    normalizeRegion(regionItem) {
+      return {
+        id: regionItem.id,
+        region:
+          regionItem.region ||
+          regionItem.regionName ||
+          ""
+      };
+    },
+
+    async loadRegions() {
       this.loading = true;
       this.errorMessage = "";
 
       try {
         const response = await axios.get(
-          `${API_BASE_URL}/academic-qualifications`,
+          `${API_BASE_URL}/regions`,
           this.getRequestConfig()
         );
 
-        this.qualifications =
-          Array.isArray(response.data)
-            ? response.data
-            : [];
+        let records = [];
+
+        if (Array.isArray(response.data)) {
+          records = response.data;
+        } else if (
+          response.data &&
+          Array.isArray(response.data.data)
+        ) {
+          records = response.data.data;
+        } else if (
+          response.data &&
+          Array.isArray(response.data.regions)
+        ) {
+          records = response.data.regions;
+        }
+
+        this.regions = records.map(
+          regionItem => {
+            return this.normalizeRegion(
+              regionItem
+            );
+          }
+        );
 
         this.lastUpdated = new Date();
 
@@ -831,16 +798,16 @@ export default {
             this.totalPages;
         }
       } catch (error) {
-        this.qualifications = [];
+        this.regions = [];
 
         this.errorMessage =
           this.getErrorMessage(
             error,
-            "Unable to load academic qualifications."
+            "Unable to load regions."
           );
 
         console.error(
-          "Unable to load academic qualifications",
+          "Unable to load regions",
           error
         );
       } finally {
@@ -848,11 +815,11 @@ export default {
       }
     },
 
-    async refreshQualifications() {
+    async refreshRegions() {
       this.refreshing = true;
 
       try {
-        await this.loadQualifications();
+        await this.loadRegions();
       } finally {
         this.refreshing = false;
       }
@@ -861,20 +828,20 @@ export default {
     openCreateModal() {
       this.resetForm();
       this.showModal = true;
-      this.focusNameInput();
+      this.focusRegionInput();
     },
 
-    openEditModal(qualification) {
+    openEditModal(regionItem) {
       this.resetForm();
 
       this.editingId =
-        qualification.id;
+        regionItem.id;
 
-      this.form.name =
-        qualification.name || "";
+      this.form.region =
+        regionItem.region || "";
 
       this.showModal = true;
-      this.focusNameInput();
+      this.focusRegionInput();
     },
 
     closeModal() {
@@ -890,7 +857,7 @@ export default {
       this.editingId = null;
 
       this.form = {
-        name: ""
+        region: ""
       };
 
       this.formSubmitted = false;
@@ -901,33 +868,33 @@ export default {
       this.formError = "";
     },
 
-    focusNameInput() {
+    focusRegionInput() {
       this.$nextTick(() => {
-        if (this.$refs.nameInput) {
-          this.$refs.nameInput.focus();
+        if (this.$refs.regionInput) {
+          this.$refs.regionInput.focus();
         }
       });
     },
 
-    async saveQualification() {
+    async saveRegion() {
       this.formSubmitted = true;
       this.formError = "";
 
-      if (this.nameError) {
-        this.focusNameInput();
+      if (this.regionError) {
+        this.focusRegionInput();
         return;
       }
 
       this.saving = true;
 
       const payload = {
-        name: this.form.name.trim()
+        region: this.form.region.trim()
       };
 
       try {
-        if (this.editingId) {
+        if (this.editingId !== null) {
           await axios.put(
-            `${API_BASE_URL}/academic-qualifications/${this.editingId}`,
+            `${API_BASE_URL}/regions/${this.editingId}`,
             payload,
             this.getRequestConfig()
           );
@@ -935,12 +902,12 @@ export default {
           this.showModal = false;
 
           await this.showSuccess(
-            "Qualification updated",
-            `"${payload.name}" was updated successfully.`
+            "Region updated",
+            `"${payload.region}" was updated successfully.`
           );
         } else {
           await axios.post(
-            `${API_BASE_URL}/academic-qualifications`,
+            `${API_BASE_URL}/regions`,
             payload,
             this.getRequestConfig()
           );
@@ -948,23 +915,23 @@ export default {
           this.showModal = false;
 
           await this.showSuccess(
-            "Qualification created",
-            `"${payload.name}" was created successfully.`
+            "Region created",
+            `"${payload.region}" was created successfully.`
           );
         }
 
         this.resetForm();
 
-        await this.loadQualifications();
+        await this.loadRegions();
       } catch (error) {
         this.formError =
           this.getErrorMessage(
             error,
-            "Unable to save the academic qualification."
+            "Unable to save the region."
           );
 
         console.error(
-          "Unable to save academic qualification",
+          "Unable to save region",
           error
         );
       } finally {
@@ -972,26 +939,22 @@ export default {
       }
     },
 
-    async deleteQualification(
-      qualification
-    ) {
-      const qualificationName =
-        qualification.name ||
-        "this qualification";
+    async deleteRegion(regionItem) {
+      const regionName =
+        regionItem.region ||
+        "this region";
 
       const result = await Swal.fire({
-        title: "Delete qualification?",
+        title: "Delete region?",
         html: `
           <div style="
             color: #64748b;
             font-size: 16px;
-            line-height: 1.6;
+            line-height: 1.7;
           ">
             Are you sure you want to delete
             <strong style="color: #1f2937;">
-              ${this.escapeHtml(
-                qualificationName
-              )}
+              ${this.escapeHtml(regionName)}
             </strong>?
             <br><br>
             This action cannot be undone.
@@ -1001,8 +964,7 @@ export default {
         showCancelButton: true,
         confirmButtonColor: "white",
         cancelButtonColor: "white",
-        confirmButtonText:
-          "Yes, delete",
+        confirmButtonText: "Yes, delete",
         cancelButtonText: "Cancel",
         reverseButtons: true,
         focusCancel: true
@@ -1013,17 +975,17 @@ export default {
       }
 
       this.deletingId =
-        qualification.id;
+        regionItem.id;
 
       try {
         await axios.delete(
-          `${API_BASE_URL}/academic-qualifications/${qualification.id}`,
+          `${API_BASE_URL}/regions/${regionItem.id}`,
           this.getRequestConfig()
         );
 
         await Swal.fire({
-          title: "Qualification deleted",
-          text: `"${qualificationName}" was deleted successfully.`,
+          title: "Region deleted",
+          text: `"${regionName}" was deleted successfully.`,
           icon: "success",
           confirmButtonColor: "white",
           confirmButtonText: "Done",
@@ -1031,23 +993,18 @@ export default {
           timerProgressBar: true
         });
 
-        await this.loadQualifications();
+        await this.loadRegions();
       } catch (error) {
         await Swal.fire({
           title: "Delete failed",
           text: this.getErrorMessage(
             error,
-            "Unable to delete the academic qualification."
+            "Unable to delete the region."
           ),
           icon: "error",
           confirmButtonColor: "white",
           confirmButtonText: "Close"
         });
-
-        console.error(
-          "Unable to delete academic qualification",
-          error
-        );
       } finally {
         this.deletingId = null;
       }
@@ -1080,8 +1037,7 @@ export default {
         error.response.data;
 
       if (
-        typeof responseData ===
-          "string" &&
+        typeof responseData === "string" &&
         responseData.trim()
       ) {
         return responseData;
@@ -1095,12 +1051,20 @@ export default {
         return responseData.message;
       }
 
+      if (
+        responseData &&
+        typeof responseData.error ===
+          "string"
+      ) {
+        return responseData.error;
+      }
+
       if (status === 400) {
-        return "Please check the submitted qualification name.";
+        return "Please check the submitted region name.";
       }
 
       if (status === 401) {
-        return "Your session is no longer valid. Please sign in again.";
+        return "Your session is no longer valid.";
       }
 
       if (status === 403) {
@@ -1108,15 +1072,15 @@ export default {
       }
 
       if (status === 404) {
-        return "The academic qualification was not found.";
+        return "The region record or endpoint was not found.";
       }
 
       if (status === 409) {
-        return "This academic qualification already exists.";
+        return "This region already exists.";
       }
 
       if (status === 500) {
-        return "The server could not process the request.";
+        return "The server could not process this request.";
       }
 
       return fallbackMessage;
@@ -1156,15 +1120,6 @@ export default {
       }
     },
 
-    goToPage(page) {
-      if (
-        page >= 1 &&
-        page <= this.totalPages
-      ) {
-        this.currentPage = page;
-      }
-    },
-
     rowNumber(index) {
       return (
         (this.currentPage - 1) *
@@ -1178,376 +1133,246 @@ export default {
 </script>
 
 
+
 <style scoped>
-.academic-qualifications-page {
+
+
+.regions-page {
   width: 100%;
   min-height: 100%;
-  padding: 4px 0 30px;
+  padding: 4px 0 32px;
+  color: #1f2937;
+  font-size: 16px;
 }
 
-/* =========================================================
-   PAGE HEADER
-   ========================================================= */
+/* Region header */
 
-/* =========================================================
-   ACADEMIC QUALIFICATIONS HEADER
-   ========================================================= */
-
-.aq-header {
+.region-header {
   position: relative !important;
-  top: auto !important;
-  left: auto !important;
-
+  inset: auto !important;
   width: 100%;
   height: auto !important;
   min-height: 0 !important;
   max-height: none !important;
-
   display: flex;
   align-items: center;
-  gap: 16px;
-
-  margin: 0 0 18px !important;
-  padding: 12px 16px !important;
-
+  gap: 18px;
+  margin: 0 0 20px !important;
+  padding: 15px 18px !important;
   overflow: hidden;
   box-sizing: border-box;
-
-  color: #1f2937;
-
-  border: 1px solid #dfe7e3;
-  border-left: 4px solid #16a34a;
-  border-radius: 12px;
-
-  background: linear-gradient(
-    135deg,
-    #ffffff 0%,
-    #fbfefc 70%,
-    #f1faf4 100%
-  );
-
-  box-shadow: 0 5px 16px rgba(15, 23, 42, 0.055);
+  border: 1px solid #dbe7f5;
+  border-left: 5px solid #2563eb;
+  border-radius: 14px;
+  background:
+    radial-gradient(
+      circle at 87% 0%,
+      rgba(37, 99, 235, 0.07),
+      transparent 30%
+    ),
+    linear-gradient(
+      135deg,
+      #ffffff 0%,
+      #fcfdff 70%,
+      #eff6ff 100%
+    );
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
 }
 
-.aq-header::before {
+.region-header::before {
   content: "";
   position: absolute;
-  top: -52px;
-  right: 110px;
-
-  width: 115px;
-  height: 115px;
-
-  border: 18px solid rgba(22, 163, 74, 0.035);
+  top: -56px;
+  right: 125px;
+  width: 125px;
+  height: 125px;
+  border: 20px solid rgba(37, 99, 235, 0.035);
   border-radius: 50%;
-
   pointer-events: none;
 }
 
-.aq-header-content {
+.region-header-content {
   position: relative;
   z-index: 2;
-
   min-width: 0;
-
   display: flex;
   flex: 1;
   align-items: center;
 }
 
-.aq-header-icon {
-  min-width: 44px;
-  width: 44px;
-  height: 44px;
-
+.region-header-icon {
+  min-width: 50px;
+  width: 50px;
+  height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
-
-  margin-right: 13px;
-
-  border-radius: 11px;
-
+  margin-right: 15px;
+  border-radius: 13px;
   background: linear-gradient(
     135deg,
-    #15803d,
-    #16a34a
+    #1d4ed8,
+    #2563eb
   );
-
-  box-shadow: 0 6px 14px rgba(22, 163, 74, 0.2);
+  box-shadow: 0 7px 16px rgba(37, 99, 235, 0.23);
 }
 
-.aq-header-icon .md-icon {
+.region-header-icon .md-icon {
   width: auto !important;
   min-width: 0 !important;
   height: auto !important;
-
   margin: 0 !important;
-
+  padding: 0 !important;
   color: #ffffff !important;
-  font-size: 24px !important;
+  font-size: 27px !important;
   line-height: 1 !important;
 }
 
-.aq-header-text {
+.region-header-text {
   min-width: 0;
   flex: 1;
 }
 
-.aq-header-label {
+.region-header-label {
   display: block;
-
-  margin: 0 0 2px;
+  margin: 0 0 3px;
   padding: 0;
-
-  color: #15803d;
-
-  font-size: 9px;
+  color: #1d4ed8;
+  font-size: 16px;
   font-weight: 800;
   line-height: 1.2;
   letter-spacing: 1px;
   text-transform: uppercase;
 }
 
-.aq-header-title {
+.region-header-title {
   margin: 0 !important;
   padding: 0 !important;
-
   color: #172033;
-
-  font-size: 20px !important;
+  font-size: 25px !important;
   font-weight: 800;
   line-height: 1.25 !important;
   letter-spacing: -0.2px;
 }
 
-.aq-header-description {
-  max-width: 620px;
-
-  margin: 3px 0 0 !important;
+.region-header-description {
+  max-width: 680px;
+  margin: 5px 0 0 !important;
   padding: 0 !important;
-
   color: #64748b;
-
-  font-size: 12px !important;
+  font-size: 16px !important;
   font-weight: 400;
-  line-height: 1.4 !important;
+  line-height: 1.5 !important;
 }
 
-.aq-header-button {
+.region-header-button {
   position: relative;
   z-index: 2;
-
   min-width: 0;
-  min-height: 38px;
-  height: 38px;
-
+  min-height: 44px;
+  height: 44px;
   display: inline-flex;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-
+  gap: 8px;
   margin: 0 0 0 auto !important;
-  padding: 0 14px !important;
-
+  padding: 0 17px !important;
   color: #ffffff;
-
-  font-size: 12px;
+  font-size: 16px;
   font-weight: 700;
   line-height: 1;
   white-space: nowrap;
-
   border: 0;
-  border-radius: 9px;
+  border-radius: 11px;
   outline: none;
-
   background: linear-gradient(
     135deg,
-    #15803d,
-    #16a34a
+    #1d4ed8,
+    #2563eb
   );
-
-  box-shadow: 0 6px 14px rgba(22, 163, 74, 0.2);
-
+  box-shadow: 0 7px 16px rgba(37, 99, 235, 0.23);
   cursor: pointer;
-
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease,
     opacity 0.2s ease;
 }
 
-.aq-header-button:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 9px 18px rgba(22, 163, 74, 0.26);
+.region-header-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 11px 22px rgba(37, 99, 235, 0.3);
 }
 
-.aq-header-button:active:not(:disabled) {
+.region-header-button:active:not(:disabled) {
   transform: translateY(0);
 }
 
-.aq-header-button:focus-visible {
+.region-header-button:focus-visible {
   box-shadow:
-    0 0 0 4px rgba(22, 163, 74, 0.14),
-    0 6px 14px rgba(22, 163, 74, 0.2);
+    0 0 0 4px rgba(37, 99, 235, 0.15),
+    0 7px 16px rgba(37, 99, 235, 0.23);
 }
 
-.aq-header-button:disabled {
+.region-header-button:disabled {
   cursor: not-allowed;
   opacity: 0.55;
 }
 
-.aq-header-button .md-icon {
+.region-header-button .md-icon {
   width: auto !important;
   min-width: 0 !important;
   height: auto !important;
-
   margin: 0 !important;
-
+  padding: 0 !important;
   color: #ffffff !important;
-  font-size: 18px !important;
+  font-size: 21px !important;
   line-height: 1 !important;
 }
 
-/* =========================================================
-   HEADER RESPONSIVENESS
-   ========================================================= */
-
-@media (max-width: 991px) {
-  .aq-header {
-    min-height: 0 !important;
-    padding: 11px 14px !important;
-  }
-
-  .aq-header-description {
-    max-width: 430px;
-  }
-}
-
-@media (max-width: 767px) {
-  .aq-header {
-    display: block;
-
-    height: auto !important;
-    min-height: 0 !important;
-
-    padding: 13px !important;
-  }
-
-  .aq-header-content {
-    align-items: flex-start;
-  }
-
-  .aq-header-button {
-    width: 100%;
-    height: 40px;
-
-    margin: 12px 0 0 !important;
-  }
-}
-
-@media (max-width: 575px) {
-  .aq-header {
-    margin-bottom: 14px !important;
-    padding: 11px !important;
-    border-radius: 11px;
-  }
-
-  .aq-header::before {
-    display: none;
-  }
-
-  .aq-header-icon {
-    min-width: 40px;
-    width: 40px;
-    height: 40px;
-
-    margin-right: 10px;
-
-    border-radius: 10px;
-  }
-
-  .aq-header-icon .md-icon {
-    font-size: 22px !important;
-  }
-
-  .aq-header-label {
-    font-size: 8px;
-  }
-
-  .aq-header-title {
-    font-size: 17px !important;
-  }
-
-  .aq-header-description {
-    margin-top: 2px !important;
-
-    font-size: 10px !important;
-    line-height: 1.35 !important;
-  }
-
-  .aq-header-button {
-    min-height: 38px;
-    height: 38px;
-
-    font-size: 11px;
-  }
-}
-
-
-
-
-
-
-
-
-
-
-/* =========================================================
-   STATISTICS
-   ========================================================= */
+/* Statistics */
 
 .statistics-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 17px;
-  margin-bottom: 21px;
+  gap: 18px;
+  margin-bottom: 22px;
 }
 
 .statistic-card {
+  min-height: 104px;
   display: flex;
   align-items: center;
-  padding: 18px;
+  padding: 20px;
   border: 1px solid #e5e7eb;
-  border-radius: 15px;
+  border-radius: 16px;
   background: #ffffff;
-  box-shadow: 0 8px 21px rgba(15, 23, 42, 0.045);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
   transition:
     transform 0.2s ease,
-    box-shadow 0.2s ease,
-    border-color 0.2s ease;
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .statistic-card:hover {
-  border-color: #bbf7d0;
-  box-shadow: 0 13px 28px rgba(15, 23, 42, 0.08);
+  border-color: #bfdbfe;
   transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
 }
 
 .statistic-icon {
-  min-width: 48px;
-  width: 48px;
-  height: 48px;
+  min-width: 54px;
+  width: 54px;
+  height: 54px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 13px;
+  border-radius: 15px;
 }
 
 .statistic-icon .md-icon {
   color: inherit !important;
-  font-size: 26px !important;
+  font-size: 29px !important;
 }
 
 .statistic-icon-primary {
@@ -1569,94 +1394,93 @@ export default {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  margin-left: 13px;
+  margin-left: 15px;
 }
 
 .statistic-value {
   color: #111827;
-  font-size: 20px;
+  font-size: 25px;
   font-weight: 800;
+  line-height: 1.25;
+}
+
+.statistic-time {
+  font-size: 19px;
 }
 
 .statistic-label {
-  margin-top: 4px;
-  color: #94a3b8;
+  margin-top: 5px;
+  color: #64748b;
   font-size: 16px;
   font-weight: 600;
 }
 
-/* =========================================================
-   RECORDS CARD
-   ========================================================= */
+/* Records card */
 
 .records-card {
   overflow: hidden;
   border: 1px solid #e5e7eb;
-  border-radius: 18px;
+  border-radius: 19px;
   background: #ffffff;
-  box-shadow: 0 13px 32px rgba(15, 23, 42, 0.065);
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.065);
 }
 
 .records-toolbar {
-  min-height: 82px;
+  min-height: 94px;
   display: flex;
   align-items: center;
-  padding: 19px 23px;
+  padding: 21px 24px;
+}
+
+.records-heading {
+  min-width: 0;
 }
 
 .records-toolbar h2 {
   margin: 0;
   color: #111827;
-  font-size: 16px;
+  font-size: 22px;
   font-weight: 800;
+  line-height: 1.3;
 }
 
 .records-toolbar p {
-  margin: 5px 0 0;
-  color: #94a3b8;
+  margin: 6px 0 0;
+  color: #64748b;
   font-size: 16px;
+  line-height: 1.5;
 }
 
 .toolbar-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 11px;
   margin-left: auto;
 }
 
-/* =========================================================
-   SEARCH
-   ========================================================= */
-
-.search-control {
-  width: 285px;
-  height: 42px;
-  display: flex;
-  align-items: center;
-  padding: 0 12px;
-  border: 1px solid #dbe3ee;
-  border-radius: 11px;
-  background: #f8fafc;
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
+.records-divider {
+  height: 1px;
+  background: #e5e7eb;
 }
 
+/* Search and refresh */
+
 .search-control:focus-within {
-  border-color: #16a34a;
-  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.09);
+  border-color: #2563eb;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.09);
 }
 
 .search-control > .md-icon {
   color: #94a3b8 !important;
-  font-size: 20px !important;
+  font-size: 23px !important;
 }
 
 .search-control input {
   min-width: 0;
   flex: 1;
-  margin-left: 8px;
-  color: #334155;
+  margin-left: 9px;
+  color: #1f2937;
   font-size: 16px;
   border: 0;
   outline: none;
@@ -1668,114 +1492,130 @@ export default {
 }
 
 .clear-search-button {
-  display: flex;
+  width: 31px;
+  height: 31px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0;
   border: 0;
+  border-radius: 8px;
   outline: none;
   background: transparent;
   cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.clear-search-button:hover {
+  background: #e2e8f0;
 }
 
 .clear-search-button .md-icon {
-  color: #94a3b8 !important;
-  font-size: 17px !important;
+  color: #64748b !important;
+  font-size: 20px !important;
 }
 
 .refresh-button {
-  min-height: 42px;
+  min-height: 48px;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 0 13px;
-  color: #15803d;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 16px;
+  color: #1d4ed8;
   font-size: 16px;
   font-weight: 700;
-  border: 1px solid #bbf7d0;
-  border-radius: 10px;
+  border: 1px solid #bfdbfe;
+  border-radius: 11px;
   outline: none;
-  background: #f0fdf4;
+  background: #eff6ff;
   cursor: pointer;
   transition:
+    transform 0.2s ease,
     background-color 0.2s ease,
-    transform 0.2s ease;
+    opacity 0.2s ease;
 }
 
 .refresh-button:hover:not(:disabled) {
-  background: #dcfce7;
+  background: #dbeafe;
   transform: translateY(-1px);
 }
 
 .refresh-button:disabled {
   cursor: not-allowed;
-  opacity: 0.6;
+  opacity: 0.55;
 }
 
 .refresh-button .md-icon {
-  color: #16a34a !important;
-  font-size: 19px !important;
+  color: #2563eb !important;
+  font-size: 21px !important;
 }
 
-.records-divider {
-  height: 1px;
-  background: #edf2f7;
-}
-
-/* =========================================================
-   ERROR BANNER
-   ========================================================= */
+/* Error banner */
 
 .error-banner {
   display: flex;
   align-items: center;
-  margin: 18px;
-  padding: 13px 15px;
+  margin: 20px;
+  padding: 16px 17px;
   color: #991b1b;
   border: 1px solid #fecaca;
-  border-radius: 11px;
+  border-radius: 12px;
   background: #fef2f2;
 }
 
 .error-banner-content {
+  min-width: 0;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .error-banner-content .md-icon {
+  flex-shrink: 0;
   color: #dc2626 !important;
+  font-size: 25px !important;
 }
 
 .error-banner-content div {
+  min-width: 0;
   display: flex;
   flex-direction: column;
 }
 
 .error-banner-content strong {
-  font-size: 16px;
+  font-size: 17px;
+  font-weight: 800;
 }
 
 .error-banner-content span {
-  margin-top: 3px;
+  margin-top: 4px;
   font-size: 16px;
+  line-height: 1.5;
 }
 
 .error-banner button {
+  flex-shrink: 0;
   margin-left: auto;
-  padding: 7px 11px;
+  padding: 9px 14px;
   color: #ffffff;
   font-size: 16px;
   font-weight: 700;
   border: 0;
-  border-radius: 8px;
+  border-radius: 9px;
   background: #dc2626;
   cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease;
 }
 
-/* =========================================================
-   TABLE
-   ========================================================= */
+.error-banner button:hover {
+  background: #b91c1c;
+  transform: translateY(-1px);
+}
+
+/* Records table */
 
 .table-responsive {
   width: 100%;
@@ -1792,20 +1632,21 @@ export default {
 }
 
 .records-table th {
-  height: 52px;
-  padding: 0 20px;
-  color: #64748b;
+  height: 58px;
+  padding: 0 22px;
+  color: #526176;
   font-size: 16px;
   font-weight: 800;
   text-align: left;
-  letter-spacing: 0.65px;
+  letter-spacing: 0.45px;
   text-transform: uppercase;
+  white-space: nowrap;
   border-bottom: 1px solid #e5e7eb;
 }
 
 .records-table td {
-  height: 69px;
-  padding: 10px 20px;
+  height: 78px;
+  padding: 12px 22px;
   color: #475569;
   font-size: 16px;
   border-bottom: 1px solid #edf2f7;
@@ -1818,250 +1659,320 @@ export default {
 }
 
 .records-table tbody tr:nth-child(even) {
-  background: #fbfdff;
+  background: #fcfdff;
 }
 
 .records-table tbody tr:hover {
-  background: #f0fdf4;
-  box-shadow: inset 4px 0 0 #16a34a;
+  background: #eff6ff;
+  box-shadow: inset 4px 0 0 #2563eb;
 }
 
 .number-column {
-  width: 80px;
+  width: 84px;
 }
 
 .identifier-column {
-  width: 140px;
+  width: 150px;
 }
 
 .actions-column {
-  width: 150px;
+  width: 160px;
   text-align: right !important;
 }
 
 .row-number {
-  width: 31px;
-  height: 31px;
+  width: 38px;
+  height: 38px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #15803d;
+  color: #1d4ed8;
   font-size: 16px;
   font-weight: 800;
-  border: 1px solid #bbf7d0;
-  border-radius: 9px;
-  background: #f0fdf4;
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  background: #eff6ff;
 }
 
-.qualification-cell {
+.region-cell {
+  min-width: 0;
   display: flex;
   align-items: center;
 }
 
-.qualification-icon {
-  min-width: 39px;
-  width: 39px;
-  height: 39px;
+.region-icon {
+  min-width: 47px;
+  width: 47px;
+  height: 47px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 11px;
-  border-radius: 11px;
-  background: #dcfce7;
+  margin-right: 13px;
+  border-radius: 13px;
+  background: #dbeafe;
 }
 
-.qualification-icon .md-icon {
-  color: #16a34a !important;
-  font-size: 21px !important;
+.region-icon .md-icon {
+  color: #2563eb !important;
+  font-size: 25px !important;
 }
 
-.qualification-information {
+.region-information {
   min-width: 0;
   display: flex;
   flex-direction: column;
 }
 
-.qualification-name {
+.region-name {
+  overflow: hidden;
   color: #1f2937;
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 700;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.qualification-description {
+.region-description {
   margin-top: 4px;
-  color: #94a3b8;
+  color: #64748b;
   font-size: 16px;
+  line-height: 1.4;
 }
 
 .record-id {
   display: inline-block;
-  padding: 5px 8px;
+  padding: 7px 10px;
   color: #475569;
   font-size: 16px;
   font-weight: 700;
-  border-radius: 8px;
+  white-space: nowrap;
+  border-radius: 9px;
   background: #f1f5f9;
 }
 
 .record-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 7px;
+  gap: 9px;
 }
 
 .record-action-button {
-  width: 33px;
-  height: 33px;
+  width: 40px;
+  height: 40px;
   display: inline-flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
   padding: 0;
   border: 0;
-  border-radius: 9px;
+  border-radius: 10px;
+  outline: none;
   cursor: pointer;
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease,
-    opacity 0.2s ease;
+    opacity 0.2s ease,
+    background-color 0.2s ease;
 }
 
 .record-action-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 7px 15px rgba(15, 23, 42, 0.12);
+  box-shadow: 0 8px 17px rgba(15, 23, 42, 0.12);
+}
+
+.record-action-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.record-action-button:focus-visible {
+  box-shadow:
+    0 0 0 4px rgba(37, 99, 235, 0.12),
+    0 8px 17px rgba(15, 23, 42, 0.12);
 }
 
 .record-action-button:disabled {
   cursor: not-allowed;
-  opacity: 0.55;
+  opacity: 0.5;
 }
 
 .record-action-button .md-icon {
-  font-size: 18px !important;
+  width: auto !important;
+  min-width: 0 !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  color: inherit !important;
+  font-size: 22px !important;
+  line-height: 1 !important;
 }
 
 .edit-button {
+  color: #2563eb;
   background: #dbeafe;
 }
 
-.edit-button .md-icon {
-  color: #2563eb !important;
+.edit-button:hover:not(:disabled) {
+  background: #bfdbfe;
 }
 
 .delete-button {
+  color: #dc2626;
   background: #fee2e2;
 }
 
-.delete-button .md-icon {
-  color: #dc2626 !important;
+.delete-button:hover:not(:disabled) {
+  background: #fecaca;
 }
 
-/* =========================================================
-   LOADING AND EMPTY STATES
-   ========================================================= */
+/* Loading and empty states */
 
 .loading-state,
 .empty-state {
-  min-height: 310px;
+  min-height: 340px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 38px 20px;
+  padding: 42px 22px;
   text-align: center;
 }
 
-.loading-spinner {
-  width: 43px;
-  height: 43px;
-  border: 4px solid #dcfce7;
-  border-top-color: #16a34a;
+.loading-spinner,
+.button-spinner,
+.small-spinner {
   border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+  animation: spin 0.7s linear infinite;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #dbeafe;
+  border-top-color: #2563eb;
+}
+
+.button-spinner {
+  width: 19px;
+  height: 19px;
+  border: 3px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #ffffff;
+}
+
+.small-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #fecaca;
+  border-top-color: #dc2626;
 }
 
 .loading-state h3,
 .empty-state h3 {
-  margin: 15px 0 0;
-  color: #475569;
-  font-size: 16px;
+  margin: 18px 0 0;
+  color: #334155;
+  font-size: 20px;
   font-weight: 700;
+  line-height: 1.4;
 }
 
 .loading-state p,
 .empty-state p {
-  margin: 6px 0 15px;
-  color: #94a3b8;
+  max-width: 460px;
+  margin: 8px 0 18px;
+  color: #64748b;
   font-size: 16px;
+  line-height: 1.5;
 }
 
 .empty-state-icon {
-  width: 70px;
-  height: 70px;
+  width: 78px;
+  height: 78px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 20px;
+  border-radius: 21px;
   background: #f1f5f9;
 }
 
 .empty-state-icon .md-icon {
-  color: #94a3b8 !important;
-  font-size: 38px !important;
+  color: #2563eb !important;
+  font-size: 42px !important;
 }
 
 .empty-primary-button,
 .empty-secondary-button {
-  min-height: 38px;
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 0 13px;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 17px;
   font-size: 16px;
   font-weight: 700;
-  border-radius: 9px;
+  border-radius: 10px;
+  outline: none;
   cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
 }
 
 .empty-primary-button {
   color: #ffffff;
   border: 0;
-  background: #16a34a;
+  background: #2563eb;
+  box-shadow: 0 7px 16px rgba(37, 99, 235, 0.2);
+}
+
+.empty-primary-button:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 21px rgba(37, 99, 235, 0.27);
 }
 
 .empty-primary-button .md-icon {
   color: #ffffff !important;
-  font-size: 17px !important;
+  font-size: 20px !important;
 }
 
 .empty-secondary-button {
-  color: #15803d;
-  border: 1px solid #bbf7d0;
-  background: #f0fdf4;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  background: #eff6ff;
 }
 
-/* =========================================================
-   PAGINATION
-   ========================================================= */
+.empty-secondary-button:hover {
+  background: #dbeafe;
+}
+
+/* Pagination */
 
 .pagination-footer {
-  min-height: 64px;
+  min-height: 72px;
   display: flex;
   align-items: center;
-  padding: 12px 20px;
+  padding: 14px 22px;
   color: #64748b;
   font-size: 16px;
-  border-top: 1px solid #edf2f7;
+  border-top: 1px solid #e5e7eb;
   background: #f8fafc;
 }
 
+.pagination-information {
+  font-size: 16px;
+  line-height: 1.5;
+}
+
 .pagination-information strong {
-  color: #334155;
+  color: #1f2937;
+  font-size: 16px;
 }
 
 .pagination-controls {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 9px;
   margin-left: auto;
 }
 
@@ -2072,51 +1983,71 @@ export default {
 }
 
 .pagination-controls select {
-  height: 31px;
-  padding: 0 23px 0 8px;
-  color: #475569;
+  height: 38px;
+  padding: 0 27px 0 10px;
+  color: #334155;
   font-size: 16px;
   border: 1px solid #dbe3ee;
-  border-radius: 7px;
+  border-radius: 9px;
   outline: none;
   background: #ffffff;
+  cursor: pointer;
+}
+
+.pagination-controls select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.09);
 }
 
 .pagination-button {
-  width: 31px;
-  height: 31px;
+  width: 38px;
+  height: 38px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0;
-  color: #16a34a;
-  border: 1px solid #bbf7d0;
-  border-radius: 8px;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+  border-radius: 9px;
+  outline: none;
   background: #ffffff;
   cursor: pointer;
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.pagination-button:hover:not(:disabled) {
+  background: #eff6ff;
 }
 
 .pagination-button:disabled {
   color: #cbd5e1;
   border-color: #e5e7eb;
   cursor: not-allowed;
+  background: #f8fafc;
 }
 
 .pagination-button .md-icon {
+  width: auto !important;
+  min-width: 0 !important;
+  height: auto !important;
+  margin: 0 !important;
   color: inherit !important;
-  font-size: 19px !important;
+  font-size: 23px !important;
+  line-height: 1 !important;
 }
 
 .pagination-page {
-  min-width: 50px;
+  min-width: 68px;
   color: #475569;
+  font-size: 16px;
   font-weight: 700;
   text-align: center;
 }
 
-/* =========================================================
-   MODAL
-   ========================================================= */
+/* Modal overlay */
 
 .modal-overlay {
   position: fixed;
@@ -2125,130 +2056,182 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 18px;
-  background: rgba(15, 23, 42, 0.65);
-  backdrop-filter: blur(5px);
+  padding: 22px;
+  overflow-y: auto;
+  background: rgba(15, 23, 42, 0.68);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
-.qualification-modal {
+.region-modal {
   width: 100%;
-  max-width: 540px;
-  overflow: hidden;
-  border-radius: 19px;
+  max-width: 610px;
+  max-height: calc(100vh - 44px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 21px;
   background: #ffffff;
-  box-shadow: 0 30px 80px rgba(15, 23, 42, 0.3);
+  box-shadow: 0 32px 85px rgba(15, 23, 42, 0.32);
 }
+
+/* Modal header */
 
 .modal-header {
   position: relative;
-  min-height: 105px;
+  min-height: 118px;
   display: flex;
   align-items: center;
-  padding: 21px 23px;
+  padding: 24px 26px;
   overflow: hidden;
   color: #ffffff;
-  background: linear-gradient(
-    135deg,
-    #14532d,
-    #15803d,
-    #16a34a,
-    #22c55e
-  );
+  background:
+    radial-gradient(
+      circle at 90% 0%,
+      rgba(255, 255, 255, 0.18),
+      transparent 34%
+    ),
+    linear-gradient(
+      135deg,
+      #1e3a8a,
+      #1d4ed8,
+      #2563eb
+    );
 }
 
 .modal-header::after {
   content: "";
   position: absolute;
-  top: -65px;
-  right: -35px;
-  width: 165px;
-  height: 165px;
-  border: 29px solid rgba(255, 255, 255, 0.08);
+  top: -82px;
+  right: -42px;
+  width: 185px;
+  height: 185px;
+  border: 30px solid rgba(255, 255, 255, 0.07);
   border-radius: 50%;
+  pointer-events: none;
 }
 
 .modal-header-icon {
   position: relative;
   z-index: 2;
-  min-width: 49px;
-  width: 49px;
-  height: 49px;
+  min-width: 56px;
+  width: 56px;
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 13px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.16);
+  margin-right: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.14);
 }
 
 .modal-header-icon .md-icon {
+  width: auto !important;
+  min-width: 0 !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
   color: #ffffff !important;
-  font-size: 26px !important;
+  font-size: 30px !important;
+  line-height: 1 !important;
 }
 
 .modal-heading {
   position: relative;
   z-index: 2;
   min-width: 0;
+  flex: 1;
 }
 
 .modal-label {
-  color: rgba(255, 255, 255, 0.72);
+  display: block;
+  margin: 0;
+  padding: 0;
+  color: rgba(255, 255, 255, 0.78);
   font-size: 16px;
   font-weight: 800;
+  line-height: 1.3;
   letter-spacing: 1px;
+  text-transform: uppercase;
 }
 
 .modal-heading h2 {
-  margin: 4px 0 3px;
+  margin: 5px 0 4px;
+  padding: 0;
   color: #ffffff;
-  font-size: 17px;
+  font-size: 23px;
   font-weight: 800;
+  line-height: 1.3;
 }
 
 .modal-heading p {
   margin: 0;
-  color: rgba(255, 255, 255, 0.75);
+  padding: 0;
+  color: rgba(255, 255, 255, 0.82);
   font-size: 16px;
+  line-height: 1.5;
 }
 
 .modal-close-button {
   position: relative;
   z-index: 2;
-  width: 36px;
-  height: 36px;
+  width: 42px;
+  height: 42px;
   display: inline-flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  margin-left: auto;
+  margin-left: 16px;
   padding: 0;
   color: #ffffff;
   border: 0;
-  border-radius: 10px;
+  border-radius: 11px;
+  outline: none;
   background: rgba(255, 255, 255, 0.12);
   cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.modal-close-button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.modal-close-button:focus-visible {
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.18);
 }
 
 .modal-close-button:disabled {
   cursor: not-allowed;
-  opacity: 0.6;
+  opacity: 0.55;
 }
 
 .modal-close-button .md-icon {
+  width: auto !important;
+  min-width: 0 !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
   color: #ffffff !important;
-  font-size: 20px !important;
+  font-size: 24px !important;
+  line-height: 1 !important;
 }
 
+/* Modal form */
+
 .modal-body {
-  padding: 27px 24px 20px;
+  padding: 30px 27px 23px;
 }
 
 .form-label {
   display: block;
-  margin-bottom: 8px;
-  color: #374151;
+  margin-bottom: 10px;
+  color: #1f2937;
   font-size: 16px;
   font-weight: 700;
+  line-height: 1.4;
 }
 
 .form-label span {
@@ -2256,12 +2239,12 @@ export default {
 }
 
 .form-input-wrapper {
-  min-height: 49px;
+  min-height: 57px;
   display: flex;
   align-items: center;
-  padding: 0 13px;
-  border: 1px solid #dbe3ee;
-  border-radius: 11px;
+  padding: 0 15px;
+  border: 1px solid #d4dce8;
+  border-radius: 13px;
   background: #ffffff;
   transition:
     border-color 0.2s ease,
@@ -2269,19 +2252,20 @@ export default {
 }
 
 .form-input-wrapper:focus-within {
-  border-color: #16a34a;
-  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
 }
 
 .form-input-wrapper.invalid {
   border-color: #dc2626;
-  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.08);
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.08);
 }
 
 .form-input-wrapper .md-icon {
-  margin-right: 10px;
-  color: #94a3b8 !important;
-  font-size: 20px !important;
+  flex-shrink: 0;
+  margin-right: 11px;
+  color: #2563eb !important;
+  font-size: 24px !important;
 }
 
 .form-input-wrapper input {
@@ -2290,26 +2274,33 @@ export default {
   color: #1f2937;
   font-size: 16px;
   font-weight: 500;
+  line-height: 1.4;
   border: 0;
   outline: none;
   background: transparent;
 }
 
+.form-input-wrapper input::placeholder {
+  color: #94a3b8;
+  font-size: 16px;
+}
+
 .form-input-wrapper input:disabled {
   cursor: not-allowed;
-  opacity: 0.65;
+  opacity: 0.6;
 }
 
 .form-information {
-  min-height: 26px;
+  min-height: 34px;
   display: flex;
   align-items: flex-start;
-  padding-top: 5px;
+  padding-top: 7px;
 }
 
 .form-error {
   color: #dc2626;
   font-size: 16px;
+  line-height: 1.4;
   visibility: hidden;
 }
 
@@ -2318,122 +2309,168 @@ export default {
 }
 
 .character-count {
+  flex-shrink: 0;
   margin-left: auto;
-  color: #94a3b8;
+  color: #64748b;
   font-size: 16px;
+  line-height: 1.4;
 }
 
 .form-hint {
   display: flex;
   align-items: flex-start;
-  margin-top: 6px;
-  padding: 10px 11px;
-  color: #64748b;
+  margin-top: 8px;
+  padding: 13px 14px;
+  color: #526176;
   font-size: 16px;
-  line-height: 1.5;
-  border: 1px solid #dcfce7;
-  border-radius: 9px;
-  background: #f0fdf4;
+  line-height: 1.55;
+  border: 1px solid #bfdbfe;
+  border-radius: 11px;
+  background: #eff6ff;
 }
 
 .form-hint .md-icon {
-  min-width: 17px;
-  margin-right: 7px;
-  color: #16a34a !important;
-  font-size: 17px !important;
+  min-width: 21px;
+  flex-shrink: 0;
+  margin-right: 9px;
+  color: #2563eb !important;
+  font-size: 21px !important;
 }
 
 .modal-error {
   display: flex;
   align-items: center;
-  margin-top: 13px;
-  padding: 10px 11px;
+  margin-top: 16px;
+  padding: 13px 14px;
   color: #991b1b;
   font-size: 16px;
+  line-height: 1.5;
   border: 1px solid #fecaca;
-  border-radius: 9px;
+  border-radius: 11px;
   background: #fef2f2;
 }
 
 .modal-error .md-icon {
-  margin-right: 7px;
+  flex-shrink: 0;
+  margin-right: 9px;
   color: #dc2626 !important;
-  font-size: 18px !important;
+  font-size: 22px !important;
 }
 
+/* Modal footer */
+
 .modal-footer {
-  min-height: 70px;
+  min-height: 78px;
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 9px;
-  padding: 13px 21px;
-  border-top: 1px solid #edf2f7;
+  gap: 11px;
+  padding: 15px 24px;
+  border-top: 1px solid #e5e7eb;
   background: #f8fafc;
 }
 
 .cancel-button,
 .save-button {
-  min-height: 40px;
-  padding: 0 16px;
+  min-height: 47px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
   font-size: 16px;
   font-weight: 700;
-  border-radius: 9px;
+  line-height: 1;
+  border-radius: 11px;
+  outline: none;
   cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease,
+    opacity 0.2s ease;
 }
 
 .cancel-button {
-  color: #64748b;
-  border: 1px solid #e2e8f0;
+  color: #526176;
+  border: 1px solid #d4dce8;
   background: #ffffff;
 }
 
+.cancel-button:hover:not(:disabled) {
+  background: #f1f5f9;
+}
+
+.cancel-button:focus-visible {
+  box-shadow: 0 0 0 4px rgba(100, 116, 139, 0.12);
+}
+
 .save-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
+  gap: 9px;
   color: #ffffff;
   border: 0;
   background: linear-gradient(
     135deg,
-    #15803d,
-    #16a34a,
-    #22c55e
+    #1d4ed8,
+    #2563eb
   );
-  box-shadow: 0 8px 18px rgba(22, 163, 74, 0.22);
+  box-shadow: 0 9px 20px rgba(37, 99, 235, 0.24);
+}
+
+.save-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 25px rgba(37, 99, 235, 0.3);
+}
+
+.save-button:focus-visible {
+  box-shadow:
+    0 0 0 4px rgba(37, 99, 235, 0.14),
+    0 9px 20px rgba(37, 99, 235, 0.24);
 }
 
 .save-button:disabled,
 .cancel-button:disabled {
   cursor: not-allowed;
-  opacity: 0.65;
+  opacity: 0.6;
 }
 
 .save-button .md-icon {
   color: #ffffff !important;
-  font-size: 18px !important;
+  font-size: 21px !important;
 }
 
-.button-spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.4);
-  border-top-color: #ffffff;
+/* Loading indicators */
+
+.button-spinner,
+.small-spinner {
+  display: inline-block;
+  flex-shrink: 0;
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }
 
-/* =========================================================
-   TRANSITIONS
-   ========================================================= */
+.button-spinner {
+  width: 19px;
+  height: 19px;
+  border: 3px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #ffffff;
+}
+
+.small-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #fecaca;
+  border-top-color: #dc2626;
+}
+
+/* Modal transitions */
 
 .modal-fade-enter-active,
 .modal-fade-leave-active {
   transition: opacity 0.2s ease;
 }
 
-.modal-fade-enter-active .qualification-modal,
-.modal-fade-leave-active .qualification-modal {
+.modal-fade-enter-active .region-modal,
+.modal-fade-leave-active .region-modal {
   transition:
     opacity 0.2s ease,
     transform 0.2s ease;
@@ -2444,11 +2481,13 @@ export default {
   opacity: 0;
 }
 
-.modal-fade-enter .qualification-modal,
-.modal-fade-leave-to .qualification-modal {
+.modal-fade-enter .region-modal,
+.modal-fade-leave-to .region-modal {
   opacity: 0;
-  transform: translateY(10px) scale(0.98);
+  transform: translateY(12px) scale(0.98);
 }
+
+/* Animations */
 
 .rotating {
   animation: spin 0.7s linear infinite;
@@ -2460,12 +2499,55 @@ export default {
   }
 }
 
-/* =========================================================
-   RESPONSIVE
-   ========================================================= */
+/* Table scrollbar */
+
+.table-responsive::-webkit-scrollbar {
+  height: 9px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background: #cbd5e1;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Modal scrollbar */
+
+.region-modal::-webkit-scrollbar {
+  width: 9px;
+}
+
+.region-modal::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.region-modal::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background: #cbd5e1;
+}
+
+.region-modal::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Tablet */
 
 @media (max-width: 991px) {
+  .region-header {
+    min-height: 0 !important;
+    padding: 14px 16px !important;
+  }
 
+  .region-header-description {
+    max-width: 440px;
+  }
 
   .statistics-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2480,33 +2562,41 @@ export default {
   }
 
   .search-control {
-    width: 250px;
+    width: 280px;
   }
 
   .refresh-button {
     width: 100%;
-    justify-content: center;
-    margin-top: 8px;
+    margin-top: 10px;
   }
 }
 
-@media (max-width: 767px) {
-  
+/* Mobile */
 
-  .header-add-button {
-    width: 100%;
-    justify-content: center;
-    margin-top: 20px;
-    margin-left: 0;
+@media (max-width: 767px) {
+  .region-header {
+    display: block;
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 15px !important;
   }
 
+  .region-header-content {
+    align-items: flex-start;
+  }
+
+  .region-header-button {
+    width: 100%;
+    height: 45px;
+    margin: 14px 0 0 !important;
+  }
 
   .records-toolbar {
     display: block;
   }
 
   .toolbar-actions {
-    margin-top: 15px;
+    margin-top: 16px;
     margin-left: 0;
   }
 
@@ -2518,42 +2608,111 @@ export default {
   .records-table td:nth-child(3) {
     display: none;
   }
+
+  .error-banner {
+    display: block;
+  }
+
+  .error-banner button {
+    width: 100%;
+    margin-top: 14px;
+    margin-left: 0;
+  }
 }
 
 @media (max-width: 575px) {
+  .regions-page {
+    padding-bottom: 20px;
+  }
 
+  .region-header {
+    margin-bottom: 16px !important;
+    padding: 13px !important;
+    border-radius: 12px;
+  }
 
+  .region-header::before {
+    display: none;
+  }
+
+  .region-header-icon {
+    min-width: 45px;
+    width: 45px;
+    height: 45px;
+    margin-right: 11px;
+    border-radius: 11px;
+  }
+
+  .region-header-icon .md-icon {
+    font-size: 24px !important;
+  }
+
+  .region-header-title {
+    font-size: 21px !important;
+  }
 
   .statistics-grid {
     grid-template-columns: 1fr;
+    gap: 13px;
+  }
+
+  .statistic-card {
+    min-height: 92px;
+    padding: 17px;
+  }
+
+  .records-toolbar {
+    padding: 20px 16px;
+  }
+
+  .records-toolbar h2 {
+    font-size: 20px;
   }
 
   .records-table th,
   .records-table td {
-    padding-right: 11px;
-    padding-left: 11px;
+    padding-right: 13px;
+    padding-left: 13px;
   }
 
-  .qualification-description {
+  .region-description {
     display: none;
   }
 
   .number-column {
-    width: 55px;
+    width: 58px;
   }
 
   .actions-column {
-    width: 100px;
+    width: 115px;
+  }
+
+  .row-number {
+    width: 34px;
+    height: 34px;
+  }
+
+  .region-icon {
+    min-width: 42px;
+    width: 42px;
+    height: 42px;
+    margin-right: 10px;
+  }
+
+  .record-action-button {
+    width: 38px;
+    height: 38px;
   }
 
   .pagination-footer {
     display: block;
+    padding: 15px;
     text-align: center;
   }
 
   .pagination-controls {
     justify-content: center;
-    margin-top: 12px;
+    margin-top: 14px;
     margin-left: 0;
   }
 
@@ -2562,38 +2721,63 @@ export default {
     padding: 0;
   }
 
-  .qualification-modal {
+  .region-modal {
     max-width: none;
-    border-radius: 19px 19px 0 0;
+    max-height: 94vh;
+    border-radius: 21px 21px 0 0;
   }
 
   .modal-header {
-    padding: 18px;
+    min-height: 108px;
+    padding: 21px 18px;
   }
 
-  .modal-heading p {
-    max-width: 230px;
+  .modal-header-icon {
+    min-width: 50px;
+    width: 50px;
+    height: 50px;
+    margin-right: 12px;
+  }
+
+  .modal-heading h2 {
+    font-size: 21px;
+  }
+
+  .modal-close-button {
+    width: 40px;
+    height: 40px;
+    margin-left: 10px;
   }
 
   .modal-body {
-    padding: 23px 18px 17px;
+    padding: 25px 19px 20px;
+  }
+
+  .form-information {
+    display: block;
+  }
+
+  .character-count {
+    display: block;
+    margin-top: 5px;
+    margin-left: 0;
+    text-align: right;
   }
 
   .modal-footer {
-    padding: 12px 16px;
+    padding: 14px 17px;
   }
 
   .cancel-button,
   .save-button {
     flex: 1;
+    padding-right: 11px;
+    padding-left: 11px;
   }
 }
+
 </style>
-
-
-
-
-
+ 
 
 
 

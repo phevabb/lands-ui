@@ -1,37 +1,36 @@
 <template>
-  <div class="academic-qualifications-page">
-    <!-- Page heading -->
-    <section class="aq-header">
-  <div class="aq-header-content">
-    <div class="aq-header-icon">
-      <md-icon>school</md-icon>
+  <div class="current-grades-page">
+    <!-- Page header -->
+   <section class="cg-header">
+  <div class="cg-header-content">
+    <div class="cg-header-icon">
+      <md-icon>grade</md-icon>
     </div>
 
-    <div class="aq-header-text">
-      
+    <div class="cg-header-text">
+      <span class="cg-header-label">
+        SYSTEM CONFIGURATION
+      </span>
 
-      <h1 class="aq-header-title">
-        Academic Qualifications
+      <h1 class="cg-header-title">
+        Current Grades
       </h1>
 
-      <p class="aq-header-description">
-        Create, update, search, and manage academic qualification
-        records used by staff accounts.
+      <p class="cg-header-description">
+        Create, update, search, and manage current staff grades
+        used when creating and updating staff accounts.
       </p>
     </div>
   </div>
 
   <button
     type="button"
-    class="aq-header-button"
+    class="cg-header-button"
     :disabled="loading"
     @click="openCreateModal"
   >
     <md-icon>add_circle</md-icon>
-
-    <span>
-      Add Qualification
-    </span>
+    <span>Add Current Grade</span>
   </button>
 </section>
 
@@ -39,16 +38,16 @@
     <section class="statistics-grid">
       <div class="statistic-card">
         <div class="statistic-icon statistic-icon-primary">
-          <md-icon>school</md-icon>
+          <md-icon>grade</md-icon>
         </div>
 
         <div class="statistic-content">
           <span class="statistic-value">
-            {{ qualifications.length }}
+            {{ currentGrades.length }}
           </span>
 
           <span class="statistic-label">
-            Total Qualifications
+            Total Current Grades
           </span>
         </div>
       </div>
@@ -60,7 +59,7 @@
 
         <div class="statistic-content">
           <span class="statistic-value">
-            {{ filteredQualifications.length }}
+            {{ filteredCurrentGrades.length }}
           </span>
 
           <span class="statistic-label">
@@ -86,17 +85,14 @@
       </div>
     </section>
 
-    <!-- Main card -->
+    <!-- Records -->
     <section class="records-card">
-      <!-- Controls -->
       <div class="records-toolbar">
         <div>
-          <h2>
-            Qualification Records
-          </h2>
+          <h2>Current Grade Records</h2>
 
           <p>
-            Manage all available academic qualifications.
+            Manage all current staff grades available in the HR system.
           </p>
         </div>
 
@@ -107,8 +103,8 @@
             <input
               v-model.trim="search"
               type="text"
-              placeholder="Search qualifications..."
-              aria-label="Search academic qualifications"
+              placeholder="Search current grades..."
+              aria-label="Search current grades"
             />
 
             <button
@@ -125,23 +121,25 @@
           <button
             type="button"
             class="refresh-button"
-            :disabled="loading"
-            @click="loadQualifications"
+            :disabled="loading || refreshing"
+            @click="refreshCurrentGrades"
           >
-            <md-icon :class="{ rotating: loading }">
+            <md-icon
+              :class="{
+                rotating: loading || refreshing
+              }"
+            >
               refresh
             </md-icon>
 
-            <span>
-              Refresh
-            </span>
+            <span>Refresh</span>
           </button>
         </div>
       </div>
 
       <div class="records-divider" />
 
-      <!-- Error state -->
+      <!-- Error -->
       <div
         v-if="errorMessage"
         class="error-banner"
@@ -150,70 +148,52 @@
           <md-icon>error_outline</md-icon>
 
           <div>
-            <strong>
-              Unable to load records
-            </strong>
-
-            <span>
-              {{ errorMessage }}
-            </span>
+            <strong>Unable to load current grades</strong>
+            <span>{{ errorMessage }}</span>
           </div>
         </div>
 
         <button
           type="button"
-          @click="loadQualifications"
+          @click="loadCurrentGrades"
         >
           Try Again
         </button>
       </div>
 
-      <!-- Loading state -->
+      <!-- Loading -->
       <div
-        v-if="loading && !qualifications.length"
+        v-if="loading && !currentGrades.length"
         class="loading-state"
       >
         <div class="loading-spinner" />
 
-        <h3>
-          Loading qualifications
-        </h3>
+        <h3>Loading current grades</h3>
 
         <p>
           Please wait while the records are retrieved.
         </p>
       </div>
 
-      <!-- Table -->
+      <!-- Data table -->
       <div
-        v-else-if="paginatedQualifications.length"
+        v-else-if="paginatedCurrentGrades.length"
         class="table-responsive"
       >
         <table class="records-table">
           <thead>
             <tr>
-              <th class="number-column">
-                #
-              </th>
-
-              <th>
-                Qualification
-              </th>
-
-              <th class="identifier-column">
-                Record ID
-              </th>
-
-              <th class="actions-column">
-                Actions
-              </th>
+              <th class="number-column">#</th>
+              <th>Current Grade</th>
+              <th class="identifier-column">Record ID</th>
+              <th class="actions-column">Actions</th>
             </tr>
           </thead>
 
           <tbody>
             <tr
-              v-for="(qualification, index) in paginatedQualifications"
-              :key="qualification.id"
+              v-for="(grade, index) in paginatedCurrentGrades"
+              :key="grade.id"
             >
               <td>
                 <span class="row-number">
@@ -222,18 +202,18 @@
               </td>
 
               <td>
-                <div class="qualification-cell">
-                  <div class="qualification-icon">
-                    <md-icon>school</md-icon>
+                <div class="grade-cell">
+                  <div class="grade-icon">
+                    <md-icon>grade</md-icon>
                   </div>
 
-                  <div class="qualification-information">
-                    <span class="qualification-name">
-                      {{ qualification.name }}
+                  <div class="grade-information">
+                    <span class="grade-name">
+                      {{ grade.currentGrade }}
                     </span>
 
-                    <span class="qualification-description">
-                      Academic qualification record
+                    <span class="grade-description">
+                      Current staff grade record
                     </span>
                   </div>
                 </div>
@@ -241,7 +221,7 @@
 
               <td>
                 <span class="record-id">
-                  #{{ qualification.id }}
+                  #{{ grade.id }}
                 </span>
               </td>
 
@@ -250,8 +230,9 @@
                   <button
                     type="button"
                     class="record-action-button edit-button"
-                    title="Edit qualification"
-                    @click="openEditModal(qualification)"
+                    title="Edit current grade"
+                    :disabled="deletingId === grade.id"
+                    @click="openEditModal(grade)"
                   >
                     <md-icon>edit</md-icon>
                   </button>
@@ -259,10 +240,18 @@
                   <button
                     type="button"
                     class="record-action-button delete-button"
-                    title="Delete qualification"
-                    @click="deleteQualification(qualification)"
+                    title="Delete current grade"
+                    :disabled="deletingId === grade.id"
+                    @click="deleteCurrentGrade(grade)"
                   >
-                    <md-icon>delete_outline</md-icon>
+                    <span
+                      v-if="deletingId === grade.id"
+                      class="small-spinner"
+                    />
+
+                    <md-icon v-else>
+                      delete_outline
+                    </md-icon>
                   </button>
                 </div>
               </td>
@@ -278,23 +267,23 @@
       >
         <div class="empty-state-icon">
           <md-icon>
-            {{ search ? "search_off" : "school" }}
+            {{ search ? "search_off" : "grade" }}
           </md-icon>
         </div>
 
         <h3>
           {{
             search
-              ? "No matching qualification found"
-              : "No academic qualifications yet"
+              ? "No matching current grade found"
+              : "No current grades created"
           }}
         </h3>
 
         <p>
           {{
             search
-              ? "Try searching with a different qualification name."
-              : "Create the first academic qualification record."
+              ? "Try searching with a different grade name."
+              : "Create the first current grade for the HR system."
           }}
         </p>
 
@@ -314,13 +303,13 @@
           @click="openCreateModal"
         >
           <md-icon>add</md-icon>
-          Add Qualification
+          Add Current Grade
         </button>
       </div>
 
       <!-- Pagination -->
       <div
-        v-if="filteredQualifications.length"
+        v-if="filteredCurrentGrades.length"
         class="pagination-footer"
       >
         <div class="pagination-information">
@@ -329,35 +318,24 @@
           to
           <strong>{{ paginationEnd }}</strong>
           of
-          <strong>{{ filteredQualifications.length }}</strong>
+          <strong>{{ filteredCurrentGrades.length }}</strong>
           records
         </div>
 
         <div class="pagination-controls">
-          <label for="academic-page-size">
+          <label for="current-grades-page-size">
             Rows:
           </label>
 
           <select
-            id="academic-page-size"
+            id="current-grades-page-size"
             v-model.number="pageSize"
             @change="handlePageSizeChange"
           >
-            <option :value="5">
-              5
-            </option>
-
-            <option :value="10">
-              10
-            </option>
-
-            <option :value="20">
-              20
-            </option>
-
-            <option :value="50">
-              50
-            </option>
+            <option :value="5">5</option>
+            <option :value="10">10</option>
+            <option :value="20">20</option>
+            <option :value="50">50</option>
           </select>
 
           <button
@@ -395,7 +373,7 @@
         @click.self="closeModal"
       >
         <div
-          class="qualification-modal"
+          class="grade-modal"
           role="dialog"
           aria-modal="true"
           :aria-label="modalTitle"
@@ -409,20 +387,12 @@
 
             <div class="modal-heading">
               <span class="modal-label">
-                ACADEMIC QUALIFICATION
+                CURRENT GRADE
               </span>
 
-              <h2>
-                {{ modalTitle }}
-              </h2>
+              <h2>{{ modalTitle }}</h2>
 
-              <p>
-                {{
-                  editingId
-                    ? "Update the selected qualification record."
-                    : "Enter a new qualification for staff accounts."
-                }}
-              </p>
+              <p>{{ modalDescription }}</p>
             </div>
 
             <button
@@ -436,32 +406,34 @@
             </button>
           </div>
 
-          <form @submit.prevent="saveQualification">
+          <form @submit.prevent="saveCurrentGrade">
             <div class="modal-body">
               <label
                 class="form-label"
-                for="qualification-name"
+                for="current-grade-name"
               >
-                Qualification Name
+                Current Grade Name
                 <span>*</span>
               </label>
 
               <div
                 class="form-input-wrapper"
                 :class="{
-                  invalid: formSubmitted && nameError
+                  invalid:
+                    formSubmitted &&
+                    currentGradeError
                 }"
               >
-                <md-icon>school</md-icon>
+                <md-icon>grade</md-icon>
 
                 <input
-                  id="qualification-name"
-                  ref="nameInput"
-                  v-model="form.name"
+                  id="current-grade-name"
+                  ref="currentGradeInput"
+                  v-model="form.currentGrade"
                   type="text"
                   maxlength="100"
                   autocomplete="off"
-                  placeholder="Example: Bachelor's Degree"
+                  placeholder="Example: Assistant Director"
                   :disabled="saving"
                   @input="clearFormError"
                 />
@@ -471,14 +443,16 @@
                 <span
                   class="form-error"
                   :class="{
-                    visible: formSubmitted && nameError
+                    visible:
+                      formSubmitted &&
+                      currentGradeError
                   }"
                 >
-                  {{ nameError || " " }}
+                  {{ currentGradeError || " " }}
                 </span>
 
                 <span class="character-count">
-                  {{ form.name.length }} / 100
+                  {{ form.currentGrade.length }} / 100
                 </span>
               </div>
 
@@ -486,7 +460,7 @@
                 <md-icon>info_outline</md-icon>
 
                 <span>
-                  Qualification names must be unique and cannot exceed
+                  Current grade names must be unique and cannot exceed
                   100 characters.
                 </span>
               </div>
@@ -496,10 +470,7 @@
                 class="modal-error"
               >
                 <md-icon>error_outline</md-icon>
-
-                <span>
-                  {{ formError }}
-                </span>
+                <span>{{ formError }}</span>
               </div>
             </div>
 
@@ -527,15 +498,7 @@
                   {{ editingId ? "save" : "add" }}
                 </md-icon>
 
-                <span>
-                  {{
-                    saving
-                      ? "Saving..."
-                      : editingId
-                        ? "Update Qualification"
-                        : "Create Qualification"
-                  }}
-                </span>
+                <span>{{ submitButtonText }}</span>
               </button>
             </div>
           </form>
@@ -544,8 +507,6 @@
     </transition>
   </div>
 </template>
-
-
 
 <script>
 import axios from "axios";
@@ -557,7 +518,7 @@ import Swal from "sweetalert2";
  const API_BASE_URL = "http://127.0.0.1:8888/api";
 
 export default {
-  name: "SuperAcademicQualifications",
+  name: "SuperCurrentGrades",
 
   data() {
     return {
@@ -574,49 +535,55 @@ export default {
       errorMessage: "",
       formError: "",
 
-      qualifications: [],
+      currentGrades: [],
 
       currentPage: 1,
       pageSize: 10,
-
       lastUpdated: null,
 
       form: {
-        name: ""
+        currentGrade: ""
       }
     };
   },
 
   computed: {
-    filteredQualifications() {
+    filteredCurrentGrades() {
       const searchValue = this.search
         ? this.search.trim().toLowerCase()
         : "";
 
       if (!searchValue) {
-        return this.qualifications;
+        return this.currentGrades;
       }
 
-      return this.qualifications.filter(qualification => {
-        const name = qualification.name || "";
+      return this.currentGrades.filter(grade => {
+        const gradeName =
+          grade.currentGrade || "";
 
-        return name
+        return gradeName
           .trim()
           .toLowerCase()
           .includes(searchValue);
       });
     },
 
-    sortedQualifications() {
-      return [...this.filteredQualifications].sort(
+    sortedCurrentGrades() {
+      return [...this.filteredCurrentGrades].sort(
         (first, second) => {
-          const firstName = first.name
-            ? first.name.trim().toLowerCase()
-            : "";
+          const firstName =
+            first.currentGrade
+              ? first.currentGrade
+                  .trim()
+                  .toLowerCase()
+              : "";
 
-          const secondName = second.name
-            ? second.name.trim().toLowerCase()
-            : "";
+          const secondName =
+            second.currentGrade
+              ? second.currentGrade
+                  .trim()
+                  .toLowerCase()
+              : "";
 
           return firstName.localeCompare(secondName);
         }
@@ -627,28 +594,25 @@ export default {
       return Math.max(
         1,
         Math.ceil(
-          this.sortedQualifications.length /
+          this.sortedCurrentGrades.length /
             this.pageSize
         )
       );
     },
 
-    paginatedQualifications() {
+    paginatedCurrentGrades() {
       const start =
         (this.currentPage - 1) *
         this.pageSize;
 
-      const end =
-        start + this.pageSize;
-
-      return this.sortedQualifications.slice(
+      return this.sortedCurrentGrades.slice(
         start,
-        end
+        start + this.pageSize
       );
     },
 
     paginationStart() {
-      if (!this.sortedQualifications.length) {
+      if (!this.sortedCurrentGrades.length) {
         return 0;
       }
 
@@ -662,20 +626,20 @@ export default {
     paginationEnd() {
       return Math.min(
         this.currentPage * this.pageSize,
-        this.sortedQualifications.length
+        this.sortedCurrentGrades.length
       );
     },
 
     modalTitle() {
       return this.editingId
-        ? "Edit Qualification"
-        : "Add Qualification";
+        ? "Edit Current Grade"
+        : "Add Current Grade";
     },
 
     modalDescription() {
       return this.editingId
-        ? "Update the selected academic qualification."
-        : "Create a new academic qualification for staff accounts.";
+        ? "Update the selected current staff grade."
+        : "Create a new current grade for staff accounts.";
     },
 
     submitButtonText() {
@@ -686,48 +650,46 @@ export default {
       }
 
       return this.editingId
-        ? "Update Qualification"
-        : "Create Qualification";
+        ? "Update Current Grade"
+        : "Create Current Grade";
     },
 
-    nameError() {
-      const name = this.form.name
-        ? this.form.name.trim()
-        : "";
+    currentGradeError() {
+      const currentGrade =
+        this.form.currentGrade
+          ? this.form.currentGrade.trim()
+          : "";
 
-      if (!name) {
-        return "Qualification name is required.";
+      if (!currentGrade) {
+        return "Current grade name is required.";
       }
 
-      if (name.length < 2) {
-        return "Qualification name must contain at least 2 characters.";
+      if (currentGrade.length < 2) {
+        return "Current grade name must contain at least 2 characters.";
       }
 
-      if (name.length > 100) {
-        return "Qualification name cannot exceed 100 characters.";
+      if (currentGrade.length > 100) {
+        return "Current grade name cannot exceed 100 characters.";
       }
 
       const duplicate =
-        this.qualifications.some(
-          qualification => {
-            const qualificationName =
-              qualification.name
-                ? qualification.name
-                    .trim()
-                    .toLowerCase()
-                : "";
+        this.currentGrades.some(grade => {
+          const existingName =
+            grade.currentGrade
+              ? grade.currentGrade
+                  .trim()
+                  .toLowerCase()
+              : "";
 
-            return (
-              qualification.id !==
-                this.editingId &&
-              qualificationName ===
-                name.toLowerCase()
-            );
-          }
-        );
+          return (
+            grade.id !== this.editingId &&
+            existingName ===
+              currentGrade.toLowerCase()
+          );
+        });
 
       if (duplicate) {
-        return "This academic qualification already exists.";
+        return "This current grade already exists.";
       }
 
       return "";
@@ -744,13 +706,6 @@ export default {
           hour: "2-digit",
           minute: "2-digit"
         }
-      );
-    },
-
-    hasSearch() {
-      return Boolean(
-        this.search &&
-          this.search.trim()
       );
     }
   },
@@ -773,7 +728,7 @@ export default {
   },
 
   created() {
-    this.loadQualifications();
+    this.loadCurrentGrades();
   },
 
   beforeDestroy() {
@@ -784,12 +739,8 @@ export default {
     getRequestConfig() {
       const token =
         localStorage.getItem("token") ||
-        localStorage.getItem(
-          "accessToken"
-        ) ||
-        localStorage.getItem(
-          "access_token"
-        );
+        localStorage.getItem("accessToken") ||
+        localStorage.getItem("access_token");
 
       const headers = {
         Accept: "application/json",
@@ -806,41 +757,33 @@ export default {
       };
     },
 
-    async loadQualifications() {
+    async loadCurrentGrades() {
       this.loading = true;
       this.errorMessage = "";
 
       try {
         const response = await axios.get(
-          `${API_BASE_URL}/academic-qualifications`,
+          `${API_BASE_URL}/current-grades`,
           this.getRequestConfig()
         );
 
-        this.qualifications =
+        this.currentGrades =
           Array.isArray(response.data)
             ? response.data
             : [];
 
         this.lastUpdated = new Date();
-
-        if (
-          this.currentPage >
-          this.totalPages
-        ) {
-          this.currentPage =
-            this.totalPages;
-        }
       } catch (error) {
-        this.qualifications = [];
+        this.currentGrades = [];
 
         this.errorMessage =
           this.getErrorMessage(
             error,
-            "Unable to load academic qualifications."
+            "Unable to load current grades."
           );
 
         console.error(
-          "Unable to load academic qualifications",
+          "Unable to load current grades",
           error
         );
       } finally {
@@ -848,11 +791,11 @@ export default {
       }
     },
 
-    async refreshQualifications() {
+    async refreshCurrentGrades() {
       this.refreshing = true;
 
       try {
-        await this.loadQualifications();
+        await this.loadCurrentGrades();
       } finally {
         this.refreshing = false;
       }
@@ -861,20 +804,19 @@ export default {
     openCreateModal() {
       this.resetForm();
       this.showModal = true;
-      this.focusNameInput();
+      this.focusCurrentGradeInput();
     },
 
-    openEditModal(qualification) {
+    openEditModal(grade) {
       this.resetForm();
 
-      this.editingId =
-        qualification.id;
+      this.editingId = grade.id;
 
-      this.form.name =
-        qualification.name || "";
+      this.form.currentGrade =
+        grade.currentGrade || "";
 
       this.showModal = true;
-      this.focusNameInput();
+      this.focusCurrentGradeInput();
     },
 
     closeModal() {
@@ -890,7 +832,7 @@ export default {
       this.editingId = null;
 
       this.form = {
-        name: ""
+        currentGrade: ""
       };
 
       this.formSubmitted = false;
@@ -901,33 +843,36 @@ export default {
       this.formError = "";
     },
 
-    focusNameInput() {
+    focusCurrentGradeInput() {
       this.$nextTick(() => {
-        if (this.$refs.nameInput) {
-          this.$refs.nameInput.focus();
+        if (
+          this.$refs.currentGradeInput
+        ) {
+          this.$refs.currentGradeInput.focus();
         }
       });
     },
 
-    async saveQualification() {
+    async saveCurrentGrade() {
       this.formSubmitted = true;
       this.formError = "";
 
-      if (this.nameError) {
-        this.focusNameInput();
+      if (this.currentGradeError) {
+        this.focusCurrentGradeInput();
         return;
       }
 
       this.saving = true;
 
       const payload = {
-        name: this.form.name.trim()
+        currentGrade:
+          this.form.currentGrade.trim()
       };
 
       try {
         if (this.editingId) {
           await axios.put(
-            `${API_BASE_URL}/academic-qualifications/${this.editingId}`,
+            `${API_BASE_URL}/current-grades/${this.editingId}`,
             payload,
             this.getRequestConfig()
           );
@@ -935,12 +880,12 @@ export default {
           this.showModal = false;
 
           await this.showSuccess(
-            "Qualification updated",
-            `"${payload.name}" was updated successfully.`
+            "Current grade updated",
+            `"${payload.currentGrade}" was updated successfully.`
           );
         } else {
           await axios.post(
-            `${API_BASE_URL}/academic-qualifications`,
+            `${API_BASE_URL}/current-grades`,
             payload,
             this.getRequestConfig()
           );
@@ -948,23 +893,22 @@ export default {
           this.showModal = false;
 
           await this.showSuccess(
-            "Qualification created",
-            `"${payload.name}" was created successfully.`
+            "Current grade created",
+            `"${payload.currentGrade}" was created successfully.`
           );
         }
 
         this.resetForm();
-
-        await this.loadQualifications();
+        await this.loadCurrentGrades();
       } catch (error) {
         this.formError =
           this.getErrorMessage(
             error,
-            "Unable to save the academic qualification."
+            "Unable to save the current grade."
           );
 
         console.error(
-          "Unable to save academic qualification",
+          "Unable to save current grade",
           error
         );
       } finally {
@@ -972,15 +916,13 @@ export default {
       }
     },
 
-    async deleteQualification(
-      qualification
-    ) {
-      const qualificationName =
-        qualification.name ||
-        "this qualification";
+    async deleteCurrentGrade(grade) {
+      const gradeName =
+        grade.currentGrade ||
+        "this current grade";
 
       const result = await Swal.fire({
-        title: "Delete qualification?",
+        title: "Delete current grade?",
         html: `
           <div style="
             color: #64748b;
@@ -989,9 +931,7 @@ export default {
           ">
             Are you sure you want to delete
             <strong style="color: #1f2937;">
-              ${this.escapeHtml(
-                qualificationName
-              )}
+              ${this.escapeHtml(gradeName)}
             </strong>?
             <br><br>
             This action cannot be undone.
@@ -999,10 +939,9 @@ export default {
         `,
         icon: "warning",
         showCancelButton: true,
-        confirmButtonColor: "white",
-        cancelButtonColor: "white",
-        confirmButtonText:
-          "Yes, delete",
+        confirmButtonColor: "#dc2626",
+        cancelButtonColor: "#64748b",
+        confirmButtonText: "Yes, delete",
         cancelButtonText: "Cancel",
         reverseButtons: true,
         focusCancel: true
@@ -1012,42 +951,36 @@ export default {
         return;
       }
 
-      this.deletingId =
-        qualification.id;
+      this.deletingId = grade.id;
 
       try {
         await axios.delete(
-          `${API_BASE_URL}/academic-qualifications/${qualification.id}`,
+          `${API_BASE_URL}/current-grades/${grade.id}`,
           this.getRequestConfig()
         );
 
         await Swal.fire({
-          title: "Qualification deleted",
-          text: `"${qualificationName}" was deleted successfully.`,
+          title: "Current grade deleted",
+          text: `"${gradeName}" was deleted successfully.`,
           icon: "success",
-          confirmButtonColor: "white",
+          confirmButtonColor: "#16a34a",
           confirmButtonText: "Done",
           timer: 2200,
           timerProgressBar: true
         });
 
-        await this.loadQualifications();
+        await this.loadCurrentGrades();
       } catch (error) {
         await Swal.fire({
           title: "Delete failed",
           text: this.getErrorMessage(
             error,
-            "Unable to delete the academic qualification."
+            "Unable to delete the current grade."
           ),
           icon: "error",
-          confirmButtonColor: "white",
+          confirmButtonColor: "#dc2626",
           confirmButtonText: "Close"
         });
-
-        console.error(
-          "Unable to delete academic qualification",
-          error
-        );
       } finally {
         this.deletingId = null;
       }
@@ -1058,7 +991,7 @@ export default {
         title,
         text,
         icon: "success",
-        confirmButtonColor: "white",
+        confirmButtonColor: "#16a34a",
         confirmButtonText: "Done",
         timer: 2200,
         timerProgressBar: true
@@ -1080,8 +1013,7 @@ export default {
         error.response.data;
 
       if (
-        typeof responseData ===
-          "string" &&
+        typeof responseData === "string" &&
         responseData.trim()
       ) {
         return responseData;
@@ -1089,18 +1021,17 @@ export default {
 
       if (
         responseData &&
-        typeof responseData.message ===
-          "string"
+        typeof responseData.message === "string"
       ) {
         return responseData.message;
       }
 
       if (status === 400) {
-        return "Please check the submitted qualification name.";
+        return "Please check the submitted current grade name.";
       }
 
       if (status === 401) {
-        return "Your session is no longer valid. Please sign in again.";
+        return "Your session is no longer valid.";
       }
 
       if (status === 403) {
@@ -1108,15 +1039,15 @@ export default {
       }
 
       if (status === 404) {
-        return "The academic qualification was not found.";
+        return "The current grade was not found.";
       }
 
       if (status === 409) {
-        return "This academic qualification already exists.";
+        return "This current grade already exists.";
       }
 
       if (status === 500) {
-        return "The server could not process the request.";
+        return "The server could not process this request.";
       }
 
       return fallbackMessage;
@@ -1126,8 +1057,7 @@ export default {
       const element =
         document.createElement("div");
 
-      element.textContent =
-        value || "";
+      element.textContent = value || "";
 
       return element.innerHTML;
     },
@@ -1156,15 +1086,6 @@ export default {
       }
     },
 
-    goToPage(page) {
-      if (
-        page >= 1 &&
-        page <= this.totalPages
-      ) {
-        this.currentPage = page;
-      }
-    },
-
     rowNumber(index) {
       return (
         (this.currentPage - 1) *
@@ -1177,26 +1098,19 @@ export default {
 };
 </script>
 
-
 <style scoped>
-.academic-qualifications-page {
+.current-grades-page {
   width: 100%;
   min-height: 100%;
   padding: 4px 0 30px;
 }
 
-/* =========================================================
-   PAGE HEADER
-   ========================================================= */
+/* Header */
 
-/* =========================================================
-   ACADEMIC QUALIFICATIONS HEADER
-   ========================================================= */
 
-.aq-header {
+.cg-header {
   position: relative !important;
-  top: auto !important;
-  left: auto !important;
+  inset: auto !important;
 
   width: 100%;
   height: auto !important;
@@ -1215,36 +1129,42 @@ export default {
 
   color: #1f2937;
 
-  border: 1px solid #dfe7e3;
-  border-left: 4px solid #16a34a;
+  border: 1px solid #dcebe4;
+  border-left: 4px solid #059669;
   border-radius: 12px;
 
-  background: linear-gradient(
-    135deg,
-    #ffffff 0%,
-    #fbfefc 70%,
-    #f1faf4 100%
-  );
+  background:
+    radial-gradient(
+      circle at 87% 0%,
+      rgba(5, 150, 105, 0.06),
+      transparent 30%
+    ),
+    linear-gradient(
+      135deg,
+      #ffffff 0%,
+      #fcfefd 70%,
+      #ecfdf5 100%
+    );
 
   box-shadow: 0 5px 16px rgba(15, 23, 42, 0.055);
 }
 
-.aq-header::before {
+.cg-header::before {
   content: "";
   position: absolute;
   top: -52px;
-  right: 110px;
+  right: 120px;
 
   width: 115px;
   height: 115px;
 
-  border: 18px solid rgba(22, 163, 74, 0.035);
+  border: 18px solid rgba(5, 150, 105, 0.035);
   border-radius: 50%;
 
   pointer-events: none;
 }
 
-.aq-header-content {
+.cg-header-content {
   position: relative;
   z-index: 2;
 
@@ -1255,7 +1175,7 @@ export default {
   align-items: center;
 }
 
-.aq-header-icon {
+.cg-header-icon {
   min-width: 44px;
   width: 44px;
   height: 44px;
@@ -1270,37 +1190,38 @@ export default {
 
   background: linear-gradient(
     135deg,
-    #15803d,
-    #16a34a
+    #047857,
+    #10b981
   );
 
-  box-shadow: 0 6px 14px rgba(22, 163, 74, 0.2);
+  box-shadow: 0 6px 14px rgba(5, 150, 105, 0.22);
 }
 
-.aq-header-icon .md-icon {
+.cg-header-icon .md-icon {
   width: auto !important;
   min-width: 0 !important;
   height: auto !important;
 
   margin: 0 !important;
+  padding: 0 !important;
 
   color: #ffffff !important;
   font-size: 24px !important;
   line-height: 1 !important;
 }
 
-.aq-header-text {
+.cg-header-text {
   min-width: 0;
   flex: 1;
 }
 
-.aq-header-label {
+.cg-header-label {
   display: block;
 
   margin: 0 0 2px;
   padding: 0;
 
-  color: #15803d;
+  color: #047857;
 
   font-size: 9px;
   font-weight: 800;
@@ -1309,7 +1230,7 @@ export default {
   text-transform: uppercase;
 }
 
-.aq-header-title {
+.cg-header-title {
   margin: 0 !important;
   padding: 0 !important;
 
@@ -1321,7 +1242,7 @@ export default {
   letter-spacing: -0.2px;
 }
 
-.aq-header-description {
+.cg-header-description {
   max-width: 620px;
 
   margin: 3px 0 0 !important;
@@ -1334,7 +1255,7 @@ export default {
   line-height: 1.4 !important;
 }
 
-.aq-header-button {
+.cg-header-button {
   position: relative;
   z-index: 2;
 
@@ -1364,11 +1285,11 @@ export default {
 
   background: linear-gradient(
     135deg,
-    #15803d,
-    #16a34a
+    #047857,
+    #10b981
   );
 
-  box-shadow: 0 6px 14px rgba(22, 163, 74, 0.2);
+  box-shadow: 0 6px 14px rgba(5, 150, 105, 0.22);
 
   cursor: pointer;
 
@@ -1378,121 +1299,19 @@ export default {
     opacity 0.2s ease;
 }
 
-.aq-header-button:hover:not(:disabled) {
+.cg-header-button:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 9px 18px rgba(22, 163, 74, 0.26);
+  box-shadow: 0 9px 18px rgba(5, 150, 105, 0.28);
 }
 
-.aq-header-button:active:not(:disabled) {
+.cg-header-button:active:not(:disabled) {
   transform: translateY(0);
 }
 
-.aq-header-button:focus-visible {
+.cg-header-button:focus-visible {
   box-shadow:
-    0 0 0 4px rgba(22, 163, 74, 0.14),
-    0 6px 14px rgba(22, 163, 74, 0.2);
-}
-
-.aq-header-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.55;
-}
-
-.aq-header-button .md-icon {
-  width: auto !important;
-  min-width: 0 !important;
-  height: auto !important;
-
-  margin: 0 !important;
-
-  color: #ffffff !important;
-  font-size: 18px !important;
-  line-height: 1 !important;
-}
-
-/* =========================================================
-   HEADER RESPONSIVENESS
-   ========================================================= */
-
-@media (max-width: 991px) {
-  .aq-header {
-    min-height: 0 !important;
-    padding: 11px 14px !important;
-  }
-
-  .aq-header-description {
-    max-width: 430px;
-  }
-}
-
-@media (max-width: 767px) {
-  .aq-header {
-    display: block;
-
-    height: auto !important;
-    min-height: 0 !important;
-
-    padding: 13px !important;
-  }
-
-  .aq-header-content {
-    align-items: flex-start;
-  }
-
-  .aq-header-button {
-    width: 100%;
-    height: 40px;
-
-    margin: 12px 0 0 !important;
-  }
-}
-
-@media (max-width: 575px) {
-  .aq-header {
-    margin-bottom: 14px !important;
-    padding: 11px !important;
-    border-radius: 11px;
-  }
-
-  .aq-header::before {
-    display: none;
-  }
-
-  .aq-header-icon {
-    min-width: 40px;
-    width: 40px;
-    height: 40px;
-
-    margin-right: 10px;
-
-    border-radius: 10px;
-  }
-
-  .aq-header-icon .md-icon {
-    font-size: 22px !important;
-  }
-
-  .aq-header-label {
-    font-size: 8px;
-  }
-
-  .aq-header-title {
-    font-size: 17px !important;
-  }
-
-  .aq-header-description {
-    margin-top: 2px !important;
-
-    font-size: 10px !important;
-    line-height: 1.35 !important;
-  }
-
-  .aq-header-button {
-    min-height: 38px;
-    height: 38px;
-
-    font-size: 11px;
-  }
+    0 0 0 3px rgba(5, 150, 105, 0.15),
+    0 6px 14px rgba(5, 150, 105, 0.22);
 }
 
 
@@ -1500,13 +1319,7 @@ export default {
 
 
 
-
-
-
-
-/* =========================================================
-   STATISTICS
-   ========================================================= */
+/* Statistics */
 
 .statistics-grid {
   display: grid;
@@ -1525,14 +1338,12 @@ export default {
   box-shadow: 0 8px 21px rgba(15, 23, 42, 0.045);
   transition:
     transform 0.2s ease,
-    box-shadow 0.2s ease,
-    border-color 0.2s ease;
+    box-shadow 0.2s ease;
 }
 
 .statistic-card:hover {
-  border-color: #bbf7d0;
-  box-shadow: 0 13px 28px rgba(15, 23, 42, 0.08);
   transform: translateY(-2px);
+  box-shadow: 0 13px 28px rgba(15, 23, 42, 0.08);
 }
 
 .statistic-icon {
@@ -1556,8 +1367,8 @@ export default {
 }
 
 .statistic-icon-success {
-  color: #16a34a;
-  background: #dcfce7;
+  color: #059669;
+  background: #d1fae5;
 }
 
 .statistic-icon-purple {
@@ -1566,7 +1377,6 @@ export default {
 }
 
 .statistic-content {
-  min-width: 0;
   display: flex;
   flex-direction: column;
   margin-left: 13px;
@@ -1585,9 +1395,7 @@ export default {
   font-weight: 600;
 }
 
-/* =========================================================
-   RECORDS CARD
-   ========================================================= */
+/* Records */
 
 .records-card {
   overflow: hidden;
@@ -1624,10 +1432,6 @@ export default {
   margin-left: auto;
 }
 
-/* =========================================================
-   SEARCH
-   ========================================================= */
-
 .search-control {
   width: 285px;
   height: 42px;
@@ -1637,14 +1441,11 @@ export default {
   border: 1px solid #dbe3ee;
   border-radius: 11px;
   background: #f8fafc;
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
 }
 
 .search-control:focus-within {
-  border-color: #16a34a;
-  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.09);
+  border-color: #059669;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.09);
 }
 
 .search-control > .md-icon {
@@ -1663,17 +1464,10 @@ export default {
   background: transparent;
 }
 
-.search-control input::placeholder {
-  color: #94a3b8;
-}
-
 .clear-search-button {
   display: flex;
-  align-items: center;
-  justify-content: center;
   padding: 0;
   border: 0;
-  outline: none;
   background: transparent;
   cursor: pointer;
 }
@@ -1689,31 +1483,17 @@ export default {
   align-items: center;
   gap: 7px;
   padding: 0 13px;
-  color: #15803d;
+  color: #047857;
   font-size: 16px;
   font-weight: 700;
-  border: 1px solid #bbf7d0;
+  border: 1px solid #a7f3d0;
   border-radius: 10px;
-  outline: none;
-  background: #f0fdf4;
+  background: #ecfdf5;
   cursor: pointer;
-  transition:
-    background-color 0.2s ease,
-    transform 0.2s ease;
-}
-
-.refresh-button:hover:not(:disabled) {
-  background: #dcfce7;
-  transform: translateY(-1px);
-}
-
-.refresh-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
 }
 
 .refresh-button .md-icon {
-  color: #16a34a !important;
+  color: #059669 !important;
   font-size: 19px !important;
 }
 
@@ -1722,9 +1502,7 @@ export default {
   background: #edf2f7;
 }
 
-/* =========================================================
-   ERROR BANNER
-   ========================================================= */
+/* Error */
 
 .error-banner {
   display: flex;
@@ -1766,16 +1544,13 @@ export default {
   padding: 7px 11px;
   color: #ffffff;
   font-size: 16px;
-  font-weight: 700;
   border: 0;
   border-radius: 8px;
   background: #dc2626;
   cursor: pointer;
 }
 
-/* =========================================================
-   TABLE
-   ========================================================= */
+/* Table */
 
 .table-responsive {
   width: 100%;
@@ -1798,7 +1573,6 @@ export default {
   font-size: 16px;
   font-weight: 800;
   text-align: left;
-  letter-spacing: 0.65px;
   text-transform: uppercase;
   border-bottom: 1px solid #e5e7eb;
 }
@@ -1811,19 +1585,9 @@ export default {
   border-bottom: 1px solid #edf2f7;
 }
 
-.records-table tbody tr {
-  transition:
-    background-color 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.records-table tbody tr:nth-child(even) {
-  background: #fbfdff;
-}
-
 .records-table tbody tr:hover {
-  background: #f0fdf4;
-  box-shadow: inset 4px 0 0 #16a34a;
+  background: #ecfdf5;
+  box-shadow: inset 4px 0 0 #059669;
 }
 
 .number-column {
@@ -1845,20 +1609,20 @@ export default {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #15803d;
+  color: #047857;
   font-size: 16px;
   font-weight: 800;
-  border: 1px solid #bbf7d0;
+  border: 1px solid #a7f3d0;
   border-radius: 9px;
-  background: #f0fdf4;
+  background: #ecfdf5;
 }
 
-.qualification-cell {
+.grade-cell {
   display: flex;
   align-items: center;
 }
 
-.qualification-icon {
+.grade-icon {
   min-width: 39px;
   width: 39px;
   height: 39px;
@@ -1867,27 +1631,26 @@ export default {
   justify-content: center;
   margin-right: 11px;
   border-radius: 11px;
-  background: #dcfce7;
+  background: #d1fae5;
 }
 
-.qualification-icon .md-icon {
-  color: #16a34a !important;
+.grade-icon .md-icon {
+  color: #059669 !important;
   font-size: 21px !important;
 }
 
-.qualification-information {
-  min-width: 0;
+.grade-information {
   display: flex;
   flex-direction: column;
 }
 
-.qualification-name {
+.grade-name {
   color: #1f2937;
   font-size: 16px;
   font-weight: 700;
 }
 
-.qualification-description {
+.grade-description {
   margin-top: 4px;
   color: #94a3b8;
   font-size: 16px;
@@ -1915,49 +1678,32 @@ export default {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0;
   border: 0;
   border-radius: 9px;
   cursor: pointer;
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease,
-    opacity 0.2s ease;
+  transition: transform 0.2s ease;
 }
 
 .record-action-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 7px 15px rgba(15, 23, 42, 0.12);
-}
-
-.record-action-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.55;
-}
-
-.record-action-button .md-icon {
-  font-size: 18px !important;
 }
 
 .edit-button {
+  color: #2563eb;
   background: #dbeafe;
 }
 
-.edit-button .md-icon {
-  color: #2563eb !important;
-}
-
 .delete-button {
+  color: #dc2626;
   background: #fee2e2;
 }
 
-.delete-button .md-icon {
-  color: #dc2626 !important;
+.record-action-button .md-icon {
+  color: inherit !important;
+  font-size: 18px !important;
 }
 
-/* =========================================================
-   LOADING AND EMPTY STATES
-   ========================================================= */
+/* States */
 
 .loading-state,
 .empty-state {
@@ -1970,13 +1716,32 @@ export default {
   text-align: center;
 }
 
+.loading-spinner,
+.button-spinner,
+.small-spinner {
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
 .loading-spinner {
   width: 43px;
   height: 43px;
-  border: 4px solid #dcfce7;
-  border-top-color: #16a34a;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+  border: 4px solid #d1fae5;
+  border-top-color: #059669;
+}
+
+.button-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #ffffff;
+}
+
+.small-spinner {
+  width: 15px;
+  height: 15px;
+  border: 2px solid #fecaca;
+  border-top-color: #dc2626;
 }
 
 .loading-state h3,
@@ -1984,7 +1749,6 @@ export default {
   margin: 15px 0 0;
   color: #475569;
   font-size: 16px;
-  font-weight: 700;
 }
 
 .loading-state p,
@@ -2005,16 +1769,13 @@ export default {
 }
 
 .empty-state-icon .md-icon {
-  color: #94a3b8 !important;
+  color: #059669 !important;
   font-size: 38px !important;
 }
 
 .empty-primary-button,
 .empty-secondary-button {
   min-height: 38px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
   padding: 0 13px;
   font-size: 16px;
   font-weight: 700;
@@ -2025,23 +1786,16 @@ export default {
 .empty-primary-button {
   color: #ffffff;
   border: 0;
-  background: #16a34a;
-}
-
-.empty-primary-button .md-icon {
-  color: #ffffff !important;
-  font-size: 17px !important;
+  background: #059669;
 }
 
 .empty-secondary-button {
-  color: #15803d;
-  border: 1px solid #bbf7d0;
-  background: #f0fdf4;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+  background: #ecfdf5;
 }
 
-/* =========================================================
-   PAGINATION
-   ========================================================= */
+/* Pagination */
 
 .pagination-footer {
   min-height: 64px;
@@ -2050,12 +1804,7 @@ export default {
   padding: 12px 20px;
   color: #64748b;
   font-size: 16px;
-  border-top: 1px solid #edf2f7;
   background: #f8fafc;
-}
-
-.pagination-information strong {
-  color: #334155;
 }
 
 .pagination-controls {
@@ -2065,58 +1814,16 @@ export default {
   margin-left: auto;
 }
 
-.pagination-controls label {
-  margin: 0;
-  color: #64748b;
-  font-size: 16px;
-}
-
-.pagination-controls select {
-  height: 31px;
-  padding: 0 23px 0 8px;
-  color: #475569;
-  font-size: 16px;
-  border: 1px solid #dbe3ee;
-  border-radius: 7px;
-  outline: none;
-  background: #ffffff;
-}
-
 .pagination-button {
   width: 31px;
   height: 31px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  color: #16a34a;
-  border: 1px solid #bbf7d0;
+  color: #059669;
+  border: 1px solid #a7f3d0;
   border-radius: 8px;
   background: #ffffff;
-  cursor: pointer;
 }
 
-.pagination-button:disabled {
-  color: #cbd5e1;
-  border-color: #e5e7eb;
-  cursor: not-allowed;
-}
-
-.pagination-button .md-icon {
-  color: inherit !important;
-  font-size: 19px !important;
-}
-
-.pagination-page {
-  min-width: 50px;
-  color: #475569;
-  font-weight: 700;
-  text-align: center;
-}
-
-/* =========================================================
-   MODAL
-   ========================================================= */
+/* Modal */
 
 .modal-overlay {
   position: fixed;
@@ -2130,7 +1837,7 @@ export default {
   backdrop-filter: blur(5px);
 }
 
-.qualification-modal {
+.grade-modal {
   width: 100%;
   max-width: 540px;
   overflow: hidden;
@@ -2140,36 +1847,19 @@ export default {
 }
 
 .modal-header {
-  position: relative;
-  min-height: 105px;
   display: flex;
   align-items: center;
   padding: 21px 23px;
-  overflow: hidden;
   color: #ffffff;
   background: linear-gradient(
     135deg,
-    #14532d,
-    #15803d,
-    #16a34a,
-    #22c55e
+    #064e3b,
+    #047857,
+    #10b981
   );
 }
 
-.modal-header::after {
-  content: "";
-  position: absolute;
-  top: -65px;
-  right: -35px;
-  width: 165px;
-  height: 165px;
-  border: 29px solid rgba(255, 255, 255, 0.08);
-  border-radius: 50%;
-}
-
 .modal-header-icon {
-  position: relative;
-  z-index: 2;
   min-width: 49px;
   width: 49px;
   height: 49px;
@@ -2181,19 +1871,12 @@ export default {
   background: rgba(255, 255, 255, 0.16);
 }
 
-.modal-header-icon .md-icon {
+.modal-header-icon .md-icon,
+.modal-close-button .md-icon {
   color: #ffffff !important;
-  font-size: 26px !important;
-}
-
-.modal-heading {
-  position: relative;
-  z-index: 2;
-  min-width: 0;
 }
 
 .modal-label {
-  color: rgba(255, 255, 255, 0.72);
   font-size: 16px;
   font-weight: 800;
   letter-spacing: 1px;
@@ -2203,7 +1886,6 @@ export default {
   margin: 4px 0 3px;
   color: #ffffff;
   font-size: 17px;
-  font-weight: 800;
 }
 
 .modal-heading p {
@@ -2213,30 +1895,10 @@ export default {
 }
 
 .modal-close-button {
-  position: relative;
-  z-index: 2;
-  width: 36px;
-  height: 36px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   margin-left: auto;
-  padding: 0;
-  color: #ffffff;
   border: 0;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.12);
+  background: transparent;
   cursor: pointer;
-}
-
-.modal-close-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.modal-close-button .md-icon {
-  color: #ffffff !important;
-  font-size: 20px !important;
 }
 
 .modal-body {
@@ -2262,48 +1924,32 @@ export default {
   padding: 0 13px;
   border: 1px solid #dbe3ee;
   border-radius: 11px;
-  background: #ffffff;
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
 }
 
 .form-input-wrapper:focus-within {
-  border-color: #16a34a;
-  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+  border-color: #059669;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
 }
 
 .form-input-wrapper.invalid {
   border-color: #dc2626;
-  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.08);
 }
 
 .form-input-wrapper .md-icon {
   margin-right: 10px;
-  color: #94a3b8 !important;
-  font-size: 20px !important;
+  color: #059669 !important;
 }
 
 .form-input-wrapper input {
   min-width: 0;
   flex: 1;
-  color: #1f2937;
-  font-size: 16px;
-  font-weight: 500;
   border: 0;
   outline: none;
-  background: transparent;
-}
-
-.form-input-wrapper input:disabled {
-  cursor: not-allowed;
-  opacity: 0.65;
 }
 
 .form-information {
   min-height: 26px;
   display: flex;
-  align-items: flex-start;
   padding-top: 5px;
 }
 
@@ -2325,50 +1971,33 @@ export default {
 
 .form-hint {
   display: flex;
-  align-items: flex-start;
   margin-top: 6px;
   padding: 10px 11px;
   color: #64748b;
   font-size: 16px;
-  line-height: 1.5;
-  border: 1px solid #dcfce7;
+  border: 1px solid #a7f3d0;
   border-radius: 9px;
-  background: #f0fdf4;
+  background: #ecfdf5;
 }
 
 .form-hint .md-icon {
-  min-width: 17px;
   margin-right: 7px;
-  color: #16a34a !important;
-  font-size: 17px !important;
+  color: #059669 !important;
 }
 
 .modal-error {
-  display: flex;
-  align-items: center;
   margin-top: 13px;
-  padding: 10px 11px;
+  padding: 10px;
   color: #991b1b;
   font-size: 16px;
-  border: 1px solid #fecaca;
-  border-radius: 9px;
   background: #fef2f2;
 }
 
-.modal-error .md-icon {
-  margin-right: 7px;
-  color: #dc2626 !important;
-  font-size: 18px !important;
-}
-
 .modal-footer {
-  min-height: 70px;
   display: flex;
-  align-items: center;
   justify-content: flex-end;
   gap: 9px;
   padding: 13px 21px;
-  border-top: 1px solid #edf2f7;
   background: #f8fafc;
 }
 
@@ -2379,11 +2008,9 @@ export default {
   font-size: 16px;
   font-weight: 700;
   border-radius: 9px;
-  cursor: pointer;
 }
 
 .cancel-button {
-  color: #64748b;
   border: 1px solid #e2e8f0;
   background: #ffffff;
 }
@@ -2396,58 +2023,19 @@ export default {
   border: 0;
   background: linear-gradient(
     135deg,
-    #15803d,
-    #16a34a,
-    #22c55e
+    #047857,
+    #10b981
   );
-  box-shadow: 0 8px 18px rgba(22, 163, 74, 0.22);
 }
-
-.save-button:disabled,
-.cancel-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.65;
-}
-
-.save-button .md-icon {
-  color: #ffffff !important;
-  font-size: 18px !important;
-}
-
-.button-spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.4);
-  border-top-color: #ffffff;
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-}
-
-/* =========================================================
-   TRANSITIONS
-   ========================================================= */
 
 .modal-fade-enter-active,
 .modal-fade-leave-active {
   transition: opacity 0.2s ease;
 }
 
-.modal-fade-enter-active .qualification-modal,
-.modal-fade-leave-active .qualification-modal {
-  transition:
-    opacity 0.2s ease,
-    transform 0.2s ease;
-}
-
 .modal-fade-enter,
 .modal-fade-leave-to {
   opacity: 0;
-}
-
-.modal-fade-enter .qualification-modal,
-.modal-fade-leave-to .qualification-modal {
-  opacity: 0;
-  transform: translateY(10px) scale(0.98);
 }
 
 .rotating {
@@ -2460,58 +2048,30 @@ export default {
   }
 }
 
-/* =========================================================
-   RESPONSIVE
-   ========================================================= */
+/* Responsive */
 
 @media (max-width: 991px) {
-
-
   .statistics-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .records-toolbar {
-    align-items: flex-start;
-  }
-
-  .toolbar-actions {
-    display: block;
-  }
-
-  .search-control {
-    width: 250px;
-  }
-
-  .refresh-button {
-    width: 100%;
-    justify-content: center;
-    margin-top: 8px;
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (max-width: 767px) {
-  
-
-  .header-add-button {
-    width: 100%;
-    justify-content: center;
-    margin-top: 20px;
-    margin-left: 0;
-  }
-
-
+  .page-header,
   .records-toolbar {
     display: block;
   }
 
-  .toolbar-actions {
+  .header-add-button,
+  .search-control,
+  .refresh-button {
+    width: 100%;
     margin-top: 15px;
-    margin-left: 0;
   }
 
-  .search-control {
-    width: 100%;
+  .toolbar-actions {
+    display: block;
+    margin-left: 0;
   }
 
   .identifier-column,
@@ -2521,29 +2081,12 @@ export default {
 }
 
 @media (max-width: 575px) {
-
-
-
   .statistics-grid {
     grid-template-columns: 1fr;
   }
 
-  .records-table th,
-  .records-table td {
-    padding-right: 11px;
-    padding-left: 11px;
-  }
-
-  .qualification-description {
-    display: none;
-  }
-
-  .number-column {
-    width: 55px;
-  }
-
-  .actions-column {
-    width: 100px;
+  .page-header {
+    padding: 22px 18px;
   }
 
   .pagination-footer {
@@ -2562,25 +2105,8 @@ export default {
     padding: 0;
   }
 
-  .qualification-modal {
-    max-width: none;
+  .grade-modal {
     border-radius: 19px 19px 0 0;
-  }
-
-  .modal-header {
-    padding: 18px;
-  }
-
-  .modal-heading p {
-    max-width: 230px;
-  }
-
-  .modal-body {
-    padding: 23px 18px 17px;
-  }
-
-  .modal-footer {
-    padding: 12px 16px;
   }
 
   .cancel-button,
@@ -2589,11 +2115,3 @@ export default {
   }
 }
 </style>
-
-
-
-
-
-
-
-

@@ -1,37 +1,37 @@
 <template>
-  <div class="academic-qualifications-page">
-    <!-- Page heading -->
-    <section class="aq-header">
-  <div class="aq-header-content">
-    <div class="aq-header-icon">
-      <md-icon>school</md-icon>
+  <div class="next-grades-page">
+    <!-- Page header -->
+    <section class="ng-header">
+  <div class="ng-header-content">
+    <div class="ng-header-icon">
+      <md-icon>trending_up</md-icon>
     </div>
 
-    <div class="aq-header-text">
-      
+    <div class="ng-header-text">
+      <span class="ng-header-label">
+        SYSTEM CONFIGURATION
+      </span>
 
-      <h1 class="aq-header-title">
-        Academic Qualifications
+      <h1 class="ng-header-title">
+        Next Grades
       </h1>
 
-      <p class="aq-header-description">
-        Create, update, search, and manage academic qualification
-        records used by staff accounts.
+      <p class="ng-header-description">
+        Create, edit, search, and manage the next grades used for
+        staff promotions and career progression.
       </p>
     </div>
   </div>
 
   <button
     type="button"
-    class="aq-header-button"
+    class="ng-header-button"
     :disabled="loading"
     @click="openCreateModal"
   >
     <md-icon>add_circle</md-icon>
 
-    <span>
-      Add Qualification
-    </span>
+    <span>Add Next Grade</span>
   </button>
 </section>
 
@@ -39,16 +39,16 @@
     <section class="statistics-grid">
       <div class="statistic-card">
         <div class="statistic-icon statistic-icon-primary">
-          <md-icon>school</md-icon>
+          <md-icon>trending_up</md-icon>
         </div>
 
         <div class="statistic-content">
           <span class="statistic-value">
-            {{ qualifications.length }}
+            {{ nextGrades.length }}
           </span>
 
           <span class="statistic-label">
-            Total Qualifications
+            Total Next Grades
           </span>
         </div>
       </div>
@@ -60,7 +60,7 @@
 
         <div class="statistic-content">
           <span class="statistic-value">
-            {{ filteredQualifications.length }}
+            {{ filteredNextGrades.length }}
           </span>
 
           <span class="statistic-label">
@@ -86,17 +86,14 @@
       </div>
     </section>
 
-    <!-- Main card -->
+    <!-- Records card -->
     <section class="records-card">
-      <!-- Controls -->
       <div class="records-toolbar">
         <div>
-          <h2>
-            Qualification Records
-          </h2>
+          <h2>Next Grade Records</h2>
 
           <p>
-            Manage all available academic qualifications.
+            Manage all promotion and career progression grades.
           </p>
         </div>
 
@@ -107,8 +104,8 @@
             <input
               v-model.trim="search"
               type="text"
-              placeholder="Search qualifications..."
-              aria-label="Search academic qualifications"
+              placeholder="Search next grades..."
+              aria-label="Search next grades"
             />
 
             <button
@@ -125,23 +122,25 @@
           <button
             type="button"
             class="refresh-button"
-            :disabled="loading"
-            @click="loadQualifications"
+            :disabled="loading || refreshing"
+            @click="refreshNextGrades"
           >
-            <md-icon :class="{ rotating: loading }">
+            <md-icon
+              :class="{
+                rotating: loading || refreshing
+              }"
+            >
               refresh
             </md-icon>
 
-            <span>
-              Refresh
-            </span>
+            <span>Refresh</span>
           </button>
         </div>
       </div>
 
       <div class="records-divider" />
 
-      <!-- Error state -->
+      <!-- Error -->
       <div
         v-if="errorMessage"
         class="error-banner"
@@ -150,70 +149,52 @@
           <md-icon>error_outline</md-icon>
 
           <div>
-            <strong>
-              Unable to load records
-            </strong>
-
-            <span>
-              {{ errorMessage }}
-            </span>
+            <strong>Unable to load next grades</strong>
+            <span>{{ errorMessage }}</span>
           </div>
         </div>
 
         <button
           type="button"
-          @click="loadQualifications"
+          @click="loadNextGrades"
         >
           Try Again
         </button>
       </div>
 
-      <!-- Loading state -->
+      <!-- Loading -->
       <div
-        v-if="loading && !qualifications.length"
+        v-if="loading && !nextGrades.length"
         class="loading-state"
       >
         <div class="loading-spinner" />
 
-        <h3>
-          Loading qualifications
-        </h3>
+        <h3>Loading next grades</h3>
 
         <p>
-          Please wait while the records are retrieved.
+          Please wait while the next-grade records are retrieved.
         </p>
       </div>
 
-      <!-- Table -->
+      <!-- Records table -->
       <div
-        v-else-if="paginatedQualifications.length"
+        v-else-if="paginatedNextGrades.length"
         class="table-responsive"
       >
         <table class="records-table">
           <thead>
             <tr>
-              <th class="number-column">
-                #
-              </th>
-
-              <th>
-                Qualification
-              </th>
-
-              <th class="identifier-column">
-                Record ID
-              </th>
-
-              <th class="actions-column">
-                Actions
-              </th>
+              <th class="number-column">#</th>
+              <th>Next Grade</th>
+              <th class="identifier-column">Record ID</th>
+              <th class="actions-column">Actions</th>
             </tr>
           </thead>
 
           <tbody>
             <tr
-              v-for="(qualification, index) in paginatedQualifications"
-              :key="qualification.id"
+              v-for="(grade, index) in paginatedNextGrades"
+              :key="grade.id"
             >
               <td>
                 <span class="row-number">
@@ -222,18 +203,18 @@
               </td>
 
               <td>
-                <div class="qualification-cell">
-                  <div class="qualification-icon">
-                    <md-icon>school</md-icon>
+                <div class="grade-cell">
+                  <div class="grade-icon">
+                    <md-icon>trending_up</md-icon>
                   </div>
 
-                  <div class="qualification-information">
-                    <span class="qualification-name">
-                      {{ qualification.name }}
+                  <div class="grade-information">
+                    <span class="grade-name">
+                      {{ grade.nextGrade }}
                     </span>
 
-                    <span class="qualification-description">
-                      Academic qualification record
+                    <span class="grade-description">
+                      Next promotion grade record
                     </span>
                   </div>
                 </div>
@@ -241,7 +222,7 @@
 
               <td>
                 <span class="record-id">
-                  #{{ qualification.id }}
+                  #{{ grade.id }}
                 </span>
               </td>
 
@@ -250,8 +231,9 @@
                   <button
                     type="button"
                     class="record-action-button edit-button"
-                    title="Edit qualification"
-                    @click="openEditModal(qualification)"
+                    title="Edit next grade"
+                    :disabled="deletingId === grade.id"
+                    @click="openEditModal(grade)"
                   >
                     <md-icon>edit</md-icon>
                   </button>
@@ -259,10 +241,18 @@
                   <button
                     type="button"
                     class="record-action-button delete-button"
-                    title="Delete qualification"
-                    @click="deleteQualification(qualification)"
+                    title="Delete next grade"
+                    :disabled="deletingId === grade.id"
+                    @click="deleteNextGrade(grade)"
                   >
-                    <md-icon>delete_outline</md-icon>
+                    <span
+                      v-if="deletingId === grade.id"
+                      class="small-spinner"
+                    />
+
+                    <md-icon v-else>
+                      delete_outline
+                    </md-icon>
                   </button>
                 </div>
               </td>
@@ -278,23 +268,23 @@
       >
         <div class="empty-state-icon">
           <md-icon>
-            {{ search ? "search_off" : "school" }}
+            {{ search ? "search_off" : "trending_up" }}
           </md-icon>
         </div>
 
         <h3>
           {{
             search
-              ? "No matching qualification found"
-              : "No academic qualifications yet"
+              ? "No matching next grade found"
+              : "No next grades created"
           }}
         </h3>
 
         <p>
           {{
             search
-              ? "Try searching with a different qualification name."
-              : "Create the first academic qualification record."
+              ? "Try searching with another grade name."
+              : "Create the first next grade for staff promotion."
           }}
         </p>
 
@@ -314,13 +304,13 @@
           @click="openCreateModal"
         >
           <md-icon>add</md-icon>
-          Add Qualification
+          Add Next Grade
         </button>
       </div>
 
       <!-- Pagination -->
       <div
-        v-if="filteredQualifications.length"
+        v-if="filteredNextGrades.length"
         class="pagination-footer"
       >
         <div class="pagination-information">
@@ -329,35 +319,24 @@
           to
           <strong>{{ paginationEnd }}</strong>
           of
-          <strong>{{ filteredQualifications.length }}</strong>
+          <strong>{{ filteredNextGrades.length }}</strong>
           records
         </div>
 
         <div class="pagination-controls">
-          <label for="academic-page-size">
+          <label for="next-grades-page-size">
             Rows:
           </label>
 
           <select
-            id="academic-page-size"
+            id="next-grades-page-size"
             v-model.number="pageSize"
             @change="handlePageSizeChange"
           >
-            <option :value="5">
-              5
-            </option>
-
-            <option :value="10">
-              10
-            </option>
-
-            <option :value="20">
-              20
-            </option>
-
-            <option :value="50">
-              50
-            </option>
+            <option :value="5">5</option>
+            <option :value="10">10</option>
+            <option :value="20">20</option>
+            <option :value="50">50</option>
           </select>
 
           <button
@@ -395,7 +374,7 @@
         @click.self="closeModal"
       >
         <div
-          class="qualification-modal"
+          class="grade-modal"
           role="dialog"
           aria-modal="true"
           :aria-label="modalTitle"
@@ -409,20 +388,12 @@
 
             <div class="modal-heading">
               <span class="modal-label">
-                ACADEMIC QUALIFICATION
+                NEXT GRADE
               </span>
 
-              <h2>
-                {{ modalTitle }}
-              </h2>
+              <h2>{{ modalTitle }}</h2>
 
-              <p>
-                {{
-                  editingId
-                    ? "Update the selected qualification record."
-                    : "Enter a new qualification for staff accounts."
-                }}
-              </p>
+              <p>{{ modalDescription }}</p>
             </div>
 
             <button
@@ -436,32 +407,34 @@
             </button>
           </div>
 
-          <form @submit.prevent="saveQualification">
+          <form @submit.prevent="saveNextGrade">
             <div class="modal-body">
               <label
                 class="form-label"
-                for="qualification-name"
+                for="next-grade-name"
               >
-                Qualification Name
+                Next Grade Name
                 <span>*</span>
               </label>
 
               <div
                 class="form-input-wrapper"
                 :class="{
-                  invalid: formSubmitted && nameError
+                  invalid:
+                    formSubmitted &&
+                    nextGradeError
                 }"
               >
-                <md-icon>school</md-icon>
+                <md-icon>trending_up</md-icon>
 
                 <input
-                  id="qualification-name"
-                  ref="nameInput"
-                  v-model="form.name"
+                  id="next-grade-name"
+                  ref="nextGradeInput"
+                  v-model="form.nextGrade"
                   type="text"
                   maxlength="100"
                   autocomplete="off"
-                  placeholder="Example: Bachelor's Degree"
+                  placeholder="Example: Deputy Director"
                   :disabled="saving"
                   @input="clearFormError"
                 />
@@ -471,14 +444,16 @@
                 <span
                   class="form-error"
                   :class="{
-                    visible: formSubmitted && nameError
+                    visible:
+                      formSubmitted &&
+                      nextGradeError
                   }"
                 >
-                  {{ nameError || " " }}
+                  {{ nextGradeError || " " }}
                 </span>
 
                 <span class="character-count">
-                  {{ form.name.length }} / 100
+                  {{ form.nextGrade.length }} / 100
                 </span>
               </div>
 
@@ -486,7 +461,7 @@
                 <md-icon>info_outline</md-icon>
 
                 <span>
-                  Qualification names must be unique and cannot exceed
+                  Next grade names must be unique and cannot exceed
                   100 characters.
                 </span>
               </div>
@@ -496,10 +471,7 @@
                 class="modal-error"
               >
                 <md-icon>error_outline</md-icon>
-
-                <span>
-                  {{ formError }}
-                </span>
+                <span>{{ formError }}</span>
               </div>
             </div>
 
@@ -527,15 +499,7 @@
                   {{ editingId ? "save" : "add" }}
                 </md-icon>
 
-                <span>
-                  {{
-                    saving
-                      ? "Saving..."
-                      : editingId
-                        ? "Update Qualification"
-                        : "Create Qualification"
-                  }}
-                </span>
+                <span>{{ submitButtonText }}</span>
               </button>
             </div>
           </form>
@@ -545,19 +509,15 @@
   </div>
 </template>
 
-
-
 <script>
 import axios from "axios";
 import Swal from "sweetalert2";
 
 // Production API
-
-// Local/testing API
- const API_BASE_URL = "http://127.0.0.1:8888/api";
+const API_BASE_URL  = "http://127.0.0.1:8888/api";
 
 export default {
-  name: "SuperAcademicQualifications",
+  name: "SuperNextGrades",
 
   data() {
     return {
@@ -574,49 +534,55 @@ export default {
       errorMessage: "",
       formError: "",
 
-      qualifications: [],
+      nextGrades: [],
 
       currentPage: 1,
       pageSize: 10,
-
       lastUpdated: null,
 
       form: {
-        name: ""
+        nextGrade: ""
       }
     };
   },
 
   computed: {
-    filteredQualifications() {
+    filteredNextGrades() {
       const searchValue = this.search
         ? this.search.trim().toLowerCase()
         : "";
 
       if (!searchValue) {
-        return this.qualifications;
+        return this.nextGrades;
       }
 
-      return this.qualifications.filter(qualification => {
-        const name = qualification.name || "";
+      return this.nextGrades.filter(grade => {
+        const gradeName =
+          grade.nextGrade || "";
 
-        return name
+        return gradeName
           .trim()
           .toLowerCase()
           .includes(searchValue);
       });
     },
 
-    sortedQualifications() {
-      return [...this.filteredQualifications].sort(
+    sortedNextGrades() {
+      return [...this.filteredNextGrades].sort(
         (first, second) => {
-          const firstName = first.name
-            ? first.name.trim().toLowerCase()
-            : "";
+          const firstName =
+            first.nextGrade
+              ? first.nextGrade
+                  .trim()
+                  .toLowerCase()
+              : "";
 
-          const secondName = second.name
-            ? second.name.trim().toLowerCase()
-            : "";
+          const secondName =
+            second.nextGrade
+              ? second.nextGrade
+                  .trim()
+                  .toLowerCase()
+              : "";
 
           return firstName.localeCompare(secondName);
         }
@@ -627,28 +593,25 @@ export default {
       return Math.max(
         1,
         Math.ceil(
-          this.sortedQualifications.length /
+          this.sortedNextGrades.length /
             this.pageSize
         )
       );
     },
 
-    paginatedQualifications() {
+    paginatedNextGrades() {
       const start =
         (this.currentPage - 1) *
         this.pageSize;
 
-      const end =
-        start + this.pageSize;
-
-      return this.sortedQualifications.slice(
+      return this.sortedNextGrades.slice(
         start,
-        end
+        start + this.pageSize
       );
     },
 
     paginationStart() {
-      if (!this.sortedQualifications.length) {
+      if (!this.sortedNextGrades.length) {
         return 0;
       }
 
@@ -662,20 +625,20 @@ export default {
     paginationEnd() {
       return Math.min(
         this.currentPage * this.pageSize,
-        this.sortedQualifications.length
+        this.sortedNextGrades.length
       );
     },
 
     modalTitle() {
       return this.editingId
-        ? "Edit Qualification"
-        : "Add Qualification";
+        ? "Edit Next Grade"
+        : "Add Next Grade";
     },
 
     modalDescription() {
       return this.editingId
-        ? "Update the selected academic qualification."
-        : "Create a new academic qualification for staff accounts.";
+        ? "Update the selected next promotion grade."
+        : "Create a new next grade for staff progression.";
     },
 
     submitButtonText() {
@@ -686,48 +649,46 @@ export default {
       }
 
       return this.editingId
-        ? "Update Qualification"
-        : "Create Qualification";
+        ? "Update Next Grade"
+        : "Create Next Grade";
     },
 
-    nameError() {
-      const name = this.form.name
-        ? this.form.name.trim()
-        : "";
+    nextGradeError() {
+      const gradeName =
+        this.form.nextGrade
+          ? this.form.nextGrade.trim()
+          : "";
 
-      if (!name) {
-        return "Qualification name is required.";
+      if (!gradeName) {
+        return "Next grade is required.";
       }
 
-      if (name.length < 2) {
-        return "Qualification name must contain at least 2 characters.";
+      if (gradeName.length < 2) {
+        return "Next grade must contain at least 2 characters.";
       }
 
-      if (name.length > 100) {
-        return "Qualification name cannot exceed 100 characters.";
+      if (gradeName.length > 100) {
+        return "Next grade cannot exceed 100 characters.";
       }
 
       const duplicate =
-        this.qualifications.some(
-          qualification => {
-            const qualificationName =
-              qualification.name
-                ? qualification.name
-                    .trim()
-                    .toLowerCase()
-                : "";
+        this.nextGrades.some(grade => {
+          const existingName =
+            grade.nextGrade
+              ? grade.nextGrade
+                  .trim()
+                  .toLowerCase()
+              : "";
 
-            return (
-              qualification.id !==
-                this.editingId &&
-              qualificationName ===
-                name.toLowerCase()
-            );
-          }
-        );
+          return (
+            grade.id !== this.editingId &&
+            existingName ===
+              gradeName.toLowerCase()
+          );
+        });
 
       if (duplicate) {
-        return "This academic qualification already exists.";
+        return "This next grade already exists.";
       }
 
       return "";
@@ -744,13 +705,6 @@ export default {
           hour: "2-digit",
           minute: "2-digit"
         }
-      );
-    },
-
-    hasSearch() {
-      return Boolean(
-        this.search &&
-          this.search.trim()
       );
     }
   },
@@ -773,7 +727,7 @@ export default {
   },
 
   created() {
-    this.loadQualifications();
+    this.loadNextGrades();
   },
 
   beforeDestroy() {
@@ -784,12 +738,8 @@ export default {
     getRequestConfig() {
       const token =
         localStorage.getItem("token") ||
-        localStorage.getItem(
-          "accessToken"
-        ) ||
-        localStorage.getItem(
-          "access_token"
-        );
+        localStorage.getItem("accessToken") ||
+        localStorage.getItem("access_token");
 
       const headers = {
         Accept: "application/json",
@@ -806,41 +756,33 @@ export default {
       };
     },
 
-    async loadQualifications() {
+    async loadNextGrades() {
       this.loading = true;
       this.errorMessage = "";
 
       try {
         const response = await axios.get(
-          `${API_BASE_URL}/academic-qualifications`,
+          `${API_BASE_URL}/next-grades`,
           this.getRequestConfig()
         );
 
-        this.qualifications =
+        this.nextGrades =
           Array.isArray(response.data)
             ? response.data
             : [];
 
         this.lastUpdated = new Date();
-
-        if (
-          this.currentPage >
-          this.totalPages
-        ) {
-          this.currentPage =
-            this.totalPages;
-        }
       } catch (error) {
-        this.qualifications = [];
+        this.nextGrades = [];
 
         this.errorMessage =
           this.getErrorMessage(
             error,
-            "Unable to load academic qualifications."
+            "Unable to load next grades."
           );
 
         console.error(
-          "Unable to load academic qualifications",
+          "Unable to load next grades",
           error
         );
       } finally {
@@ -848,11 +790,11 @@ export default {
       }
     },
 
-    async refreshQualifications() {
+    async refreshNextGrades() {
       this.refreshing = true;
 
       try {
-        await this.loadQualifications();
+        await this.loadNextGrades();
       } finally {
         this.refreshing = false;
       }
@@ -861,20 +803,19 @@ export default {
     openCreateModal() {
       this.resetForm();
       this.showModal = true;
-      this.focusNameInput();
+      this.focusNextGradeInput();
     },
 
-    openEditModal(qualification) {
+    openEditModal(grade) {
       this.resetForm();
 
-      this.editingId =
-        qualification.id;
+      this.editingId = grade.id;
 
-      this.form.name =
-        qualification.name || "";
+      this.form.nextGrade =
+        grade.nextGrade || "";
 
       this.showModal = true;
-      this.focusNameInput();
+      this.focusNextGradeInput();
     },
 
     closeModal() {
@@ -890,7 +831,7 @@ export default {
       this.editingId = null;
 
       this.form = {
-        name: ""
+        nextGrade: ""
       };
 
       this.formSubmitted = false;
@@ -901,33 +842,36 @@ export default {
       this.formError = "";
     },
 
-    focusNameInput() {
+    focusNextGradeInput() {
       this.$nextTick(() => {
-        if (this.$refs.nameInput) {
-          this.$refs.nameInput.focus();
+        if (
+          this.$refs.nextGradeInput
+        ) {
+          this.$refs.nextGradeInput.focus();
         }
       });
     },
 
-    async saveQualification() {
+    async saveNextGrade() {
       this.formSubmitted = true;
       this.formError = "";
 
-      if (this.nameError) {
-        this.focusNameInput();
+      if (this.nextGradeError) {
+        this.focusNextGradeInput();
         return;
       }
 
       this.saving = true;
 
       const payload = {
-        name: this.form.name.trim()
+        nextGrade:
+          this.form.nextGrade.trim()
       };
 
       try {
         if (this.editingId) {
           await axios.put(
-            `${API_BASE_URL}/academic-qualifications/${this.editingId}`,
+            `${API_BASE_URL}/next-grades/${this.editingId}`,
             payload,
             this.getRequestConfig()
           );
@@ -935,12 +879,12 @@ export default {
           this.showModal = false;
 
           await this.showSuccess(
-            "Qualification updated",
-            `"${payload.name}" was updated successfully.`
+            "Next grade updated",
+            `"${payload.nextGrade}" was updated successfully.`
           );
         } else {
           await axios.post(
-            `${API_BASE_URL}/academic-qualifications`,
+            `${API_BASE_URL}/next-grades`,
             payload,
             this.getRequestConfig()
           );
@@ -948,23 +892,22 @@ export default {
           this.showModal = false;
 
           await this.showSuccess(
-            "Qualification created",
-            `"${payload.name}" was created successfully.`
+            "Next grade created",
+            `"${payload.nextGrade}" was created successfully.`
           );
         }
 
         this.resetForm();
-
-        await this.loadQualifications();
+        await this.loadNextGrades();
       } catch (error) {
         this.formError =
           this.getErrorMessage(
             error,
-            "Unable to save the academic qualification."
+            "Unable to save the next grade."
           );
 
         console.error(
-          "Unable to save academic qualification",
+          "Unable to save next grade",
           error
         );
       } finally {
@@ -972,15 +915,13 @@ export default {
       }
     },
 
-    async deleteQualification(
-      qualification
-    ) {
-      const qualificationName =
-        qualification.name ||
-        "this qualification";
+    async deleteNextGrade(grade) {
+      const gradeName =
+        grade.nextGrade ||
+        "this next grade";
 
       const result = await Swal.fire({
-        title: "Delete qualification?",
+        title: "Delete next grade?",
         html: `
           <div style="
             color: #64748b;
@@ -989,9 +930,7 @@ export default {
           ">
             Are you sure you want to delete
             <strong style="color: #1f2937;">
-              ${this.escapeHtml(
-                qualificationName
-              )}
+              ${this.escapeHtml(gradeName)}
             </strong>?
             <br><br>
             This action cannot be undone.
@@ -999,10 +938,9 @@ export default {
         `,
         icon: "warning",
         showCancelButton: true,
-        confirmButtonColor: "white",
-        cancelButtonColor: "white",
-        confirmButtonText:
-          "Yes, delete",
+        confirmButtonColor: "#dc2626",
+        cancelButtonColor: "#64748b",
+        confirmButtonText: "Yes, delete",
         cancelButtonText: "Cancel",
         reverseButtons: true,
         focusCancel: true
@@ -1012,42 +950,36 @@ export default {
         return;
       }
 
-      this.deletingId =
-        qualification.id;
+      this.deletingId = grade.id;
 
       try {
         await axios.delete(
-          `${API_BASE_URL}/academic-qualifications/${qualification.id}`,
+          `${API_BASE_URL}/next-grades/${grade.id}`,
           this.getRequestConfig()
         );
 
         await Swal.fire({
-          title: "Qualification deleted",
-          text: `"${qualificationName}" was deleted successfully.`,
+          title: "Next grade deleted",
+          text: `"${gradeName}" was deleted successfully.`,
           icon: "success",
-          confirmButtonColor: "white",
+          confirmButtonColor: "#0891b2",
           confirmButtonText: "Done",
           timer: 2200,
           timerProgressBar: true
         });
 
-        await this.loadQualifications();
+        await this.loadNextGrades();
       } catch (error) {
         await Swal.fire({
           title: "Delete failed",
           text: this.getErrorMessage(
             error,
-            "Unable to delete the academic qualification."
+            "Unable to delete the next grade."
           ),
           icon: "error",
-          confirmButtonColor: "white",
+          confirmButtonColor: "#dc2626",
           confirmButtonText: "Close"
         });
-
-        console.error(
-          "Unable to delete academic qualification",
-          error
-        );
       } finally {
         this.deletingId = null;
       }
@@ -1058,7 +990,7 @@ export default {
         title,
         text,
         icon: "success",
-        confirmButtonColor: "white",
+        confirmButtonColor: "#0891b2",
         confirmButtonText: "Done",
         timer: 2200,
         timerProgressBar: true
@@ -1080,8 +1012,7 @@ export default {
         error.response.data;
 
       if (
-        typeof responseData ===
-          "string" &&
+        typeof responseData === "string" &&
         responseData.trim()
       ) {
         return responseData;
@@ -1089,18 +1020,17 @@ export default {
 
       if (
         responseData &&
-        typeof responseData.message ===
-          "string"
+        typeof responseData.message === "string"
       ) {
         return responseData.message;
       }
 
       if (status === 400) {
-        return "Please check the submitted qualification name.";
+        return "Please check the submitted next grade name.";
       }
 
       if (status === 401) {
-        return "Your session is no longer valid. Please sign in again.";
+        return "Your session is no longer valid.";
       }
 
       if (status === 403) {
@@ -1108,15 +1038,15 @@ export default {
       }
 
       if (status === 404) {
-        return "The academic qualification was not found.";
+        return "The next grade was not found.";
       }
 
       if (status === 409) {
-        return "This academic qualification already exists.";
+        return "This next grade already exists.";
       }
 
       if (status === 500) {
-        return "The server could not process the request.";
+        return "The server could not process this request.";
       }
 
       return fallbackMessage;
@@ -1126,8 +1056,7 @@ export default {
       const element =
         document.createElement("div");
 
-      element.textContent =
-        value || "";
+      element.textContent = value || "";
 
       return element.innerHTML;
     },
@@ -1156,15 +1085,6 @@ export default {
       }
     },
 
-    goToPage(page) {
-      if (
-        page >= 1 &&
-        page <= this.totalPages
-      ) {
-        this.currentPage = page;
-      }
-    },
-
     rowNumber(index) {
       return (
         (this.currentPage - 1) *
@@ -1177,26 +1097,20 @@ export default {
 };
 </script>
 
-
 <style scoped>
-.academic-qualifications-page {
+
+.next-grades-page {
   width: 100%;
   min-height: 100%;
   padding: 4px 0 30px;
+  color: #1f2937;
 }
 
-/* =========================================================
-   PAGE HEADER
-   ========================================================= */
+/* Next Grades compact header */
 
-/* =========================================================
-   ACADEMIC QUALIFICATIONS HEADER
-   ========================================================= */
-
-.aq-header {
+.ng-header {
   position: relative !important;
-  top: auto !important;
-  left: auto !important;
+  inset: auto !important;
 
   width: 100%;
   height: auto !important;
@@ -1215,47 +1129,48 @@ export default {
 
   color: #1f2937;
 
-  border: 1px solid #dfe7e3;
-  border-left: 4px solid #16a34a;
+  border: 1px solid #d9edf2;
+  border-left: 4px solid #0891b2;
   border-radius: 12px;
 
-  background: linear-gradient(
-    135deg,
-    #ffffff 0%,
-    #fbfefc 70%,
-    #f1faf4 100%
-  );
+  background:
+    radial-gradient(
+      circle at 87% 0%,
+      rgba(8, 145, 178, 0.06),
+      transparent 30%
+    ),
+    linear-gradient(
+      135deg,
+      #ffffff 0%,
+      #fcfeff 70%,
+      #ecfeff 100%
+    );
 
   box-shadow: 0 5px 16px rgba(15, 23, 42, 0.055);
 }
 
-.aq-header::before {
+.ng-header::before {
   content: "";
   position: absolute;
   top: -52px;
-  right: 110px;
-
+  right: 120px;
   width: 115px;
   height: 115px;
-
-  border: 18px solid rgba(22, 163, 74, 0.035);
+  border: 18px solid rgba(8, 145, 178, 0.035);
   border-radius: 50%;
-
   pointer-events: none;
 }
 
-.aq-header-content {
+.ng-header-content {
   position: relative;
   z-index: 2;
-
   min-width: 0;
-
   display: flex;
   flex: 1;
   align-items: center;
 }
 
-.aq-header-icon {
+.ng-header-icon {
   min-width: 44px;
   width: 44px;
   height: 44px;
@@ -1270,38 +1185,34 @@ export default {
 
   background: linear-gradient(
     135deg,
-    #15803d,
-    #16a34a
+    #0e7490,
+    #0891b2
   );
 
-  box-shadow: 0 6px 14px rgba(22, 163, 74, 0.2);
+  box-shadow: 0 6px 14px rgba(8, 145, 178, 0.22);
 }
 
-.aq-header-icon .md-icon {
+.ng-header-icon .md-icon {
   width: auto !important;
   min-width: 0 !important;
   height: auto !important;
-
   margin: 0 !important;
-
+  padding: 0 !important;
   color: #ffffff !important;
   font-size: 24px !important;
   line-height: 1 !important;
 }
 
-.aq-header-text {
+.ng-header-text {
   min-width: 0;
   flex: 1;
 }
 
-.aq-header-label {
+.ng-header-label {
   display: block;
-
   margin: 0 0 2px;
   padding: 0;
-
-  color: #15803d;
-
+  color: #0e7490;
   font-size: 9px;
   font-weight: 800;
   line-height: 1.2;
@@ -1309,32 +1220,27 @@ export default {
   text-transform: uppercase;
 }
 
-.aq-header-title {
+.ng-header-title {
   margin: 0 !important;
   padding: 0 !important;
-
   color: #172033;
-
   font-size: 20px !important;
   font-weight: 800;
   line-height: 1.25 !important;
   letter-spacing: -0.2px;
 }
 
-.aq-header-description {
+.ng-header-description {
   max-width: 620px;
-
   margin: 3px 0 0 !important;
   padding: 0 !important;
-
   color: #64748b;
-
   font-size: 12px !important;
   font-weight: 400;
   line-height: 1.4 !important;
 }
 
-.aq-header-button {
+.ng-header-button {
   position: relative;
   z-index: 2;
 
@@ -1352,7 +1258,6 @@ export default {
   padding: 0 14px !important;
 
   color: #ffffff;
-
   font-size: 12px;
   font-weight: 700;
   line-height: 1;
@@ -1364,11 +1269,11 @@ export default {
 
   background: linear-gradient(
     135deg,
-    #15803d,
-    #16a34a
+    #0e7490,
+    #0891b2
   );
 
-  box-shadow: 0 6px 14px rgba(22, 163, 74, 0.2);
+  box-shadow: 0 6px 14px rgba(8, 145, 178, 0.22);
 
   cursor: pointer;
 
@@ -1378,135 +1283,38 @@ export default {
     opacity 0.2s ease;
 }
 
-.aq-header-button:hover:not(:disabled) {
+.ng-header-button:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 9px 18px rgba(22, 163, 74, 0.26);
+  box-shadow: 0 9px 18px rgba(8, 145, 178, 0.28);
 }
 
-.aq-header-button:active:not(:disabled) {
+.ng-header-button:active:not(:disabled) {
   transform: translateY(0);
 }
 
-.aq-header-button:focus-visible {
+.ng-header-button:focus-visible {
   box-shadow:
-    0 0 0 4px rgba(22, 163, 74, 0.14),
-    0 6px 14px rgba(22, 163, 74, 0.2);
+    0 0 0 4px rgba(8, 145, 178, 0.14),
+    0 6px 14px rgba(8, 145, 178, 0.22);
 }
 
-.aq-header-button:disabled {
+.ng-header-button:disabled {
   cursor: not-allowed;
   opacity: 0.55;
 }
 
-.aq-header-button .md-icon {
+.ng-header-button .md-icon {
   width: auto !important;
   min-width: 0 !important;
   height: auto !important;
-
   margin: 0 !important;
-
+  padding: 0 !important;
   color: #ffffff !important;
   font-size: 18px !important;
   line-height: 1 !important;
 }
 
-/* =========================================================
-   HEADER RESPONSIVENESS
-   ========================================================= */
-
-@media (max-width: 991px) {
-  .aq-header {
-    min-height: 0 !important;
-    padding: 11px 14px !important;
-  }
-
-  .aq-header-description {
-    max-width: 430px;
-  }
-}
-
-@media (max-width: 767px) {
-  .aq-header {
-    display: block;
-
-    height: auto !important;
-    min-height: 0 !important;
-
-    padding: 13px !important;
-  }
-
-  .aq-header-content {
-    align-items: flex-start;
-  }
-
-  .aq-header-button {
-    width: 100%;
-    height: 40px;
-
-    margin: 12px 0 0 !important;
-  }
-}
-
-@media (max-width: 575px) {
-  .aq-header {
-    margin-bottom: 14px !important;
-    padding: 11px !important;
-    border-radius: 11px;
-  }
-
-  .aq-header::before {
-    display: none;
-  }
-
-  .aq-header-icon {
-    min-width: 40px;
-    width: 40px;
-    height: 40px;
-
-    margin-right: 10px;
-
-    border-radius: 10px;
-  }
-
-  .aq-header-icon .md-icon {
-    font-size: 22px !important;
-  }
-
-  .aq-header-label {
-    font-size: 8px;
-  }
-
-  .aq-header-title {
-    font-size: 17px !important;
-  }
-
-  .aq-header-description {
-    margin-top: 2px !important;
-
-    font-size: 10px !important;
-    line-height: 1.35 !important;
-  }
-
-  .aq-header-button {
-    min-height: 38px;
-    height: 38px;
-
-    font-size: 11px;
-  }
-}
-
-
-
-
-
-
-
-
-
-
-/* =========================================================
-   STATISTICS
-   ========================================================= */
+/* Statistics */
 
 .statistics-grid {
   display: grid;
@@ -1516,6 +1324,7 @@ export default {
 }
 
 .statistic-card {
+  min-height: 96px;
   display: flex;
   align-items: center;
   padding: 18px;
@@ -1530,15 +1339,15 @@ export default {
 }
 
 .statistic-card:hover {
-  border-color: #bbf7d0;
-  box-shadow: 0 13px 28px rgba(15, 23, 42, 0.08);
+  border-color: #a5f3fc;
   transform: translateY(-2px);
+  box-shadow: 0 13px 28px rgba(15, 23, 42, 0.08);
 }
 
 .statistic-icon {
-  min-width: 48px;
-  width: 48px;
-  height: 48px;
+  min-width: 50px;
+  width: 50px;
+  height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1547,12 +1356,12 @@ export default {
 
 .statistic-icon .md-icon {
   color: inherit !important;
-  font-size: 26px !important;
+  font-size: 27px !important;
 }
 
 .statistic-icon-primary {
-  color: #2563eb;
-  background: #dbeafe;
+  color: #0891b2;
+  background: #cffafe;
 }
 
 .statistic-icon-success {
@@ -1574,20 +1383,19 @@ export default {
 
 .statistic-value {
   color: #111827;
-  font-size: 20px;
+  font-size: 23px;
   font-weight: 800;
+  line-height: 1.25;
 }
 
 .statistic-label {
   margin-top: 4px;
-  color: #94a3b8;
-  font-size: 16px;
+  color: #64748b;
+  font-size: 14px;
   font-weight: 600;
 }
 
-/* =========================================================
-   RECORDS CARD
-   ========================================================= */
+/* Records card */
 
 .records-card {
   overflow: hidden;
@@ -1598,7 +1406,7 @@ export default {
 }
 
 .records-toolbar {
-  min-height: 82px;
+  min-height: 86px;
   display: flex;
   align-items: center;
   padding: 19px 23px;
@@ -1607,14 +1415,16 @@ export default {
 .records-toolbar h2 {
   margin: 0;
   color: #111827;
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 800;
+  line-height: 1.3;
 }
 
 .records-toolbar p {
   margin: 5px 0 0;
-  color: #94a3b8;
-  font-size: 16px;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.45;
 }
 
 .toolbar-actions {
@@ -1624,32 +1434,37 @@ export default {
   margin-left: auto;
 }
 
-/* =========================================================
-   SEARCH
-   ========================================================= */
+.records-divider {
+  height: 1px;
+  background: #edf2f7;
+}
+
+/* Search */
 
 .search-control {
-  width: 285px;
-  height: 42px;
+  width: 300px;
+  height: 45px;
   display: flex;
   align-items: center;
-  padding: 0 12px;
+  padding: 0 13px;
   border: 1px solid #dbe3ee;
   border-radius: 11px;
   background: #f8fafc;
   transition:
     border-color 0.2s ease,
-    box-shadow 0.2s ease;
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
 }
 
 .search-control:focus-within {
-  border-color: #16a34a;
-  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.09);
+  border-color: #0891b2;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.09);
 }
 
 .search-control > .md-icon {
   color: #94a3b8 !important;
-  font-size: 20px !important;
+  font-size: 21px !important;
 }
 
 .search-control input {
@@ -1657,7 +1472,7 @@ export default {
   flex: 1;
   margin-left: 8px;
   color: #334155;
-  font-size: 16px;
+  font-size: 14px;
   border: 0;
   outline: none;
   background: transparent;
@@ -1668,69 +1483,70 @@ export default {
 }
 
 .clear-search-button {
-  display: flex;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0;
   border: 0;
+  border-radius: 7px;
   outline: none;
   background: transparent;
   cursor: pointer;
 }
 
+.clear-search-button:hover {
+  background: #e2e8f0;
+}
+
 .clear-search-button .md-icon {
-  color: #94a3b8 !important;
-  font-size: 17px !important;
+  color: #64748b !important;
+  font-size: 18px !important;
 }
 
 .refresh-button {
-  min-height: 42px;
+  min-height: 45px;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 7px;
-  padding: 0 13px;
-  color: #15803d;
-  font-size: 16px;
+  padding: 0 15px;
+  color: #0e7490;
+  font-size: 14px;
   font-weight: 700;
-  border: 1px solid #bbf7d0;
+  border: 1px solid #a5f3fc;
   border-radius: 10px;
   outline: none;
-  background: #f0fdf4;
+  background: #ecfeff;
   cursor: pointer;
   transition:
-    background-color 0.2s ease,
-    transform 0.2s ease;
+    transform 0.2s ease,
+    background-color 0.2s ease;
 }
 
 .refresh-button:hover:not(:disabled) {
-  background: #dcfce7;
+  background: #cffafe;
   transform: translateY(-1px);
 }
 
 .refresh-button:disabled {
   cursor: not-allowed;
-  opacity: 0.6;
+  opacity: 0.55;
 }
 
 .refresh-button .md-icon {
-  color: #16a34a !important;
-  font-size: 19px !important;
+  color: #0891b2 !important;
+  font-size: 20px !important;
 }
 
-.records-divider {
-  height: 1px;
-  background: #edf2f7;
-}
-
-/* =========================================================
-   ERROR BANNER
-   ========================================================= */
+/* Error */
 
 .error-banner {
   display: flex;
   align-items: center;
   margin: 18px;
-  padding: 13px 15px;
+  padding: 14px 16px;
   color: #991b1b;
   border: 1px solid #fecaca;
   border-radius: 11px;
@@ -1745,6 +1561,7 @@ export default {
 
 .error-banner-content .md-icon {
   color: #dc2626 !important;
+  font-size: 24px !important;
 }
 
 .error-banner-content div {
@@ -1753,19 +1570,21 @@ export default {
 }
 
 .error-banner-content strong {
-  font-size: 16px;
+  font-size: 15px;
+  font-weight: 800;
 }
 
 .error-banner-content span {
   margin-top: 3px;
-  font-size: 16px;
+  font-size: 14px;
+  line-height: 1.4;
 }
 
 .error-banner button {
   margin-left: auto;
-  padding: 7px 11px;
+  padding: 8px 13px;
   color: #ffffff;
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 700;
   border: 0;
   border-radius: 8px;
@@ -1773,9 +1592,7 @@ export default {
   cursor: pointer;
 }
 
-/* =========================================================
-   TABLE
-   ========================================================= */
+/* Table */
 
 .table-responsive {
   width: 100%;
@@ -1792,22 +1609,22 @@ export default {
 }
 
 .records-table th {
-  height: 52px;
+  height: 54px;
   padding: 0 20px;
-  color: #64748b;
-  font-size: 16px;
+  color: #526176;
+  font-size: 12px;
   font-weight: 800;
   text-align: left;
-  letter-spacing: 0.65px;
+  letter-spacing: 0.55px;
   text-transform: uppercase;
   border-bottom: 1px solid #e5e7eb;
 }
 
 .records-table td {
-  height: 69px;
-  padding: 10px 20px;
+  height: 72px;
+  padding: 11px 20px;
   color: #475569;
-  font-size: 16px;
+  font-size: 14px;
   border-bottom: 1px solid #edf2f7;
 }
 
@@ -1818,12 +1635,12 @@ export default {
 }
 
 .records-table tbody tr:nth-child(even) {
-  background: #fbfdff;
+  background: #fcfdfe;
 }
 
 .records-table tbody tr:hover {
-  background: #f0fdf4;
-  box-shadow: inset 4px 0 0 #16a34a;
+  background: #ecfeff;
+  box-shadow: inset 4px 0 0 #0891b2;
 }
 
 .number-column {
@@ -1840,64 +1657,66 @@ export default {
 }
 
 .row-number {
-  width: 31px;
-  height: 31px;
+  width: 34px;
+  height: 34px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #15803d;
-  font-size: 16px;
+  color: #0e7490;
+  font-size: 13px;
   font-weight: 800;
-  border: 1px solid #bbf7d0;
+  border: 1px solid #a5f3fc;
   border-radius: 9px;
-  background: #f0fdf4;
+  background: #ecfeff;
 }
 
-.qualification-cell {
+.grade-cell {
   display: flex;
   align-items: center;
 }
 
-.qualification-icon {
-  min-width: 39px;
-  width: 39px;
-  height: 39px;
+.grade-icon {
+  min-width: 42px;
+  width: 42px;
+  height: 42px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 11px;
-  border-radius: 11px;
-  background: #dcfce7;
+  margin-right: 12px;
+  border-radius: 12px;
+  background: #cffafe;
 }
 
-.qualification-icon .md-icon {
-  color: #16a34a !important;
-  font-size: 21px !important;
+.grade-icon .md-icon {
+  color: #0891b2 !important;
+  font-size: 22px !important;
 }
 
-.qualification-information {
+.grade-information {
   min-width: 0;
   display: flex;
   flex-direction: column;
 }
 
-.qualification-name {
+.grade-name {
   color: #1f2937;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
+  line-height: 1.35;
 }
 
-.qualification-description {
+.grade-description {
   margin-top: 4px;
   color: #94a3b8;
-  font-size: 16px;
+  font-size: 12px;
+  line-height: 1.35;
 }
 
 .record-id {
   display: inline-block;
-  padding: 5px 8px;
+  padding: 6px 9px;
   color: #475569;
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 700;
   border-radius: 8px;
   background: #f1f5f9;
@@ -1906,18 +1725,19 @@ export default {
 .record-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 7px;
+  gap: 8px;
 }
 
 .record-action-button {
-  width: 33px;
-  height: 33px;
+  width: 36px;
+  height: 36px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0;
   border: 0;
-  border-radius: 9px;
+  border-radius: 10px;
+  outline: none;
   cursor: pointer;
   transition:
     transform 0.2s ease,
@@ -1927,76 +1747,90 @@ export default {
 
 .record-action-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 7px 15px rgba(15, 23, 42, 0.12);
+  box-shadow: 0 8px 16px rgba(15, 23, 42, 0.11);
 }
 
 .record-action-button:disabled {
   cursor: not-allowed;
-  opacity: 0.55;
+  opacity: 0.5;
 }
 
 .record-action-button .md-icon {
-  font-size: 18px !important;
+  color: inherit !important;
+  font-size: 19px !important;
 }
 
 .edit-button {
+  color: #2563eb;
   background: #dbeafe;
 }
 
-.edit-button .md-icon {
-  color: #2563eb !important;
-}
-
 .delete-button {
+  color: #dc2626;
   background: #fee2e2;
 }
 
-.delete-button .md-icon {
-  color: #dc2626 !important;
-}
-
-/* =========================================================
-   LOADING AND EMPTY STATES
-   ========================================================= */
+/* Loading and empty states */
 
 .loading-state,
 .empty-state {
-  min-height: 310px;
+  min-height: 320px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 38px 20px;
+  padding: 40px 20px;
   text-align: center;
 }
 
-.loading-spinner {
-  width: 43px;
-  height: 43px;
-  border: 4px solid #dcfce7;
-  border-top-color: #16a34a;
+.loading-spinner,
+.button-spinner,
+.small-spinner {
   border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+  animation: spin 0.7s linear infinite;
+}
+
+.loading-spinner {
+  width: 46px;
+  height: 46px;
+  border: 4px solid #cffafe;
+  border-top-color: #0891b2;
+}
+
+.button-spinner {
+  width: 17px;
+  height: 17px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #ffffff;
+}
+
+.small-spinner {
+  width: 17px;
+  height: 17px;
+  border: 2px solid #fecaca;
+  border-top-color: #dc2626;
 }
 
 .loading-state h3,
 .empty-state h3 {
-  margin: 15px 0 0;
-  color: #475569;
-  font-size: 16px;
+  margin: 16px 0 0;
+  color: #334155;
+  font-size: 18px;
   font-weight: 700;
 }
 
 .loading-state p,
 .empty-state p {
-  margin: 6px 0 15px;
-  color: #94a3b8;
-  font-size: 16px;
+  max-width: 430px;
+  margin: 7px 0 17px;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 .empty-state-icon {
-  width: 70px;
-  height: 70px;
+  width: 72px;
+  height: 72px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2005,57 +1839,56 @@ export default {
 }
 
 .empty-state-icon .md-icon {
-  color: #94a3b8 !important;
-  font-size: 38px !important;
+  color: #0891b2 !important;
+  font-size: 39px !important;
 }
 
 .empty-primary-button,
 .empty-secondary-button {
-  min-height: 38px;
+  min-height: 41px;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 0 13px;
-  font-size: 16px;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 15px;
+  font-size: 14px;
   font-weight: 700;
-  border-radius: 9px;
+  border-radius: 10px;
   cursor: pointer;
 }
 
 .empty-primary-button {
   color: #ffffff;
   border: 0;
-  background: #16a34a;
+  background: #0891b2;
 }
 
 .empty-primary-button .md-icon {
   color: #ffffff !important;
-  font-size: 17px !important;
+  font-size: 18px !important;
 }
 
 .empty-secondary-button {
-  color: #15803d;
-  border: 1px solid #bbf7d0;
-  background: #f0fdf4;
+  color: #0e7490;
+  border: 1px solid #a5f3fc;
+  background: #ecfeff;
 }
 
-/* =========================================================
-   PAGINATION
-   ========================================================= */
+/* Pagination */
 
 .pagination-footer {
-  min-height: 64px;
+  min-height: 68px;
   display: flex;
   align-items: center;
-  padding: 12px 20px;
+  padding: 13px 21px;
   color: #64748b;
-  font-size: 16px;
+  font-size: 13px;
   border-top: 1px solid #edf2f7;
   background: #f8fafc;
 }
 
 .pagination-information strong {
-  color: #334155;
+  color: #1f2937;
 }
 
 .pagination-controls {
@@ -2068,32 +1901,37 @@ export default {
 .pagination-controls label {
   margin: 0;
   color: #64748b;
-  font-size: 16px;
+  font-size: 13px;
 }
 
 .pagination-controls select {
-  height: 31px;
-  padding: 0 23px 0 8px;
-  color: #475569;
-  font-size: 16px;
+  height: 34px;
+  padding: 0 24px 0 9px;
+  color: #334155;
+  font-size: 13px;
   border: 1px solid #dbe3ee;
-  border-radius: 7px;
+  border-radius: 8px;
   outline: none;
   background: #ffffff;
 }
 
 .pagination-button {
-  width: 31px;
-  height: 31px;
+  width: 34px;
+  height: 34px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0;
-  color: #16a34a;
-  border: 1px solid #bbf7d0;
-  border-radius: 8px;
+  color: #0891b2;
+  border: 1px solid #a5f3fc;
+  border-radius: 9px;
+  outline: none;
   background: #ffffff;
   cursor: pointer;
+}
+
+.pagination-button:hover:not(:disabled) {
+  background: #ecfeff;
 }
 
 .pagination-button:disabled {
@@ -2104,19 +1942,18 @@ export default {
 
 .pagination-button .md-icon {
   color: inherit !important;
-  font-size: 19px !important;
+  font-size: 20px !important;
 }
 
 .pagination-page {
-  min-width: 50px;
+  min-width: 58px;
   color: #475569;
+  font-size: 13px;
   font-weight: 700;
   text-align: center;
 }
 
-/* =========================================================
-   MODAL
-   ========================================================= */
+/* Modal */
 
 .modal-overlay {
   position: fixed;
@@ -2125,65 +1962,70 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 18px;
-  background: rgba(15, 23, 42, 0.65);
-  backdrop-filter: blur(5px);
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.68);
+  backdrop-filter: blur(6px);
 }
 
-.qualification-modal {
+.grade-modal {
   width: 100%;
-  max-width: 540px;
+  max-width: 560px;
   overflow: hidden;
-  border-radius: 19px;
+  border-radius: 20px;
   background: #ffffff;
-  box-shadow: 0 30px 80px rgba(15, 23, 42, 0.3);
+  box-shadow: 0 32px 80px rgba(15, 23, 42, 0.32);
 }
 
 .modal-header {
   position: relative;
-  min-height: 105px;
+  min-height: 106px;
   display: flex;
   align-items: center;
   padding: 21px 23px;
   overflow: hidden;
   color: #ffffff;
-  background: linear-gradient(
-    135deg,
-    #14532d,
-    #15803d,
-    #16a34a,
-    #22c55e
-  );
+  background:
+    radial-gradient(
+      circle at 90% 0%,
+      rgba(255, 255, 255, 0.18),
+      transparent 34%
+    ),
+    linear-gradient(
+      135deg,
+      #164e63,
+      #0e7490,
+      #0891b2
+    );
 }
 
 .modal-header::after {
   content: "";
   position: absolute;
-  top: -65px;
-  right: -35px;
-  width: 165px;
-  height: 165px;
-  border: 29px solid rgba(255, 255, 255, 0.08);
+  top: -80px;
+  right: -40px;
+  width: 175px;
+  height: 175px;
+  border: 28px solid rgba(255, 255, 255, 0.07);
   border-radius: 50%;
 }
 
 .modal-header-icon {
   position: relative;
   z-index: 2;
-  min-width: 49px;
-  width: 49px;
-  height: 49px;
+  min-width: 50px;
+  width: 50px;
+  height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 13px;
+  margin-right: 14px;
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.14);
 }
 
 .modal-header-icon .md-icon {
   color: #ffffff !important;
-  font-size: 26px !important;
+  font-size: 27px !important;
 }
 
 .modal-heading {
@@ -2193,30 +2035,33 @@ export default {
 }
 
 .modal-label {
-  color: rgba(255, 255, 255, 0.72);
-  font-size: 16px;
+  display: block;
+  color: rgba(255, 255, 255, 0.74);
+  font-size: 10px;
   font-weight: 800;
   letter-spacing: 1px;
+  text-transform: uppercase;
 }
 
 .modal-heading h2 {
   margin: 4px 0 3px;
   color: #ffffff;
-  font-size: 17px;
+  font-size: 20px;
   font-weight: 800;
 }
 
 .modal-heading p {
   margin: 0;
-  color: rgba(255, 255, 255, 0.75);
-  font-size: 16px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 13px;
+  line-height: 1.4;
 }
 
 .modal-close-button {
   position: relative;
   z-index: 2;
-  width: 36px;
-  height: 36px;
+  width: 37px;
+  height: 37px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2229,25 +2074,29 @@ export default {
   cursor: pointer;
 }
 
+.modal-close-button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2);
+}
+
 .modal-close-button:disabled {
   cursor: not-allowed;
-  opacity: 0.6;
+  opacity: 0.55;
 }
 
 .modal-close-button .md-icon {
   color: #ffffff !important;
-  font-size: 20px !important;
+  font-size: 21px !important;
 }
 
 .modal-body {
-  padding: 27px 24px 20px;
+  padding: 27px 25px 21px;
 }
 
 .form-label {
   display: block;
-  margin-bottom: 8px;
-  color: #374151;
-  font-size: 16px;
+  margin-bottom: 9px;
+  color: #1f2937;
+  font-size: 14px;
   font-weight: 700;
 }
 
@@ -2256,12 +2105,12 @@ export default {
 }
 
 .form-input-wrapper {
-  min-height: 49px;
+  min-height: 52px;
   display: flex;
   align-items: center;
-  padding: 0 13px;
-  border: 1px solid #dbe3ee;
-  border-radius: 11px;
+  padding: 0 14px;
+  border: 1px solid #d4dce8;
+  border-radius: 12px;
   background: #ffffff;
   transition:
     border-color 0.2s ease,
@@ -2269,8 +2118,8 @@ export default {
 }
 
 .form-input-wrapper:focus-within {
-  border-color: #16a34a;
-  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+  border-color: #0891b2;
+  box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
 }
 
 .form-input-wrapper.invalid {
@@ -2280,36 +2129,40 @@ export default {
 
 .form-input-wrapper .md-icon {
   margin-right: 10px;
-  color: #94a3b8 !important;
-  font-size: 20px !important;
+  color: #0891b2 !important;
+  font-size: 21px !important;
 }
 
 .form-input-wrapper input {
   min-width: 0;
   flex: 1;
   color: #1f2937;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 500;
   border: 0;
   outline: none;
   background: transparent;
 }
 
+.form-input-wrapper input::placeholder {
+  color: #94a3b8;
+}
+
 .form-input-wrapper input:disabled {
   cursor: not-allowed;
-  opacity: 0.65;
+  opacity: 0.6;
 }
 
 .form-information {
-  min-height: 26px;
+  min-height: 28px;
   display: flex;
   align-items: flex-start;
-  padding-top: 5px;
+  padding-top: 6px;
 }
 
 .form-error {
   color: #dc2626;
-  font-size: 16px;
+  font-size: 12px;
   visibility: hidden;
 }
 
@@ -2320,120 +2173,118 @@ export default {
 .character-count {
   margin-left: auto;
   color: #94a3b8;
-  font-size: 16px;
+  font-size: 12px;
 }
 
 .form-hint {
   display: flex;
   align-items: flex-start;
-  margin-top: 6px;
-  padding: 10px 11px;
-  color: #64748b;
-  font-size: 16px;
+  margin-top: 7px;
+  padding: 11px 12px;
+  color: #526176;
+  font-size: 13px;
   line-height: 1.5;
-  border: 1px solid #dcfce7;
-  border-radius: 9px;
-  background: #f0fdf4;
+  border: 1px solid #a5f3fc;
+  border-radius: 10px;
+  background: #ecfeff;
 }
 
 .form-hint .md-icon {
-  min-width: 17px;
-  margin-right: 7px;
-  color: #16a34a !important;
-  font-size: 17px !important;
+  min-width: 19px;
+  margin-right: 8px;
+  color: #0891b2 !important;
+  font-size: 19px !important;
 }
 
 .modal-error {
   display: flex;
   align-items: center;
-  margin-top: 13px;
-  padding: 10px 11px;
+  margin-top: 14px;
+  padding: 11px 12px;
   color: #991b1b;
-  font-size: 16px;
+  font-size: 13px;
+  line-height: 1.4;
   border: 1px solid #fecaca;
-  border-radius: 9px;
+  border-radius: 10px;
   background: #fef2f2;
 }
 
 .modal-error .md-icon {
-  margin-right: 7px;
+  margin-right: 8px;
   color: #dc2626 !important;
-  font-size: 18px !important;
+  font-size: 20px !important;
 }
 
 .modal-footer {
-  min-height: 70px;
+  min-height: 72px;
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 9px;
-  padding: 13px 21px;
-  border-top: 1px solid #edf2f7;
+  gap: 10px;
+  padding: 14px 22px;
+  border-top: 1px solid #e5e7eb;
   background: #f8fafc;
 }
 
 .cancel-button,
 .save-button {
-  min-height: 40px;
-  padding: 0 16px;
-  font-size: 16px;
+  min-height: 42px;
+  padding: 0 17px;
+  font-size: 14px;
   font-weight: 700;
-  border-radius: 9px;
+  border-radius: 10px;
   cursor: pointer;
 }
 
 .cancel-button {
-  color: #64748b;
-  border: 1px solid #e2e8f0;
+  color: #526176;
+  border: 1px solid #d4dce8;
   background: #ffffff;
+}
+
+.cancel-button:hover:not(:disabled) {
+  background: #f1f5f9;
 }
 
 .save-button {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  justify-content: center;
+  gap: 8px;
   color: #ffffff;
   border: 0;
   background: linear-gradient(
     135deg,
-    #15803d,
-    #16a34a,
-    #22c55e
+    #0e7490,
+    #0891b2
   );
-  box-shadow: 0 8px 18px rgba(22, 163, 74, 0.22);
+  box-shadow: 0 8px 18px rgba(8, 145, 178, 0.22);
+}
+
+.save-button:hover:not(:disabled) {
+  box-shadow: 0 11px 22px rgba(8, 145, 178, 0.28);
 }
 
 .save-button:disabled,
 .cancel-button:disabled {
   cursor: not-allowed;
-  opacity: 0.65;
+  opacity: 0.6;
 }
 
 .save-button .md-icon {
   color: #ffffff !important;
-  font-size: 18px !important;
+  font-size: 19px !important;
 }
 
-.button-spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.4);
-  border-top-color: #ffffff;
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-}
-
-/* =========================================================
-   TRANSITIONS
-   ========================================================= */
+/* Transitions */
 
 .modal-fade-enter-active,
 .modal-fade-leave-active {
   transition: opacity 0.2s ease;
 }
 
-.modal-fade-enter-active .qualification-modal,
-.modal-fade-leave-active .qualification-modal {
+.modal-fade-enter-active .grade-modal,
+.modal-fade-leave-active .grade-modal {
   transition:
     opacity 0.2s ease,
     transform 0.2s ease;
@@ -2444,10 +2295,10 @@ export default {
   opacity: 0;
 }
 
-.modal-fade-enter .qualification-modal,
-.modal-fade-leave-to .qualification-modal {
+.modal-fade-enter .grade-modal,
+.modal-fade-leave-to .grade-modal {
   opacity: 0;
-  transform: translateY(10px) scale(0.98);
+  transform: translateY(12px) scale(0.98);
 }
 
 .rotating {
@@ -2460,12 +2311,36 @@ export default {
   }
 }
 
-/* =========================================================
-   RESPONSIVE
-   ========================================================= */
+/* Table scrollbar */
+
+.table-responsive::-webkit-scrollbar {
+  height: 8px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background: #cbd5e1;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Tablet */
 
 @media (max-width: 991px) {
+  .ng-header {
+    min-height: 0 !important;
+    padding: 11px 14px !important;
+  }
 
+  .ng-header-description {
+    max-width: 430px;
+  }
 
   .statistics-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2480,26 +2355,34 @@ export default {
   }
 
   .search-control {
-    width: 250px;
+    width: 260px;
   }
 
   .refresh-button {
     width: 100%;
-    justify-content: center;
-    margin-top: 8px;
+    margin-top: 9px;
   }
 }
 
-@media (max-width: 767px) {
-  
+/* Mobile */
 
-  .header-add-button {
-    width: 100%;
-    justify-content: center;
-    margin-top: 20px;
-    margin-left: 0;
+@media (max-width: 767px) {
+  .ng-header {
+    display: block;
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 13px !important;
   }
 
+  .ng-header-content {
+    align-items: flex-start;
+  }
+
+  .ng-header-button {
+    width: 100%;
+    height: 40px;
+    margin: 12px 0 0 !important;
+  }
 
   .records-toolbar {
     display: block;
@@ -2518,36 +2401,129 @@ export default {
   .records-table td:nth-child(3) {
     display: none;
   }
+
+  .error-banner {
+    display: block;
+  }
+
+  .error-banner button {
+    width: 100%;
+    margin-top: 13px;
+    margin-left: 0;
+  }
 }
 
 @media (max-width: 575px) {
+  .next-grades-page {
+    padding-bottom: 20px;
+  }
 
+  .ng-header {
+    margin-bottom: 14px !important;
+    padding: 11px !important;
+    border-radius: 11px;
+  }
 
+  .ng-header::before {
+    display: none;
+  }
+
+  .ng-header-icon {
+    min-width: 40px;
+    width: 40px;
+    height: 40px;
+    margin-right: 10px;
+    border-radius: 10px;
+  }
+
+  .ng-header-icon .md-icon {
+    font-size: 22px !important;
+  }
+
+  .ng-header-label {
+    font-size: 8px;
+  }
+
+  .ng-header-title {
+    font-size: 17px !important;
+  }
+
+  .ng-header-description {
+    margin-top: 2px !important;
+    font-size: 10px !important;
+    line-height: 1.35 !important;
+  }
+
+  .ng-header-button {
+    min-height: 38px;
+    height: 38px;
+    font-size: 11px;
+  }
 
   .statistics-grid {
     grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .statistic-card {
+    min-height: 84px;
+    padding: 15px;
+  }
+
+  .records-toolbar {
+    padding: 18px 15px;
+  }
+
+  .records-toolbar h2 {
+    font-size: 18px;
+  }
+
+  .records-toolbar p {
+    font-size: 12px;
   }
 
   .records-table th,
   .records-table td {
-    padding-right: 11px;
-    padding-left: 11px;
+    padding-right: 12px;
+    padding-left: 12px;
   }
 
-  .qualification-description {
+  .grade-description {
     display: none;
   }
 
+  .grade-name {
+    font-size: 14px;
+  }
+
   .number-column {
-    width: 55px;
+    width: 54px;
   }
 
   .actions-column {
-    width: 100px;
+    width: 105px;
+  }
+
+  .row-number {
+    width: 30px;
+    height: 30px;
+  }
+
+  .grade-icon {
+    min-width: 38px;
+    width: 38px;
+    height: 38px;
+    margin-right: 9px;
+  }
+
+  .record-action-button {
+    width: 34px;
+    height: 34px;
   }
 
   .pagination-footer {
     display: block;
+    padding: 14px;
     text-align: center;
   }
 
@@ -2562,37 +2538,51 @@ export default {
     padding: 0;
   }
 
-  .qualification-modal {
+  .grade-modal {
     max-width: none;
-    border-radius: 19px 19px 0 0;
+    border-radius: 20px 20px 0 0;
   }
 
   .modal-header {
-    padding: 18px;
+    padding: 19px 17px;
+  }
+
+  .modal-header-icon {
+    min-width: 46px;
+    width: 46px;
+    height: 46px;
+    margin-right: 11px;
+  }
+
+  .modal-heading h2 {
+    font-size: 18px;
   }
 
   .modal-heading p {
     max-width: 230px;
+    font-size: 11px;
   }
 
   .modal-body {
-    padding: 23px 18px 17px;
+    padding: 23px 18px 18px;
   }
 
   .modal-footer {
-    padding: 12px 16px;
+    padding: 13px 15px;
   }
 
   .cancel-button,
   .save-button {
     flex: 1;
+    padding-right: 10px;
+    padding-left: 10px;
+    font-size: 12px;
   }
 }
+
+
+
 </style>
-
-
-
-
 
 
 
