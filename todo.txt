@@ -1,0 +1,1 @@
+confirmButtonText: '<span style="color: white;">Done</span>',

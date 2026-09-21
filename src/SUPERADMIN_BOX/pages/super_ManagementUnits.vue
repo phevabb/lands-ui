@@ -508,10 +508,9 @@ export default {
         confirmButtonColor: "#dc2626",
         cancelButtonColor: "#64748b",
 
-        confirmButtonText:
-          "Yes, delete",
+        confirmButtonText:'<span style="color: white;">Yes, delete</span>',
 
-        cancelButtonText: "Cancel",
+        cancelButtonText: '<span style="color: white;">Cancel</span>',
 
         reverseButtons: true,
         focusCancel: true

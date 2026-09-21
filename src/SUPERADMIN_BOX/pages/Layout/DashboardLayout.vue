@@ -33,15 +33,15 @@
         </div>
 
         <!-- Overview heading -->
-        <div class="sidebar-section-heading">
+        <!-- <div class="sidebar-section-heading">
           Overview
-        </div>
+        </div> -->
 
         <!-- Dashboard -->
-        <SidebarLink
+        <!-- <SidebarLink
           :link="{
             name: 'Superadmin Dashboard',
-            path: '/superadmin/dashboard'
+            path: '/superadmin/allusers'
           }"
           class="sidebar-link"
         >
@@ -52,7 +52,7 @@
               Dashboard
             </span>
           </span>
-        </SidebarLink>
+        </SidebarLink> -->
 
         <!-- Staff management heading -->
         <div class="sidebar-section-heading">
@@ -76,11 +76,11 @@
           </span>
         </SidebarLink>
 
-        <!-- New entry -->
+        <!-- Manager Profiles -->
         <SidebarLink
           :link="{
-            name: 'Superadmin New Entry',
-            path: '/superadmin/new-entry'
+            name: 'Manager Profile',
+            path: '/superadmin/manager-profiles'
           }"
           class="sidebar-link"
         >
@@ -88,57 +88,14 @@
             <md-icon>person_add</md-icon>
 
             <span class="sidebar-text">
-              New Entry
+              Manager Profiles
             </span>
           </span>
         </SidebarLink>
 
-        <!-- Staff per department -->
-        <SidebarLink
-          :link="{
-            name: 'Superadmin Staff Per Department',
-            path: '/superadmin/users-per-department'
-          }"
-          class="sidebar-link"
-        >
-          <span class="sidebar-item">
-            <md-icon>account_tree</md-icon>
+      
 
-            <span class="sidebar-text">
-              Staff Per Department
-            </span>
-          </span>
-        </SidebarLink>
-
-        <!-- Configuration heading -->
-        <div class="sidebar-section-heading">
-          System Configuration
-        </div>
-
-        <!-- Configuration dropdown -->
-        <div
-          class="sidebar-link sidebar-dropdown-trigger"
-          :class="{
-            active: isConfigurationActive
-          }"
-          @click="toggleConfigurationDropdown"
-        >
-          <span class="sidebar-item">
-            <md-icon>settings</md-icon>
-
-            <span class="sidebar-text">
-              Configuration Tables
-            </span>
-
-            <md-icon class="dropdown-arrow">
-              {{
-                showConfigurationDropdown
-                  ? "expand_less"
-                  : "expand_more"
-              }}
-            </md-icon>
-          </span>
-        </div>
+       
 
         <transition name="dropdown">
           <div
@@ -612,6 +569,32 @@ const handleLogout = async () => {
 </script>
 
 <style scoped>
+
+.main-panel {
+  transition:
+    width 0.25s ease,
+    margin-left 0.25s ease;
+}
+
+body.sidebar-hidden .main-panel {
+  width: 100% !important;
+  margin-left: 0 !important;
+}
+
+body:not(.sidebar-hidden) .main-panel {
+  width: calc(100% - 260px);
+  margin-left: 260px;
+}
+
+@media (max-width: 991px) {
+  body.sidebar-hidden .main-panel,
+  body:not(.sidebar-hidden) .main-panel {
+    width: 100% !important;
+    margin-left: 0 !important;
+  }
+}
+
+
 /* =========================================================
    MAIN LAYOUT
    ========================================================= */

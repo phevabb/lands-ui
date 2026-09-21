@@ -1,115 +1,371 @@
 <template>
-  <div
-    class="sidebar"
-    :data-color="sidebarItemColor"
-    :data-image="sidebarBackgroundImage"
-    :style="sidebarStyle"
-  >
-    <div class="logo welcome-text">
-      
-        Welcome, <strong>{{ fullName || title }}</strong>
-     
-    </div>
+  <div class="sidebar-controller">
+    <transition name="sidebar-slide">
+      <div
+        v-show="sidebarVisible"
+        class="sidebar"
+        :data-color="sidebarItemColor"
+        :data-image="sidebarBackgroundImage"
+        :style="sidebarStyle"
+      >
+        <div class="sidebar-top">
+          <div class="logo welcome-text">
+            <span>
+              Welcome,
+              <strong>
+                {{ fullName || title }}
+              </strong>
+            </span>
+          </div>
 
-    <div class="sidebar-wrapper">
-      <slot name="content"></slot>
-    </div>
+          <button
+            type="button"
+            class="sidebar-hide-button"
+            title="Hide sidebar"
+            aria-label="Hide sidebar"
+            @click="hideSidebar"
+          >
+            <md-icon>chevron_left</md-icon>
+          </button>
+        </div>
+
+        <div class="sidebar-wrapper">
+          <slot name="content"></slot>
+        </div>
+      </div>
+    </transition>
+
+    <button
+      v-show="!sidebarVisible"
+      type="button"
+      class="sidebar-show-button"
+      title="Show sidebar"
+      aria-label="Show sidebar"
+      @click="showSidebar"
+    >
+      <md-icon>menu</md-icon>
+
+      <span>Menu</span>
+    </button>
   </div>
 </template>
 
-
-
 <script setup>
-import { computed, provide } from "vue"
-import SidebarLink from "./SidebarLink.vue"
-import { onMounted, ref } from "vue";
-const fullName = ref(null);
+import {
+  computed,
+  onMounted,
+  provide,
+  ref
+} from "vue";
 
-
-onMounted(() => {
-  fullName.value = localStorage.getItem("user");
-  
-});
+import SidebarLink from "./SidebarLink.vue";
 
 const props = defineProps({
   title: {
     type: String,
-    default: "GH LANDS ",
+    default: "GH LANDS"
   },
+
   sidebarBackgroundImage: {
     type: String,
-    default: () => require("@/assets/img/sidebar-2.jpg"),
+    default: () =>
+      require("@/assets/img/sidebar-2.jpg")
   },
+
   imgLogo: {
     type: String,
-    default: () => require("@/assets/img/vue-logo.png"),
+    default: () =>
+      require("@/assets/img/vue-logo.png")
   },
+
   sidebarItemColor: {
     type: String,
     default: "green",
-    validator: (value) => {
-      let acceptedValues = ["", "purple", "blue", "green", "orange", "red"]
-      return acceptedValues.includes(value)
-    },
+
+    validator: value => {
+      const acceptedValues = [
+        "",
+        "purple",
+        "blue",
+        "green",
+        "orange",
+        "red"
+      ];
+
+      return acceptedValues.includes(value);
+    }
   },
+
   sidebarLinks: {
     type: Array,
-    default: () => [],
+    default: () => []
   },
+
   autoClose: {
     type: Boolean,
-    default: true,
-  },
-})
+    default: true
+  }
+});
 
-provide("autoClose", props.autoClose)
+const fullName = ref("");
+const sidebarVisible = ref(true);
 
-// Sidebar background style
-const sidebarStyle = computed(() => ({
-  backgroundImage: `url(${props.sidebarBackgroundImage})`,
-}))
+provide("autoClose", props.autoClose);
+
+const sidebarStyle = computed(() => {
+  return {
+    backgroundImage:
+      `url(${props.sidebarBackgroundImage})`
+  };
+});
+
+onMounted(() => {
+  fullName.value =
+    localStorage.getItem("user") || "";
+
+  const savedSidebarState =
+    localStorage.getItem(
+      "sidebarVisible"
+    );
+
+  if (savedSidebarState !== null) {
+    sidebarVisible.value =
+      savedSidebarState === "true";
+  }
+
+  updateMainPanel();
+});
+
+function hideSidebar() {
+  sidebarVisible.value = false;
+
+  localStorage.setItem(
+    "sidebarVisible",
+    "false"
+  );
+
+  updateMainPanel();
+}
+
+function showSidebar() {
+  sidebarVisible.value = true;
+
+  localStorage.setItem(
+    "sidebarVisible",
+    "true"
+  );
+
+  updateMainPanel();
+}
+
+function updateMainPanel() {
+  document.body.classList.toggle(
+    "sidebar-hidden",
+    !sidebarVisible.value
+  );
+}
 </script>
 
 <style scoped>
-/* Ensure words move left */
+.sidebar-controller {
+  position: relative;
+  z-index: 1030;
+}
 
-
-.nav {
-  text-align: left; /* text aligned left */
+.sidebar-top {
+  position: relative;
+  z-index: 5;
+  min-height: 76px;
+  display: flex;
+  align-items: center;
+  padding: 12px 10px 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
 }
 
 .logo {
+  min-width: 0;
+  flex: 1;
   display: flex;
-  justify-content: center;
   align-items: center;
-  padding: 12px;
+  padding: 0;
 }
 
 .welcome-text {
-  font-size: 1rem;
   color: rgba(255, 255, 255, 0.9);
-  text-align: center;
+  font-size: 16px;
   font-weight: 500;
+  line-height: 1.5;
+  text-align: left;
   text-decoration: none;
 }
 
+.welcome-text span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .welcome-text strong {
-  color: #fff;
+  display: block;
+  overflow: hidden;
+  color: #ffffff;
+  font-size: 17px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-hide-button {
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  margin-left: 9px;
+  padding: 0;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 11px;
+  outline: none;
+  background: rgba(255, 255, 255, 0.13);
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.sidebar-hide-button:hover {
+  background: rgba(220, 38, 38, 0.9);
+  transform: translateX(-2px);
+}
+
+.sidebar-hide-button:active {
+  transform: translateX(0);
+}
+
+.sidebar-hide-button .md-icon {
+  width: auto !important;
+  min-width: 0 !important;
+  height: auto !important;
+  margin: 0 !important;
+  color: #ffffff !important;
+  font-size: 27px !important;
+  line-height: 1 !important;
+}
+
+.sidebar-show-button {
+  position: fixed;
+  top: 18px;
+  left: 18px;
+  z-index: 1100;
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 16px;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+  border: 0;
+  border-radius: 11px;
+  outline: none;
+  background: linear-gradient(
+    135deg,
+    #15803d,
+    #16a34a
+  );
+  box-shadow: 0 9px 22px rgba(22, 163, 74, 0.3);
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.sidebar-show-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 13px 27px rgba(22, 163, 74, 0.36);
+}
+
+.sidebar-show-button:active {
+  transform: translateY(0);
+}
+
+.sidebar-show-button .md-icon {
+  width: auto !important;
+  min-width: 0 !important;
+  height: auto !important;
+  margin: 0 !important;
+  color: #ffffff !important;
+  font-size: 23px !important;
+  line-height: 1 !important;
+}
+
+.sidebar-wrapper {
+  height: calc(100vh - 76px);
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.nav {
+  text-align: left;
 }
 
 .nav .md-list-item,
 .nav .sidebar-link {
-  justify-content: flex-start !important; /* push items to left */
+  justify-content: flex-start !important;
   text-align: left !important;
 }
 
 .nav .md-list-item p,
 .nav .sidebar-link p {
-  color: white;
-  font-weight: bold;
-  margin-left: 10px; /* space between icon and text */
+  margin-left: 10px;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
 }
 
+.sidebar-slide-enter-active,
+.sidebar-slide-leave-active {
+  transition:
+    transform 0.25s ease,
+    opacity 0.25s ease;
+}
 
+.sidebar-slide-enter-from,
+.sidebar-slide-leave-to {
+  opacity: 0;
+  transform: translateX(-100%);
+}
 
+.sidebar-slide-enter-to,
+.sidebar-slide-leave-from {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.sidebar-wrapper::-webkit-scrollbar {
+  width: 8px;
+}
+
+.sidebar-wrapper::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.sidebar-wrapper::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.sidebar-wrapper::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+@media (max-width: 991px) {
+  .sidebar-show-button {
+    top: 12px;
+    left: 12px;
+  }
+}
 </style>

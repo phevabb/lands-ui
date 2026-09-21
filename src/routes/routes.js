@@ -54,7 +54,11 @@ import super_Departments from "../SUPERADMIN_BOX/pages/super_Departments.vue";
 import super_Districts from "../SUPERADMIN_BOX/pages/super_Districts.vue";
 import super_Regions from "../SUPERADMIN_BOX/pages/super_Regions.vue";
 import super_ManagementUnits from "../SUPERADMIN_BOX/pages/super_ManagementUnits.vue"
-
+import super_Title from "../SUPERADMIN_BOX/pages/super_Title.vue"
+import super_OnLeaveTypes from "../SUPERADMIN_BOX/pages/super_OnLeaveTypes.vue";
+import super_Positions from "../SUPERADMIN_BOX/pages/super_Positions.vue";
+import super_AllUsers from "../SUPERADMIN_BOX/pages/super_AllUsers.vue";
+import Super_ManagerProfiles from "../SUPERADMIN_BOX/pages/super_ManagerProfiles.vue";
 
 
 const routes = [
@@ -194,6 +198,71 @@ const routes = [
     {
       path: "",
       redirect: "dashboard"
+    },
+
+
+     {
+      path: "manager-profiles",
+      name: "Manager Profiles",
+      component: Super_ManagerProfiles,
+      meta: {
+        title: "Users",
+        requiresAuth: false,
+        allowedRoles: [],
+        requiresSuperuser: false
+      }
+    },
+    
+
+    {
+      path: "allusers",
+      name: "Users",
+      component: super_AllUsers,
+      meta: {
+        title: "Users",
+        requiresAuth: false,
+        allowedRoles: [],
+        requiresSuperuser: false
+      }
+    },
+
+
+
+     {
+      path: "positions",
+      name: "Positions",
+      component: super_Positions,
+      meta: {
+        title: "Positions",
+        requiresAuth: false,
+        allowedRoles: [],
+        requiresSuperuser: false
+      }
+    },
+
+
+    {
+      path: "on-leave-types",
+      name: "On Leave Types",
+      component: super_OnLeaveTypes,
+      meta: {
+        title: "On Leave Types",
+        requiresAuth: false,
+        allowedRoles: [],
+        requiresSuperuser: false
+      }
+    },
+
+     {
+      path: "titles",
+      name: "Titles",
+      component: super_Title,
+      meta: {
+        title: "Titles",
+        requiresAuth: false,
+        allowedRoles: [],
+        requiresSuperuser: false
+      }
     },
 
     {
