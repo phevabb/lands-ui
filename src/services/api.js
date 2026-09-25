@@ -689,9 +689,45 @@ export const pro_stats =
       }
     );
   };
-export const directorate_stats = (params) => api.get("/admin/dashboard-summary", { params });
-export const class_stats = (params) => api.get("/admin/dashboard-summary", { params });
-export const region_stats = (params) => api.get("/admin/dashboard-summary", { params });
+export const directorate_stats =
+  (params = {}) => {
+    return api.get(
+      "/admin/directorate-stats",
+      {
+        params: {
+          page:
+            params.page ??
+            1,
+
+          page_size:
+            params.page_size ??
+            params.pageSize ??
+            10
+        }
+      }
+    );
+  };
+  
+export const class_stats =
+  (params = {}) => {
+    return api.get(
+      "/admin/class-stats",
+      {
+        params: {
+          page:
+            params.page ??
+            1,
+
+          page_size:
+            params.page_size ??
+            params.pageSize ??
+            10
+        }
+      }
+    );
+  };
+
+  export const region_stats = (params) => api.get("/admin/dashboard-summary", { params });
 export const management_stats = (params) => api.get("/admin/dashboard-summary", { params });
 export const senior_stats = (params) => api.get("/admin/dashboard-summary", { params });
 export const gender_stats = (params) => api.get("/admin/dashboard-summary", { params });

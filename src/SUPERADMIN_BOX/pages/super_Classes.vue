@@ -937,8 +937,8 @@ export default {
         showCancelButton: true,
         confirmButtonColor: "#dc2626",
         cancelButtonColor: "#64748b",
-        confirmButtonText: "Yes, delete",
-        cancelButtonText: "Cancel",
+        confirmButtonText: '<span style="color: white;">Yes, delete</span>',
+        cancelButtonText: '<span style="color: white;">Cancel</span>',
         reverseButtons: true,
         focusCancel: true
       });
@@ -960,7 +960,7 @@ export default {
           text: `"${className}" was deleted successfully.`,
           icon: "success",
           confirmButtonColor: "#16a34a",
-          confirmButtonText: "Done",
+          confirmButtonText: '<span style="color: white;">Done</span>',
           timer: 2200,
           timerProgressBar: true
         });
@@ -975,7 +975,7 @@ export default {
           ),
           icon: "error",
           confirmButtonColor: "#dc2626",
-          confirmButtonText: "Close"
+          confirmButtonText: '<span style="color: white;">Close</span>'
         });
       } finally {
         this.deletingId = null;
@@ -988,7 +988,7 @@ export default {
         text,
         icon: "success",
         confirmButtonColor: "#16a34a",
-        confirmButtonText: "Done",
+        confirmButtonText: '<span style="color: white;">Done</span>',
         timer: 2200,
         timerProgressBar: true
       });

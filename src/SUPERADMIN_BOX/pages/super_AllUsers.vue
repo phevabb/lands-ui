@@ -1261,7 +1261,7 @@
         </option>
 
         <option
-          v-for="item in lookupOptions.staffClasses"
+          v-for="item in lookupOptions.classes"
           :key="item.id"
           :value="item.id"
         >
@@ -2334,6 +2334,7 @@ function createEmptyLookups() {
   return {
     academicQualifications: [],
     departments: [],
+    classes:[],
     staffClasses: [],
     districts: [],
     regions: [],
@@ -3004,6 +3005,7 @@ getResponseRecords(responseData) {
     "academicQualifications",
     "qualifications",
     "departments",
+    "classes",
     "staffClasses",
     "districts",
     "regions",
@@ -3178,6 +3180,15 @@ getResponseRecords(responseData) {
           fields: [
             "staffClass",
             "staffClassName",
+            "name"
+          ]
+        },
+        {
+          key: "classes",
+          endpoint: "classes",
+          fields: [
+            "classes",
+            "classesName",
             "name"
           ]
         },
