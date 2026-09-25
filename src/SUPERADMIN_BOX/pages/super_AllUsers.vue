@@ -1081,6 +1081,16 @@
                   </div>
 
                   <div class="form-group">
+                    <label for="email">Email</label>
+                    <input
+                      id="email"
+                      v-model="form.email"
+                      type="email"
+                      :disabled="saving"
+                    />
+                  </div>
+
+                  <div class="form-group">
                     <label for="gender">Gender</label>
                     <select
                       id="gender"
@@ -2252,6 +2262,7 @@ function createEmptyForm() {
     middleName: "",
     lastName: "",
     maidenName: "",
+    email:"",
 
     gender: null,
     dateOfBirth: "",
@@ -3544,6 +3555,12 @@ resetForm() {
           this.cleanString(
             this.form.maidenName
           ),
+
+           email:
+          this.cleanString(
+            this.form.email
+          ),
+
 
         gender:
           this.form.gender || null,

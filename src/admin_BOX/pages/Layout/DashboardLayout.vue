@@ -125,11 +125,28 @@
   </div>
 </template>
 
-<script setup>
-import { ref, getCurrentInstance } from "vue";
-import { useRouter } from "vue-router/composables";
-import { logout } from "../../../services/api";
 
+
+
+
+
+
+
+
+<script setup>
+import {
+  getCurrentInstance,
+  ref
+} from "vue";
+
+import {
+  useRouter
+} from "vue-router/composables";
+
+import {
+  logout,
+  removeAuthentication
+} from "@/services/api";
 
 // Components
 import TopNavbar from "./TopNavbar.vue";
@@ -140,41 +157,171 @@ import SideBar from "@/components/SidebarPlugin/SideBar.vue";
 import SidebarLink from "@/components/SidebarPlugin/SidebarLink.vue";
 import Notifications from "@/components/NotificationPlugin/Notifications.vue";
 
-// Access global properties (like $sidebar and $route)
+const router =
+  useRouter();
 
-const router = useRouter();
-const showAccountDropdown = ref(false);
+const instance =
+  getCurrentInstance();
 
-const toggleAccountDropdown = () => {
-  showAccountDropdown.value = !showAccountDropdown.value;
-};
+const proxy =
+  instance.proxy;
 
-const goToChangePassword = () => {
-  router.push("/change-password"); // Make sure this route exists
-};
+/*
+ * Sidebar appearance
+ */
 
-const handleLogout = async () => {
-  try {
-    await logout();
-    localStorage.removeItem("token"); // Remove token before redirect
-    localStorage.removeItem("user");
-    localStorage.removeItem("region");
-    localStorage.removeItem("region_id");
-    localStorage.removeItem("user_id");   
+const sidebarBackground =
+  ref("green");
 
-    router.push("/login");
-  } catch (error) {
+const sidebarBackgroundImage =
+  ref(
+    require(
+      "@/assets/img/new.jpg"
+    )
+  );
 
-  }
-};
+/*
+ * Account dropdown
+ */
 
+const showAccountDropdown =
+  ref(false);
 
-const { proxy } = getCurrentInstance();
+const activeAccountItem =
+  ref(null);
 
-// Sidebar state
-const sidebarBackground = ref("green");
-const sidebarBackgroundImage = ref(require("@/assets/img/new.jpg"));
+const logoutLoading =
+  ref(false);
+
+const toggleAccountDropdown =
+  () => {
+    showAccountDropdown.value =
+      !showAccountDropdown.value;
+
+    activeAccountItem.value =
+      showAccountDropdown.value
+        ? "account"
+        : null;
+  };
+
+const setActive =
+  item => {
+    activeAccountItem.value =
+      item;
+  };
+
+const closeAccountDropdown =
+  () => {
+    showAccountDropdown.value =
+      false;
+
+    activeAccountItem.value =
+      null;
+  };
+
+/*
+ * Change password navigation
+ */
+
+const goToChangePassword =
+  async () => {
+    closeAccountDropdown();
+
+    try {
+      await router.push({
+        path: "/change-password"
+      });
+    } catch (error) {
+      if (
+        !error ||
+        error.name !==
+          "NavigationDuplicated"
+      ) {
+        console.error(
+          "Unable to open change password page:",
+          error
+        );
+      }
+    }
+  };
+
+/*
+ * Local authentication cleanup
+ */
+
+const clearAuthentication =
+  () => {
+    removeAuthentication();
+  };
+
+/*
+ * Logout
+ */
+
+const handleLogout =
+  async () => {
+    if (logoutLoading.value) {
+      return;
+    }
+
+    logoutLoading.value =
+      true;
+
+    closeAccountDropdown();
+
+    try {
+      /*
+       * Notify the Ktor backend.
+       *
+       * JWT access tokens are stateless, so local
+       * authentication data must still be removed.
+       */
+      await logout();
+
+      console.log(
+        "Backend logout completed successfully"
+      );
+    } catch (error) {
+      /*
+       * The user should still be logged out locally
+       * if the backend is unavailable or if the JWT
+       * has already expired.
+       */
+      console.error(
+        "Backend logout request failed:",
+        error.response?.data ||
+        error
+      );
+    } finally {
+      clearAuthentication();
+
+      logoutLoading.value =
+        false;
+
+      try {
+        await router.replace({
+          path: "/login"
+        });
+      } catch (error) {
+        if (
+          !error ||
+          error.name !==
+            "NavigationDuplicated"
+        ) {
+          console.error(
+            "Unable to redirect to login:",
+            error
+          );
+        }
+      }
+    }
+  };
 </script>
+
+
+
+
+
 
 <style scoped>
 /* Style for all sidebar text */

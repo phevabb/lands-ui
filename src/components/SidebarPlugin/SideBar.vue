@@ -50,9 +50,11 @@
   </div>
 </template>
 
+
 <script setup>
 import {
   computed,
+  onBeforeUnmount,
   onMounted,
   provide,
   ref
@@ -69,13 +71,17 @@ const props = defineProps({
   sidebarBackgroundImage: {
     type: String,
     default: () =>
-      require("@/assets/img/sidebar-2.jpg")
+      require(
+        "@/assets/img/sidebar-2.jpg"
+      )
   },
 
   imgLogo: {
     type: String,
     default: () =>
-      require("@/assets/img/vue-logo.png")
+      require(
+        "@/assets/img/vue-logo.png"
+      )
   },
 
   sidebarItemColor: {
@@ -92,7 +98,9 @@ const props = defineProps({
         "red"
       ];
 
-      return acceptedValues.includes(value);
+      return acceptedValues.includes(
+        value
+      );
     }
   },
 
@@ -107,37 +115,245 @@ const props = defineProps({
   }
 });
 
-const fullName = ref("");
-const sidebarVisible = ref(true);
+const fullName =
+  ref("");
 
-provide("autoClose", props.autoClose);
+const userId =
+  ref("");
 
-const sidebarStyle = computed(() => {
-  return {
-    backgroundImage:
-      `url(${props.sidebarBackgroundImage})`
-  };
-});
+const role =
+  ref("");
+
+const regionName =
+  ref("");
+
+const profilePictureUrl =
+  ref("");
+
+const sidebarVisible =
+  ref(true);
+
+provide(
+  "autoClose",
+  props.autoClose
+);
+
+const sidebarStyle =
+  computed(() => {
+    return {
+      backgroundImage:
+        `url(${props.sidebarBackgroundImage})`
+    };
+  });
+
+const displayName =
+  computed(() => {
+    return (
+      fullName.value ||
+      userId.value ||
+      "User"
+    );
+  });
+
+const userSubtitle =
+  computed(() => {
+    const values = [
+      role.value,
+      regionName.value
+    ].filter(value => {
+      return (
+        value !== null &&
+        value !== undefined &&
+        String(value).trim() !== ""
+      );
+    });
+
+    return values.join(" • ");
+  });
 
 onMounted(() => {
-  fullName.value =
-    localStorage.getItem("user") || "";
+  loadStoredUser();
+  loadSidebarState();
+  updateMainPanel();
 
+  window.addEventListener(
+    "storage",
+    handleStorageChange
+  );
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener(
+    "storage",
+    handleStorageChange
+  );
+});
+
+function loadStoredUser() {
+  const storedUser =
+    localStorage.getItem(
+      "authenticatedUser"
+    ) ||
+    localStorage.getItem(
+      "user"
+    );
+
+  const user =
+    parseStoredUser(
+      storedUser
+    );
+
+  fullName.value =
+    user.fullName ||
+    user.displayName ||
+    "";
+
+  userId.value =
+    user.userId ||
+    localStorage.getItem(
+      "userId"
+    ) ||
+    "";
+
+  role.value =
+    user.role ||
+    localStorage.getItem(
+      "role"
+    ) ||
+    "";
+
+  regionName.value =
+    user.regionName ||
+    localStorage.getItem(
+      "regionName"
+    ) ||
+    localStorage.getItem(
+      "region"
+    ) ||
+    "";
+
+  profilePictureUrl.value =
+    user.profilePictureUrl ||
+    user.profilePicture ||
+    "";
+
+  printlnStoredUser();
+}
+
+function parseStoredUser(
+  storedValue
+) {
+  if (!storedValue) {
+    return {};
+  }
+
+  try {
+    const parsedValue =
+      JSON.parse(
+        storedValue
+      );
+
+    if (
+      parsedValue &&
+      typeof parsedValue ===
+        "object" &&
+      !Array.isArray(parsedValue)
+    ) {
+      return parsedValue;
+    }
+
+    if (
+      typeof parsedValue ===
+        "string"
+    ) {
+      return {
+        fullName:
+          parsedValue
+      };
+    }
+  } catch (error) {
+    /*
+     * Legacy support:
+     *
+     * Older login code stored only the
+     * full name in the "user" key instead
+     * of storing a JSON object.
+     */
+    return {
+      fullName:
+        storedValue
+    };
+  }
+
+  return {};
+}
+
+function printlnStoredUser() {
+  console.log(
+    "Sidebar authenticated user:",
+    {
+      fullName:
+        fullName.value,
+
+      userId:
+        userId.value,
+
+      role:
+        role.value,
+
+      regionName:
+        regionName.value
+    }
+  );
+}
+
+function loadSidebarState() {
   const savedSidebarState =
     localStorage.getItem(
       "sidebarVisible"
     );
 
-  if (savedSidebarState !== null) {
+  if (
+    savedSidebarState !== null
+  ) {
     sidebarVisible.value =
-      savedSidebarState === "true";
+      savedSidebarState ===
+      "true";
+  }
+}
+
+function handleStorageChange(
+  event
+) {
+  const authenticationKeys = [
+    "authenticatedUser",
+    "user",
+    "userId",
+    "role",
+    "region",
+    "regionName"
+  ];
+
+  if (
+    authenticationKeys.includes(
+      event.key
+    )
+  ) {
+    loadStoredUser();
   }
 
-  updateMainPanel();
-});
+  if (
+    event.key ===
+    "sidebarVisible"
+  ) {
+    loadSidebarState();
+    updateMainPanel();
+  }
+}
 
 function hideSidebar() {
-  sidebarVisible.value = false;
+  sidebarVisible.value =
+    false;
 
   localStorage.setItem(
     "sidebarVisible",
@@ -148,7 +364,8 @@ function hideSidebar() {
 }
 
 function showSidebar() {
-  sidebarVisible.value = true;
+  sidebarVisible.value =
+    true;
 
   localStorage.setItem(
     "sidebarVisible",
@@ -156,6 +373,14 @@ function showSidebar() {
   );
 
   updateMainPanel();
+}
+
+function toggleSidebar() {
+  if (sidebarVisible.value) {
+    hideSidebar();
+  } else {
+    showSidebar();
+  }
 }
 
 function updateMainPanel() {

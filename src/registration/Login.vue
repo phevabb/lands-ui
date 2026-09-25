@@ -19,55 +19,188 @@
           <p class="login-subtitle">Enter your credentials to access your account.</p>
         </div>
 
-        <div v-for="(msg, index) in messages" :key="index" class="alert-message" role="alert">
-          <p>{{ msg }}</p>
-          <button type="button" class="close-alert" @click="closeAlert(index)">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-          </button>
-        </div>
+<div
+  v-for="(message, index) in messages"
+  :key="index"
+  class="alert-message"
+  role="alert"
+>
+  <p>{{ message }}</p>
 
-        <form @submit.prevent="handleLogin" class="login-form">
+  <button
+    type="button"
+    class="close-alert"
+    aria-label="Close message"
+    @click="closeAlert(index)"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class="feather feather-x"
+    >
+      <line
+        x1="18"
+        y1="6"
+        x2="6"
+        y2="18"
+      ></line>
+
+      <line
+        x1="6"
+        y1="6"
+        x2="18"
+        y2="18"
+      ></line>
+    </svg>
+  </button>
+</div>
+       <form
+  class="login-form"
+  novalidate
+  @submit.prevent="handleLogin"
+>
+
+
           <div class="form-group">
-  <label for="department">Choose Department</label>
+  <label for="department">
+    Choose Portal
+  </label>
+
   <div class="input-wrapper select-wrapper">
-    <select v-model="form.staff_department" id="department">
-      <option value="" disabled selected>Select Department</option>
-      <option v-for="dept in departments" :key="dept.id" :value="dept.name">
-        {{ dept.name }}
+    <select
+      id="department"
+      v-model="form.selectedRole"
+      :disabled="loading"
+      @change="clearMessages"
+    >
+      <option
+        value=""
+        disabled
+      >
+        Select Portal
+      </option>
+
+      <option
+        v-for="department in departments"
+        :key="department.id"
+        :value="department.name"
+      >
+        {{ department.name }}
       </option>
     </select>
-    <!-- Dropdown arrow -->
-    <span class="dropdown-icon">▼</span>
+
+    <span class="dropdown-icon">
+      ▼
+    </span>
   </div>
+
+  <span
+    v-if="
+      formSubmitted &&
+      selectedRoleError
+    "
+    class="field-error"
+  >
+    {{ selectedRoleError }}
+  </span>
 </div>
 
+       <div class="form-group">
+  <label for="userID">
+    Staff ID
+  </label>
 
-          <div class="form-group">
-            <label for="userID">Staff ID</label>
-            <div class="input-wrapper">
-              <input v-model="form.user_ID" type="text" id="userID" placeholder="ID" />
-            </div>
-          </div>
+  <div class="input-wrapper">
+    <input
+      id="userID"
+      v-model.trim="form.userId"
+      type="text"
+      name="userId"
+      autocomplete="username"
+      placeholder="Enter your staff ID"
+      :disabled="loading"
+      @input="clearMessages"
+    />
+  </div>
 
-          <div class="form-group">
-            <label for="password">Password</label>
-            <div class="input-wrapper password-input-group">
-              <input
-                :type="showPassword ? 'text' : 'password'"
-                id="password"
-                v-model="form.password"
-                placeholder="Password"
-              />
-              <button type="button" class="toggle-password" @click="togglePassword">
-                <i :class="showPassword ? 'mdi mdi-eye-off' : 'mdi mdi-eye'"></i>
-              </button>
-            </div>
-          </div>
+  <span
+    v-if="
+      formSubmitted &&
+      userIdError
+    "
+    class="field-error"
+  >
+    {{ userIdError }}
+  </span>
+</div>
 
+         <div class="form-group">
+  <label for="password">
+    Password
+  </label>
+
+  <div class="input-wrapper password-input-group">
+    <input
+      id="password"
+      v-model="form.password"
+      :type="
+        showPassword
+          ? 'text'
+          : 'password'
+      "
+      name="password"
+      autocomplete="current-password"
+      placeholder="Enter your password"
+      :disabled="loading"
+      @input="clearMessages"
+    />
+
+    <button
+      type="button"
+      class="toggle-password"
+      :disabled="loading"
+      @click="togglePassword"
+    >
+      <i
+        :class="
+          showPassword
+            ? 'mdi mdi-eye-off'
+            : 'mdi mdi-eye'
+        "
+      ></i>
+    </button>
+  </div>
+
+  <span
+    v-if="
+      formSubmitted &&
+      passwordError
+    "
+    class="field-error"
+  >
+    {{ passwordError }}
+  </span>
+</div>
          <!-- Loading spinner OR button -->
-        <md-progress-bar v-if="loading" md-mode="indeterminate"></md-progress-bar>
-        <button v-else type="submit" class="login-btn">Log in</button>
+      <md-progress-bar
+  v-if="loading"
+  md-mode="indeterminate"
+></md-progress-bar>
 
+<button
+  v-else
+  type="submit"
+  class="login-btn"
+>
+  Log in
+</button>
 
           <div class="forgot-password">
             <router-link to="/reset-password">Forgot password?</router-link>
@@ -81,86 +214,723 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
-import {login} from '@/services/api'
-const loading = ref(false)
-import { useRouter } from "vue-router/composables";
+import {
+  computed,
+  onMounted,
+  reactive,
+  ref
+} from "vue";
 
-const router = useRouter();
+import {
+  useRoute,
+  useRouter
+} from "vue-router/composables";
 
+import {
+  login
+} from "@/services/api";
 
-const messages = ref([])
-const insert_message = (msg) => {
-  messages.value.push(msg)
-}
-const closeAlert = (index) => {
-  messages.value.splice(index, 1)
-}
+const router =
+  useRouter();
 
-const form = reactive({
-  staff_department: '',
-  user_ID: '',
-  password: ''
-})
+const route =
+  useRoute();
 
-const departments = ref([
-  { id: 1, name: 'Admin' },
-  { id: 2, name: 'Manager' },
-  { id: 3, name: 'Staff' }
-])
+const loading =
+  ref(false);
 
-const showPassword = ref(false)
+const showPassword =
+  ref(false);
 
-const togglePassword = () => {
-  showPassword.value = !showPassword.value
-}
+const formSubmitted =
+  ref(false);
 
-const handleLogin = async () => {
-  loading.value = true
-  try {
-    const { data } = await login(form);
+const messages =
+  ref([]);
 
-    
+const form =
+  reactive({
+    selectedRole: "",
+    userId: "",
+    password: ""
+  });
 
-    // Ensure region_id is stored as string
-    const region = data.user.region || "";
-    const regionId = data.user.region_id != null ? String(data.user.region_id) : "";
+const departments =
+  ref([
+    {
+      id: 1,
+      name: "Admin"
+    },
+    {
+      id: 2,
+      name: "Manager"
+    },
+    {
+      id: 3,
+      name: "Staff"
+    }
+  ]);
 
-    localStorage.setItem("region", region);
-    localStorage.setItem("region_id", regionId);
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("user", data.user.full_name);
-    localStorage.setItem("user_id", data.user.id)  // store staff id
-
-
-    const role = data.user.role
-    const id = data.user.id
-
-    if (role === "Admin") {
-      router.push({ path: "/dashboard" })
-    } else if (role === "Manager") {
-      router.push({ path: "/manager/dashboard" })
-    } else if (role === "Staff") {
-      router.push({ path: `/staff/staff-details/${id}` }) // pass id in the route
+const selectedRoleError =
+  computed(() => {
+    if (!form.selectedRole) {
+      return "Choose the portal you want to access.";
     }
 
-  } catch (err) {
+    return "";
+  });
 
-    const message =
-      err?.response?.data?.non_field_errors?.[0] ||
-      err?.response?.data?.staff_department?.[0] ||
-      err?.response?.data?.user_ID?.[0] ||
-      err?.response?.data?.password?.[0] ||
-      err?.response?.data?.error ||
-      "Please check your internet connection"
+const userIdError =
+  computed(() => {
+    const userId =
+      form.userId
+        ? form.userId.trim()
+        : "";
 
-    insert_message(message)
-  } finally {
-    loading.value = false
-  }
-}
+    if (!userId) {
+      return "Staff ID is required.";
+    }
 
+    return "";
+  });
+
+const passwordError =
+  computed(() => {
+    if (!form.password) {
+      return "Password is required.";
+    }
+
+    return "";
+  });
+
+onMounted(() => {
+  clearExistingAuthentication();
+});
+
+const insertMessage =
+  message => {
+    if (!message) {
+      return;
+    }
+
+    messages.value = [
+      message
+    ];
+  };
+
+const closeAlert =
+  index => {
+    messages.value.splice(
+      index,
+      1
+    );
+  };
+
+const clearMessages =
+  () => {
+    messages.value = [];
+  };
+
+const togglePassword =
+  () => {
+    showPassword.value =
+      !showPassword.value;
+  };
+
+const normalizeBoolean =
+  (
+    value,
+    fallback = false
+  ) => {
+    if (
+      typeof value ===
+      "boolean"
+    ) {
+      return value;
+    }
+
+    if (
+      value === 1 ||
+      value === "1" ||
+      value === "true"
+    ) {
+      return true;
+    }
+
+    if (
+      value === 0 ||
+      value === "0" ||
+      value === "false"
+    ) {
+      return false;
+    }
+
+    return fallback;
+  };
+
+const normalizeRole =
+  role => {
+    return role
+      ? String(role)
+          .trim()
+          .toLowerCase()
+      : "";
+  };
+
+const clearExistingAuthentication =
+  () => {
+    localStorage.removeItem(
+      "token"
+    );
+
+    localStorage.removeItem(
+      "accessToken"
+    );
+
+    localStorage.removeItem(
+      "access_token"
+    );
+
+    localStorage.removeItem(
+      "tokenType"
+    );
+
+    localStorage.removeItem(
+      "tokenExpiresAt"
+    );
+
+    localStorage.removeItem(
+      "authenticatedUser"
+    );
+
+    localStorage.removeItem(
+      "user"
+    );
+
+    localStorage.removeItem(
+      "user_id"
+    );
+
+    localStorage.removeItem(
+      "userId"
+    );
+
+    localStorage.removeItem(
+      "role"
+    );
+
+    localStorage.removeItem(
+      "region"
+    );
+
+    localStorage.removeItem(
+      "region_id"
+    );
+
+    localStorage.removeItem(
+      "regionName"
+    );
+
+    localStorage.removeItem(
+      "regionId"
+    );
+
+    localStorage.removeItem(
+      "isSuperuser"
+    );
+  };
+
+const validateForm =
+  () => {
+    clearMessages();
+
+    if (
+      selectedRoleError.value
+    ) {
+      insertMessage(
+        selectedRoleError.value
+      );
+
+      return false;
+    }
+
+    if (userIdError.value) {
+      insertMessage(
+        userIdError.value
+      );
+
+      return false;
+    }
+
+    if (passwordError.value) {
+      insertMessage(
+        passwordError.value
+      );
+
+      return false;
+    }
+
+    return true;
+  };
+
+const validateSelectedPortal =
+  user => {
+    const selectedRole =
+      normalizeRole(
+        form.selectedRole
+      );
+
+    const authenticatedRole =
+      normalizeRole(
+        user.role
+      );
+
+    if (
+      selectedRole !==
+      authenticatedRole
+    ) {
+      const actualRole =
+        user.role ||
+        "Unknown";
+
+      insertMessage(
+        `Role Mismatch`
+      );
+
+      return false;
+    }
+
+    return true;
+  };
+
+const saveAuthentication =
+  responseData => {
+    const token =
+      responseData.token;
+
+    const user =
+      responseData.user;
+
+    const normalizedUser = {
+      ...user,
+
+      id:
+        Number(user.id),
+
+      userId:
+        user.userId || "",
+
+      fullName:
+        user.fullName || "",
+
+      displayName:
+        user.displayName ||
+        user.fullName ||
+        user.userId ||
+        "",
+
+      role:
+        user.role || "",
+
+      isActive:
+        normalizeBoolean(
+          user.isActive,
+          true
+        ),
+
+      isStaff:
+        normalizeBoolean(
+          user.isStaff,
+          false
+        ),
+
+      isSuperuser:
+        normalizeBoolean(
+          user.isSuperuser,
+          false
+        ),
+
+      regionId:
+        user.regionId !== null &&
+        user.regionId !== undefined
+          ? Number(
+              user.regionId
+            )
+          : null,
+
+      regionName:
+        user.regionName || ""
+    };
+
+    localStorage.setItem(
+      "accessToken",
+      token
+    );
+
+    /*
+     * Keep "token" temporarily for existing
+     * components that read this key.
+     */
+    localStorage.setItem(
+      "token",
+      token
+    );
+
+    localStorage.setItem(
+      "tokenType",
+      responseData.tokenType ||
+        "Bearer"
+    );
+
+    localStorage.setItem(
+      "tokenExpiresAt",
+      responseData.expiresAt ||
+        ""
+    );
+
+    localStorage.setItem(
+      "authenticatedUser",
+      JSON.stringify(
+        normalizedUser
+      )
+    );
+
+    localStorage.setItem(
+      "user",
+      normalizedUser.fullName
+    );
+
+    localStorage.setItem(
+      "user_id",
+      String(
+        normalizedUser.id
+      )
+    );
+
+    localStorage.setItem(
+      "userId",
+      normalizedUser.userId
+    );
+
+    localStorage.setItem(
+      "role",
+      normalizedUser.role
+    );
+
+    localStorage.setItem(
+      "isSuperuser",
+      String(
+        normalizedUser.isSuperuser
+      )
+    );
+
+    localStorage.setItem(
+      "region",
+      normalizedUser.regionName
+    );
+
+    localStorage.setItem(
+      "regionName",
+      normalizedUser.regionName
+    );
+
+    localStorage.setItem(
+      "region_id",
+      normalizedUser.regionId !==
+        null
+        ? String(
+            normalizedUser.regionId
+          )
+        : ""
+    );
+
+    localStorage.setItem(
+      "regionId",
+      normalizedUser.regionId !==
+        null
+        ? String(
+            normalizedUser.regionId
+          )
+        : ""
+    );
+
+    return normalizedUser;
+  };
+
+const redirectAuthenticatedUser =
+  async user => {
+    const normalizedRole =
+      normalizeRole(
+        user.role
+      );
+
+    const requestedRedirect =
+      route.query &&
+      typeof route.query.redirect ===
+        "string"
+        ? route.query.redirect
+        : "";
+
+    if (
+      normalizedRole ===
+      "admin"
+    ) {
+      const destination =
+        requestedRedirect.startsWith(
+          "/dashboard"
+        )
+          ? requestedRedirect
+          : "/dashboard";
+
+      await router.push({
+        path: destination
+      });
+
+      return;
+    }
+
+    if (
+      normalizedRole ===
+      "manager"
+    ) {
+      const destination =
+        requestedRedirect.startsWith(
+          "/manager/"
+        )
+          ? requestedRedirect
+          : "/manager/dashboard";
+
+      await router.push({
+        path: destination
+      });
+
+      return;
+    }
+
+    if (
+      normalizedRole ===
+      "staff"
+    ) {
+      const destination =
+        `/staff/staff-details/${user.id}`;
+
+      await router.push({
+        path: destination
+      });
+
+      return;
+    }
+
+    throw new Error(
+      "This account does not have a supported portal role."
+    );
+  };
+
+const handleLogin =
+  async () => {
+    formSubmitted.value = true;
+
+    if (!validateForm()) {
+      return;
+    }
+
+    loading.value = true;
+    clearMessages();
+    clearExistingAuthentication();
+
+    const payload = {
+      userId:
+        form.userId.trim(),
+
+      password:
+        form.password
+    };
+
+    try {
+      const response =
+        await login(payload);
+
+      const responseData =
+        response.data || {};
+
+      const token =
+        responseData.token;
+
+      const user =
+        responseData.user;
+
+      if (!token) {
+        throw new Error(
+          "The server did not return an authentication token."
+        );
+      }
+
+      if (!user) {
+        throw new Error(
+          "The server did not return the authenticated account."
+        );
+      }
+
+      if (
+        !normalizeBoolean(
+          user.isActive,
+          true
+        )
+      ) {
+        insertMessage(
+          "This account is inactive. Please contact an administrator."
+        );
+
+        form.password = "";
+
+        return;
+      }
+
+      if (
+        !validateSelectedPortal(
+          user
+        )
+      ) {
+        form.password = "";
+
+        return;
+      }
+
+      /*
+       * This is the normal Admin, Manager,
+       * and Staff portal.
+       *
+       * Superusers should use the dedicated
+       * Super Admin login page.
+       */
+      if (
+        normalizeBoolean(
+          user.isSuperuser,
+          false
+        )
+      ) {
+        insertMessage(
+          "This is a Super Admin account. Please use the Super Admin portal."
+        );
+
+        form.password = "";
+
+        return;
+      }
+
+      const authenticatedUser =
+        saveAuthentication(
+          responseData
+        );
+
+      await redirectAuthenticatedUser(
+        authenticatedUser
+      );
+    } catch (error) {
+      clearExistingAuthentication();
+
+      form.password = "";
+
+      insertMessage(
+        getLoginErrorMessage(
+          error
+        )
+      );
+
+      console.error(
+        "Portal login failed:",
+        error.response?.status,
+        error.response?.data,
+        error
+      );
+    } finally {
+      loading.value = false;
+    }
+  };
+
+const getLoginErrorMessage =
+  error => {
+    if (
+      error instanceof Error &&
+      !error.response &&
+      error.message &&
+      error.message !==
+        "Network Error"
+    ) {
+      return error.message;
+    }
+
+    if (!error.response) {
+      return "Unable to connect to the HR backend. Please check the connection and try again.";
+    }
+
+    const status =
+      error.response.status;
+
+    const responseData =
+      error.response.data;
+
+    if (
+      typeof responseData ===
+        "string" &&
+      responseData.trim()
+    ) {
+      return responseData;
+    }
+
+    if (
+      responseData &&
+      typeof responseData.detail ===
+        "string"
+    ) {
+      return responseData.detail;
+    }
+
+    if (
+      responseData &&
+      typeof responseData.error ===
+        "string"
+    ) {
+      return responseData.error;
+    }
+
+    if (
+      responseData &&
+      typeof responseData.message ===
+        "string"
+    ) {
+      return responseData.message;
+    }
+
+    if (status === 400) {
+      return "The login request could not be processed.";
+    }
+
+    if (status === 401) {
+      return "Invalid staff ID or password.";
+    }
+
+    if (status === 403) {
+      return "This account is inactive or is not permitted to access the selected portal.";
+    }
+
+    if (status === 404) {
+      return "The authentication endpoint was not found.";
+    }
+
+    if (status === 429) {
+      return "Too many login attempts. Please wait and try again.";
+    }
+
+    if (status >= 500) {
+      return "The server could not complete the login request.";
+    }
+
+    return "Unable to log in. Please try again.";
+  };
 </script>
+
+
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');

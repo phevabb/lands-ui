@@ -1,141 +1,709 @@
-import axios from 'axios';
-const api = axios.create({
-
-  
 
 
 
-    baseURL: 'http://127.0.0.1:8000/',
 
-    
 
-    // baseURL: 'https://hr-production-415c.up.railway.app/',  NO MORE
 
- //  baseURL: 'https://humanresourcebackend-7ritgqhp.b4a.run/', NO MORE
 
-  
+import axios from "axios";
 
-});
+// Production API
+// const API_BASE_URL =
+//   process.env.VUE_APP_API_BASE_URL ||
+//   "https://your-production-domain.com/api";
+
+// Local/testing API
+const API_BASE_URL =
+  "http://127.0.0.1:8888/api";
+
+const api =
+  axios.create({
+    baseURL: API_BASE_URL,
+
+    headers: {
+      Accept: "application/json"
+    },
+
+    timeout: 30000
+  });
+
+const PUBLIC_ENDPOINTS = [
+  "/auth/login",
+  "/auth/password-reset",
+  "/auth/password-reset-confirm"
+];
+
+function getStoredToken() {
+  return (
+    localStorage.getItem(
+      "accessToken"
+    ) ||
+    localStorage.getItem(
+      "token"
+    ) ||
+    localStorage.getItem(
+      "access_token"
+    ) ||
+    ""
+  );
+}
+
+function isPublicEndpoint(
+  requestUrl
+) {
+  if (!requestUrl) {
+    return false;
+  }
+
+  const normalizedUrl =
+    String(requestUrl)
+      .split("?")[0]
+      .replace(/\/+$/, "");
+
+  return PUBLIC_ENDPOINTS.some(
+    endpoint => {
+      return (
+        normalizedUrl === endpoint ||
+        normalizedUrl.endsWith(
+          endpoint
+        )
+      );
+    }
+  );
+}
+
+function clearAuthentication() {
+  localStorage.removeItem(
+    "accessToken"
+  );
+
+  localStorage.removeItem(
+    "token"
+  );
+
+  localStorage.removeItem(
+    "access_token"
+  );
+
+  localStorage.removeItem(
+    "tokenType"
+  );
+
+  localStorage.removeItem(
+    "tokenExpiresAt"
+  );
+
+  localStorage.removeItem(
+    "authenticatedUser"
+  );
+
+  localStorage.removeItem(
+    "superAdminUser"
+  );
+
+  localStorage.removeItem(
+    "user"
+  );
+
+  localStorage.removeItem(
+    "user_id"
+  );
+
+  localStorage.removeItem(
+    "userId"
+  );
+
+  localStorage.removeItem(
+    "role"
+  );
+
+  localStorage.removeItem(
+    "region"
+  );
+
+  localStorage.removeItem(
+    "region_id"
+  );
+
+  localStorage.removeItem(
+    "regionName"
+  );
+
+  localStorage.removeItem(
+    "regionId"
+  );
+
+  localStorage.removeItem(
+    "isSuperuser"
+  );
+}
 
 api.interceptors.request.use(
-  (config) => {
-    if (config.data instanceof FormData) {
-      for (let [key, value] of config.data.entries()) {
-        // Debugging FormData entries if needed
+  config => {
+    const requestIsPublic =
+      isPublicEndpoint(
+        config.url
+      );
+
+    /*
+     * Let the browser generate the correct
+     * multipart boundary for FormData.
+     *
+     * Do not manually set:
+     * Content-Type: multipart/form-data
+     */
+    if (
+      config.data instanceof FormData
+    ) {
+      if (config.headers) {
+        delete config.headers[
+          "Content-Type"
+        ];
+
+        delete config.headers[
+          "content-type"
+        ];
       }
-      config.headers['Content-Type'] = 'multipart/form-data';
+    } else {
+      config.headers[
+        "Content-Type"
+      ] = "application/json";
     }
-    const publicEndpoints = [
-      'api/v1/auth/login',
-      'api/v1/auth/password-reset/confirm',
-    ];
-    const isPublic = publicEndpoints.some((endpoint) => config.url.includes(endpoint));
-    if (!isPublic) {
-      const token = localStorage.getItem('token');
+
+    if (!requestIsPublic) {
+      const token =
+        getStoredToken();
+
       if (token) {
-        config.headers.Authorization = `Token ${token}`;
+        config.headers.Authorization =
+          `Bearer ${token}`;
       }
+    } else if (
+      config.headers &&
+      config.headers.Authorization
+    ) {
+      delete config.headers.Authorization;
     }
+
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
+
+  error => {
+    return Promise.reject(
+      error
+    );
   }
 );
 
-export const DEFAULT_AVATAR = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+api.interceptors.response.use(
+  response => {
+    return response;
+  },
 
-// AUTHS
-export const login = (credentials) => api.post('api/v1/auth/login', credentials);
-export const logout = () => api.post('api/v1/auth/logout');
-export const changepassword = (data) => api.post('api/v1/auth/change-password', data);
-export const resetpassword = (data) => api.post('api/v1/auth/password-reset', data);
-export const resetpasswordconfirm = (data) => api.post('api/v1/auth/password-reset/confirm', data);
+  error => {
+    const status =
+      error.response?.status;
 
-// SUPERADMIN
-export const directorate_stats = (params) => api.get("superadmin/api/v1/directorate-stats", { params });
-export const class_stats = (params) => api.get("superadmin/api/v1/class-stats", { params });
-export const region_stats = (params) => api.get("superadmin/api/v1/region-stats", { params });
-export const management_stats = (params) => api.get("superadmin/api/v1/management-stats", { params });
-export const senior_stats = (params) => api.get("superadmin/api/v1/senior-stats", { params });
-export const gender_stats = (params) => api.get("superadmin/api/v1/gender-stats", { params });
-export const age_stats = (params) => api.get("superadmin/api/v1/age-stats", { params });
-export const salary_stats = (params) => api.get("superadmin/api/v1/salary-grade-stats", { params });
-export const leave_stats = (params) => api.get("superadmin/api/v1/leave-stats", { params });
-export const contract_stats = (params) => api.get("superadmin/api/v1/contract-stats", { params });
-export const pro_stats = (params) => api.get("superadmin/api/v1/pro-stats", { params });
-export const admin_dashboard_summary = (params = {}) => api.get("superadmin/api/v1/admin-dashboard-summary", { params });
-export const all_users = (params) => api.get("superadmin/api/v1/all-users", { params });
+    const currentPath =
+      window.location.pathname;
 
-// Users (Superadmin)
-export const create_user = (payload) => api.post("superadmin/api/v1/users/create", payload);
-export const remove_user = (payload) => api.post("superadmin/api/v1/remove-user", payload);
-export const user_fields = () => api.get("superadmin/api/v1/user-fields");
-export const get_user_details = (userId) => api.get(`superadmin/api/v1/users/${userId}`);
-export const update_user = (userId) => api.get(`superadmin/api/v1/user-update/${userId}/`);
-export const put_user = (userId, payload) => {
-  for (let [key, value] of payload.entries()) {}
-  return api.put(`superadmin/api/v1/user-update/${userId}/`, payload);
-};
-export const patch_user = (userId, payload) => {
-  for (let [key, value] of payload.entries()) {}
-  return api.patch(`superadmin/api/v1/user-update/${userId}/`, payload);
-};
-export const all_users_to_excel = (params = {}) => api.get("superadmin/api/v1/all-users-to-excel", { params });
+    const requestUrl =
+      error.config?.url || "";
 
-export const users_per_department = (dept, params = {}) => {
-  return api.get("superadmin/api/v1/users-per-department/", {
-    params: { dept, ...params },
-  });
-};
+    const requestWasPublic =
+      isPublicEndpoint(
+        requestUrl
+      );
 
-export const users_per_department_no_pages = (dept, params = {}) => {
-  return api.get("superadmin/api/v1/users-per-department-no-pages/", {
-    params: { dept, ...params },
-  });
-};
+    /*
+     * Do not redirect when login itself returns 401.
+     * The login component needs to display the backend
+     * error message.
+     */
+    if (
+      status === 401 &&
+      !requestWasPublic
+    ) {
+      clearAuthentication();
 
-// MANAGERS
-export const manager_directorate_stats = (params) => api.get("manager/api/v1/directorate-stats", { params });
-export const manager_class_stats = (params) => api.get("manager/api/v1/class-stats", { params });
-export const manager_region_stats = (params) => api.get("manager/api/v1/region-stats", { params });
-export const manager_management_stats = (params) => api.get("manager/api/v1/management-stats", { params });
-export const manager_senior_stats = (params) => api.get("manager/api/v1/senior-stats", { params });
-export const manager_gender_stats = (params) => api.get("manager/api/v1/gender-stats", { params });
-export const manager_age_stats = (params) => api.get("manager/api/v1/age-stats", { params });
-export const manager_salary_stats = (params) => api.get("manager/api/v1/salary-grade-stats", { params });
-export const manager_leave_stats = (params) => api.get("manager/api/v1/leave-stats", { params });
-export const manager_contract_stats = (params) => api.get("manager/api/v1/contract-stats", { params });
-export const manager_pro_stats = (params) => api.get("manager/api/v1/pro-stats", { params });
-export const manager_admin_dashboard_summary = (params = {}) => api.get("manager/api/v1/admin-dashboard-summary", { params });
-export const manager_all_users = (params) => api.get("manager/api/v1/all-users", { params });
-export const manager_all_users_to_excel = (params = {}) => api.get("manager/api/v1/all-users-to-excel", { params });
+      const isSuperAdminPage =
+        currentPath.startsWith(
+          "/superadmin"
+        );
 
-// Users (Managers)
-export const manager_create_user = (payload) => api.post("manager/api/v1/users/create", payload);
-export const manager_remove_user = (payload) => api.post("manager/api/v1/remove-user", payload);
-export const manager_user_fields = () => api.get("manager/api/v1/user-fields");
-export const manager_get_user_details = (userId) => api.get(`manager/api/v1/users/${userId}`);
-export const manager_update_user = (userId) => api.get(`manager/api/v1/user-update/${userId}/`);
-export const manager_put_user = (userId, payload) => {
-  for (let [key, value] of payload.entries()) {}
-  return api.put(`manager/api/v1/user-update/${userId}/`, payload);
-};
-export const manager_patch_user = (userId, payload) => {
-  for (let [key, value] of payload.entries()) {}
-  return api.patch(`manager/api/v1/user-update/${userId}/`, payload);
-};
+      const loginPath =
+        isSuperAdminPage
+          ? "/superadmin/login"
+          : "/login";
 
-export const manager_users_per_department = (dept, params = {}) => {
-  return api.get("manager/api/v1/users-per-department/", {
-    params: { dept, ...params },
-  });
-};
+      if (
+        currentPath !== loginPath
+      ) {
+        window.location.href =
+          `${loginPath}?redirect=${encodeURIComponent(
+            currentPath
+          )}`;
+      }
+    }
 
-export const manager_users_per_department_no_pages = (dept, params = {}) => {
-  return api.get("manager/api/v1/users-per-department-no-pages/", {
-    params: { dept, ...params },
-  });
+    return Promise.reject(
+      error
+    );
+  }
+);
+
+export const DEFAULT_AVATAR =
+  "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+
+/*
+ * Authentication
+ */
+
+export function login(
+  credentials
+) {
+  return api.post(
+    "/auth/login",
+    {
+      userId:
+        credentials.userId ||
+        credentials.user_ID ||
+        "",
+
+      password:
+        credentials.password ||
+        ""
+    }
+  );
+}
+
+export function logout() {
+  return api.post(
+    "/auth/logout"
+  );
+}
+
+export function getAuthenticatedUser() {
+  return api.get(
+    "/auth/me"
+  );
+}
+
+export function changePassword(
+  payload
+) {
+  return api.post(
+    "/auth/change-password",
+    {
+      currentPassword:
+        payload.currentPassword ||
+        payload.current_password ||
+        "",
+
+      newPassword:
+        payload.newPassword ||
+        payload.new_password ||
+        "",
+
+      confirmPassword:
+        payload.confirmPassword ||
+        payload.confirm_password ||
+        ""
+    }
+  );
+}
+
+export function requestPasswordReset(
+  payload
+) {
+  return api.post(
+    "/auth/password-reset",
+    {
+      userId:
+        payload.userId ||
+        payload.user_ID ||
+        ""
+    }
+  );
+}
+
+export function confirmPasswordReset(
+  payload
+) {
+  return api.post(
+    "/auth/password-reset-confirm",
+    {
+      token:
+        payload.token ||
+        "",
+
+      newPassword:
+        payload.newPassword ||
+        payload.new_password ||
+        payload.new_password1 ||
+        "",
+
+      confirmPassword:
+        payload.confirmPassword ||
+        payload.confirm_password ||
+        payload.new_password2 ||
+        ""
+    }
+  );
+}
+
+/*
+ * Backward-compatible authentication names.
+ *
+ * These allow existing components to keep using:
+ *
+ * changepassword()
+ * resetpassword()
+ * resetpasswordconfirm()
+ */
+
+export const changepassword =
+  payload => {
+    return changePassword(
+      payload
+    );
+  };
+
+export const resetpassword =
+  payload => {
+    return requestPasswordReset(
+      payload
+    );
+  };
+
+export const resetpasswordconfirm =
+  payload => {
+    return confirmPasswordReset(
+      payload
+    );
+  };
+
+/*
+ * Media
+ */
+
+export function uploadProfilePicture(
+  file
+) {
+  const formData =
+    new FormData();
+
+  formData.append(
+    "file",
+    file,
+    file.name
+  );
+
+  return api.post(
+    "/media/profile-picture",
+    formData
+  );
+}
+
+export function deleteProfilePicture(
+  publicId
+) {
+  return api.delete(
+    "/media/profile-picture",
+    {
+      params: {
+        publicId
+      }
+    }
+  );
+}
+
+/*
+ * Manager profiles
+ */
+
+export function getManagerProfiles() {
+  return api.get(
+    "/manager-profiles"
+  );
+}
+
+export function getManagerProfile(
+  managerProfileId
+) {
+  return api.get(
+    `/manager-profiles/${managerProfileId}`
+  );
+}
+
+export function getManagerProfileByAccount(
+  accountId
+) {
+  return api.get(
+    `/manager-profiles/account/${accountId}`
+  );
+}
+
+export function getManagerProfilesByRegion(
+  regionId
+) {
+  return api.get(
+    `/manager-profiles/region/${regionId}`
+  );
+}
+
+export function createManagerProfile(
+  payload
+) {
+  return api.post(
+    "/manager-profiles",
+    {
+      accountId:
+        Number(
+          payload.accountId
+        ),
+
+      regionId:
+        Number(
+          payload.regionId
+        )
+    }
+  );
+}
+
+export function updateManagerProfile(
+  managerProfileId,
+  payload
+) {
+  return api.put(
+    `/manager-profiles/${managerProfileId}`,
+    {
+      accountId:
+        Number(
+          payload.accountId
+        ),
+
+      regionId:
+        Number(
+          payload.regionId
+        )
+    }
+  );
+}
+
+export function deleteManagerProfile(
+  managerProfileId
+) {
+  return api.delete(
+    `/manager-profiles/${managerProfileId}`
+  );
+}
+
+/*
+ * Accounts and regions
+ */
+
+export function getAccounts(
+  params = {}
+) {
+  return api.get(
+    "/accounts",
+    {
+      params
+    }
+  );
+}
+
+export function getRegions(
+  params = {}
+) {
+  return api.get(
+    "/regions",
+    {
+      params
+    }
+  );
+}
+
+/*
+ * Authentication-storage helpers
+ */
+
+export function saveAuthentication(
+  responseData
+) {
+  const token =
+    responseData?.token || "";
+
+  const user =
+    responseData?.user || null;
+
+  if (!token || !user) {
+    throw new Error(
+      "The authentication response is incomplete."
+    );
+  }
+
+  localStorage.setItem(
+    "accessToken",
+    token
+  );
+
+  /*
+   * Keep this for existing components that still
+   * retrieve the token using localStorage.getItem("token").
+   */
+  localStorage.setItem(
+    "token",
+    token
+  );
+
+  localStorage.setItem(
+    "tokenType",
+    responseData.tokenType ||
+      "Bearer"
+  );
+
+  localStorage.setItem(
+    "tokenExpiresAt",
+    responseData.expiresAt ||
+      ""
+  );
+
+  localStorage.setItem(
+    "authenticatedUser",
+    JSON.stringify(user)
+  );
+
+  localStorage.setItem(
+    "user",
+    user.fullName ||
+      user.displayName ||
+      user.userId ||
+      ""
+  );
+
+  localStorage.setItem(
+    "user_id",
+    user.id !== null &&
+    user.id !== undefined
+      ? String(user.id)
+      : ""
+  );
+
+  localStorage.setItem(
+    "userId",
+    user.userId || ""
+  );
+
+  localStorage.setItem(
+    "role",
+    user.role || ""
+  );
+
+  localStorage.setItem(
+    "isSuperuser",
+    String(
+      user.isSuperuser === true
+    )
+  );
+
+  localStorage.setItem(
+    "region",
+    user.regionName || ""
+  );
+
+  localStorage.setItem(
+    "regionName",
+    user.regionName || ""
+  );
+
+  const regionId =
+    user.regionId !== null &&
+    user.regionId !== undefined
+      ? String(user.regionId)
+      : "";
+
+  localStorage.setItem(
+    "region_id",
+    regionId
+  );
+
+  localStorage.setItem(
+    "regionId",
+    regionId
+  );
+
+  return user;
+}
+
+export function removeAuthentication() {
+  clearAuthentication();
+}
+
+export function getStoredUser() {
+  const serializedUser =
+    localStorage.getItem(
+      "authenticatedUser"
+    );
+
+  if (!serializedUser) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(
+      serializedUser
+    );
+  } catch (error) {
+    return null;
+  }
+}
+
+
+
+export function get_user_details (userId) {
+  return api.get(`/staff/${userId}`);
+}
+
+
+export function admin_dashboard_summary (params = {}) {
+  return api.get("/admin/dashboard-summary", { params });
+}
+
+export const pro_stats =
+  (params = {}) => {
+    return api.get(
+      "/admin/pro-stats",
+      {
+        params: {
+          page:
+            params.page ??
+            1,
+
+          page_size:
+            params.page_size ??
+            params.pageSize ??
+            10
+        }
+      }
+    );
+  };
+export const directorate_stats = (params) => api.get("/admin/dashboard-summary", { params });
+export const class_stats = (params) => api.get("/admin/dashboard-summary", { params });
+export const region_stats = (params) => api.get("/admin/dashboard-summary", { params });
+export const management_stats = (params) => api.get("/admin/dashboard-summary", { params });
+export const senior_stats = (params) => api.get("/admin/dashboard-summary", { params });
+export const gender_stats = (params) => api.get("/admin/dashboard-summary", { params });
+export const age_stats = (params) => api.get("/admin/dashboard-summary", { params });
+export const salary_stats = (params) => api.get("/admin/dashboard-summary", { params });
+export const leave_stats = (params) => api.get("/admin/dashboard-summary", { params });
+export const contract_stats = (params) => api.get("/admin/dashboard-summary", { params });
+
+
+export {
+  api,
+  API_BASE_URL
 };
 
 export default api;

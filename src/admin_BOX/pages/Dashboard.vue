@@ -51,6 +51,7 @@ async function fetchUsers(tab, apiFunc, page, name_) {
     tab.previous = data.previous;
     
   } catch (err) {
+    console.log("Error fetching users for tab print:", tab.name_, err);
     if (err.message.includes("Network Error") || err.code === "ERR_NETWORK") {
       errorMessage.value = "Please check your internet connection.";
     } else {
@@ -95,296 +96,738 @@ function getCurrentPageFromUrl(next, previous, count, pageSize = 10) {
 
 
 
-
 onMounted(async () => {
   isLoading.value = true;
-    errorMessage.value =""
+  errorMessage.value = "";
 
   try {
-    // Call both APIs at once
-    const [{ data: summaryData }, { data: proData }, { data: conData }, { data: leaData }, { data: classData }, { data: dirData }, {data: regData}, {data: manData}, {data: senData}, {data: genData}, {data: ageData}, {data: salData}] = await Promise.all([
-    admin_dashboard_summary(),
-    pro_stats(),
-    contract_stats(),  
-    leave_stats(),  
-    class_stats(),
+    /*
+     * Keep the new Ktor Admin summary API together
+     * with all legacy Django statistics APIs.
+     */
+    const [
+      { data: summaryData },
+      { data: proData },
+      { data: conData },
+      { data: leaData },
+      { data: classData },
+      { data: dirData },
+      { data: regData },
+      { data: manData },
+      { data: senData },
+      { data: genData },
+      { data: ageData },
+      { data: salData }
+    ] = await Promise.all([
+      /*
+       * New Ktor API:
+       * GET /api/admin/dashboard-summary
+       */
+      admin_dashboard_summary(),
+
+      /*
+       * Legacy Django APIs.
+       * Keep these because the dashboard tabs
+       * still depend on their responses.
+       */
+      pro_stats(),
+      contract_stats(),
+      leave_stats(),
+      class_stats(),
       directorate_stats(),
       region_stats(),
       management_stats(),
       senior_stats(),
       gender_stats(),
       age_stats(),
-      salary_stats(),
-      
-
+      salary_stats()
     ]);
 
-  
-    
-    
+    /*
+     * Print only the Ktor dashboard summary.
+     */
+    console.log(
+      "Admin dashboard summary:",
+      summaryData
+    );
 
-    allUsers.value = summaryData.num_of_users;
-    totalMales.value = summaryData.num_of_males;
-    totalFemales.value = summaryData.num_of_females;
-    totalAdmins.value = summaryData.num_of_admins;
-    totalManagers.value = summaryData.num_of_managers;
-    totalStaffMembers.value = summaryData.num_of_staffs;
-    
+    /*
+     * Ktor uses camelCase response properties.
+     *
+     * Nullish coalescing preserves valid zero values.
+     */
+    allUsers.value =
+      Number(
+        summaryData.numOfUsers ??
+        0
+      );
 
-const proTab = {
-  id: "tab-pro",
-  label: "Professionals and Sub Professionals",
-  icon: "school",
-  users: (proData.results ?? []).map(d => ({
-    name: d.professional, // adjust field name if different
-    count: d.count,
-  })),
-  total: proData.count,
+    totalMales.value =
+      Number(
+        summaryData.numOfMales ??
+        0
+      );
 
-  // Pagination
-  next: proData.next,
-  previous: proData.previous,
-  currentPage: getCurrentPageFromUrl(proData.next, proData.previous, proData.count, ),
-  totalPages: Math.ceil(proData.count / page_size),
-  name_: "Professionals and Sub Professionals",
+    totalFemales.value =
+      Number(
+        summaryData.numOfFemales ??
+        0
+      );
 
-  apiFunc: pro_stats,
-};
+    totalAdmins.value =
+      Number(
+        summaryData.numOfAdmins ??
+        0
+      );
 
-const conTab = {
-  id: "tab-CON",
-  label: "Contract Types",
-  icon: "school",
-  users: (conData.results ?? []).map(d => ({
-    name: d.contract_type,
-    count: d.count,
-  })),
-  total: conData.count,
-  
+    totalManagers.value =
+      Number(
+        summaryData.numOfManagers ??
+        0
+      );
 
-  // Pagination
-  next: conData.next,
-  previous: conData.previous,
-  currentPage: getCurrentPageFromUrl(conData.next, conData.previous, conData.count,),
-  totalPages: Math.ceil(conData.count / page_size),
-  name_: "Contract Type",
+    totalStaffMembers.value =
+      Number(
+        summaryData.numOfStaffs ??
+        0
+      );
 
-  apiFunc: contract_stats,
-};
+    /*
+     * Keep all your existing legacy Django
+     * tab definitions below this point.
+     */
 
-const leaTab = {
-  id: "tab-lea",
-  label: "Leave Types",
-  icon: "school",
-  users: (leaData.results ?? []).map(d => ({
-    name: d.leave_type,
-    count: d.count,
-  })),
-  total: leaData.count,
+    const proTab = {
+      id: "tab-pro",
+      label:
+        "Professionals and Sub Professionals",
+      icon: "school",
 
+      users:
+        (
+          proData.results ??
+          []
+        ).map(item => {
+          return {
+            name:
+              item.professional,
+            count:
+              item.count
+          };
+        }),
 
-  // Pagination
-  next: leaData.next,
-  previous: leaData.previous,
-  currentPage: getCurrentPageFromUrl(leaData.next, leaData.previous, leaData.count,),
-  totalPages: Math.ceil(leaData.count / page_size),
-  name_: "Leave Type",
+      total:
+        proData.count,
 
-  apiFunc: leave_stats,
-};
+      next:
+        proData.next,
 
-const classTab = {
-  id: "tab-classes",
-  label: "Classes",
-  icon: "school",
-  users: (classData.results ?? []).map(d => ({
-    name: d.class,
-    count: d.count,
-  })),
-  total: classData.count,
+      previous:
+        proData.previous,
 
+      currentPage:
+        getCurrentPageFromUrl(
+          proData.next,
+          proData.previous,
+          proData.count
+        ),
 
-  // Pagination
-  next: classData.next,
-  previous: classData.previous,
-  currentPage: getCurrentPageFromUrl(classData.next, classData.previous, classData.count, ),
-  totalPages: Math.ceil(classData.count / page_size),
-  name_: "Class",
+      totalPages:
+        Math.ceil(
+          (
+            proData.count ??
+            0
+          ) /
+          page_size
+        ),
 
-  apiFunc: class_stats,
-};
+      name_:
+        "Professionals and Sub Professionals",
 
-const directorateTab = {
-  id: "tab-dept",
-  label: "Departments",
-  icon: "account_balance",
-  users: (dirData.results ?? []).map(d => ({
-    name: d.department,
-    count: d.count,
-  })),
-  total: dirData.count,
+      apiFunc:
+        pro_stats
+    };
 
+    const conTab = {
+      id: "tab-CON",
+      label: "Contract Types",
+      icon: "school",
 
-  // Pagination
-  next: dirData.next,
-  previous: dirData.previous,
-  currentPage: getCurrentPageFromUrl(dirData.next, dirData.previous, dirData.count,),
-  totalPages: Math.ceil(dirData.count /page_size),
-  name_: "Directorate",
+      users:
+        (
+          conData.results ??
+          []
+        ).map(item => {
+          return {
+            name:
+              item.contract_type,
 
-  apiFunc: directorate_stats,
-};
+            count:
+              item.count
+          };
+        }),
 
-const regionTab = {
-  id: "tab-reg",
-  label: "Regions",
-  icon: "account_balance",
-  users: (regData.results ?? []).map(d => ({
-    name: d.region,
-    count: d.count,
-  })),
-  total: regData.count,
+      total:
+        conData.count,
 
+      next:
+        conData.next,
 
-  // Pagination
-  next: regData.next,
-  previous: regData.previous,
-  currentPage: getCurrentPageFromUrl(regData.next, regData.previous, regData.count, ),
-  totalPages: Math.ceil(regData.count / page_size),
-  name_: "Region",
+      previous:
+        conData.previous,
 
-  apiFunc: region_stats,
-};
+      currentPage:
+        getCurrentPageFromUrl(
+          conData.next,
+          conData.previous,
+          conData.count
+        ),
 
-const manTab = {
-  id: "tab-man",
-  label: "Management Unit",
-  icon: "account_balance",
-  users: (manData.results ?? []).map(d => ({
-    name: d.management_unit,
-    count: d.count,
-  })),
-  total: manData.count,
+      totalPages:
+        Math.ceil(
+          (
+            conData.count ??
+            0
+          ) /
+          page_size
+        ),
 
-  // Pagination
-  next: manData.next,
-  previous: manData.previous,
-  currentPage: getCurrentPageFromUrl(manData.next, manData.previous, manData.count, ),
-  totalPages: Math.ceil(manData.count / page_size),
-  name_: "Management Unit",
+      name_:
+        "Contract Type",
 
-  apiFunc: management_stats,
-};
+      apiFunc:
+        contract_stats
+    };
 
-const senTab = {
-  id: "tab-sen",
-  label: "Senior/Junior Staff",
-  icon: "account_balance",
-  users: (senData.results ?? []).map(d => ({
-    name: d.staff_category,
-    count: d.count,
-  })),
-  total: senData.count,
+    const leaTab = {
+      id: "tab-lea",
+      label: "Leave Types",
+      icon: "school",
 
+      users:
+        (
+          leaData.results ??
+          []
+        ).map(item => {
+          return {
+            name:
+              item.leave_type,
 
-  // Pagination
-  next: senData.next,
-  previous: senData.previous,
-  currentPage: getCurrentPageFromUrl(senData.next, senData.previous, senData.count, ),
-  totalPages: Math.ceil(senData.count / page_size),
-  name_: "Staff Category",
+            count:
+              item.count
+          };
+        }),
 
-  apiFunc: senior_stats,
-};
+      total:
+        leaData.count,
 
-const genTab = {
-  id: "tab-gen",
-  label: "Gender",
-  icon: "account_balance",
-  users: (genData.results ?? []).map(d => ({
-    name: d.gender,
-    count: d.count,
-  })),
-  total: "2",
+      next:
+        leaData.next,
 
+      previous:
+        leaData.previous,
 
-  // Pagination
-  next: genData.next,
-  previous: genData.previous,
-  currentPage: getCurrentPageFromUrl(genData.next, genData.previous, genData.count, ),
-  totalPages: Math.ceil(genData.count / page_size),
-  name_: "Gender",
+      currentPage:
+        getCurrentPageFromUrl(
+          leaData.next,
+          leaData.previous,
+          leaData.count
+        ),
 
-  apiFunc: gender_stats,
-};
+      totalPages:
+        Math.ceil(
+          (
+            leaData.count ??
+            0
+          ) /
+          page_size
+        ),
 
-const ageTab = {
-  id: "tab-age",
-  label: "Age Groups",
-  icon: "account_balance",
-  users: (ageData.results ?? []).map(d => ({
-    name: d.age_range,
-    count: d.count,
-  })),
-  total: ageData.count,
+      name_:
+        "Leave Type",
 
-  // Pagination
-  next: ageData.next,
-  previous: ageData.previous,
-  currentPage: getCurrentPageFromUrl(ageData.next, ageData.previous, ageData.count, ),
-  totalPages: Math.ceil(ageData.count /page_size),
-  name_: "Age Range",
+      apiFunc:
+        leave_stats
+    };
 
-  apiFunc: age_stats,
-};
+    const classTab = {
+      id: "tab-classes",
+      label: "Classes",
+      icon: "school",
 
-const salTab = {
-  id: "tab-sal",
-  label: "Grade Levels",
-  icon: "account_balance",
-  users: (salData.results ?? []).map(d => ({
-    name: d.salary_range,
-    count: d.count,
-  })),
-  total: salData.count,
- name_: "Salary Level",
+      users:
+        (
+          classData.results ??
+          []
+        ).map(item => {
+          return {
+            name:
+              item.class,
 
-  // Pagination
-  next: salData.next,
-  previous: salData.previous,
-  currentPage: getCurrentPageFromUrl(salData.next, salData.previous, salData.count, ),
-  totalPages: Math.ceil(salData.count / page_size),
+            count:
+              item.count
+          };
+        }),
 
-  apiFunc: salary_stats,
-};
+      total:
+        classData.count,
 
+      next:
+        classData.next,
 
-    
+      previous:
+        classData.previous,
 
-    // Push into table
-    table_1.value = [classTab, conTab, proTab, senTab,];
+      currentPage:
+        getCurrentPageFromUrl(
+          classData.next,
+          classData.previous,
+          classData.count
+        ),
 
-    table_2.value = [ manTab , ageTab,  ];
+      totalPages:
+        Math.ceil(
+          (
+            classData.count ??
+            0
+          ) /
+          page_size
+        ),
 
-    table_3.value = [  directorateTab, leaTab ,  ];
+      name_: "Class",
 
-    table_4.value = [  salTab, proTab , ];
+      apiFunc:
+        class_stats
+    };
 
-    table_5.value = [  regionTab, genTab  , ];
+    const directorateTab = {
+      id: "tab-dept",
+      label: "Departments",
+      icon: "account_balance",
 
+      users:
+        (
+          dirData.results ??
+          []
+        ).map(item => {
+          return {
+            name:
+              item.department,
 
-  } catch (err) {  
-    
-     if (err.message.includes("Network Error") || err.code === "ERR_NETWORK") {
-      errorMessage.value = "Please check your internet connection.";
+            count:
+              item.count
+          };
+        }),
+
+      total:
+        dirData.count,
+
+      next:
+        dirData.next,
+
+      previous:
+        dirData.previous,
+
+      currentPage:
+        getCurrentPageFromUrl(
+          dirData.next,
+          dirData.previous,
+          dirData.count
+        ),
+
+      totalPages:
+        Math.ceil(
+          (
+            dirData.count ??
+            0
+          ) /
+          page_size
+        ),
+
+      name_:
+        "Directorate",
+
+      apiFunc:
+        directorate_stats
+    };
+
+    const regionTab = {
+      id: "tab-reg",
+      label: "Regions",
+      icon: "account_balance",
+
+      users:
+        (
+          regData.results ??
+          []
+        ).map(item => {
+          return {
+            name:
+              item.region,
+
+            count:
+              item.count
+          };
+        }),
+
+      total:
+        regData.count,
+
+      next:
+        regData.next,
+
+      previous:
+        regData.previous,
+
+      currentPage:
+        getCurrentPageFromUrl(
+          regData.next,
+          regData.previous,
+          regData.count
+        ),
+
+      totalPages:
+        Math.ceil(
+          (
+            regData.count ??
+            0
+          ) /
+          page_size
+        ),
+
+      name_: "Region",
+
+      apiFunc:
+        region_stats
+    };
+
+    const manTab = {
+      id: "tab-man",
+      label:
+        "Management Unit",
+      icon:
+        "account_balance",
+
+      users:
+        (
+          manData.results ??
+          []
+        ).map(item => {
+          return {
+            name:
+              item.management_unit,
+
+            count:
+              item.count
+          };
+        }),
+
+      total:
+        manData.count,
+
+      next:
+        manData.next,
+
+      previous:
+        manData.previous,
+
+      currentPage:
+        getCurrentPageFromUrl(
+          manData.next,
+          manData.previous,
+          manData.count
+        ),
+
+      totalPages:
+        Math.ceil(
+          (
+            manData.count ??
+            0
+          ) /
+          page_size
+        ),
+
+      name_:
+        "Management Unit",
+
+      apiFunc:
+        management_stats
+    };
+
+    const senTab = {
+      id: "tab-sen",
+      label:
+        "Senior/Junior Staff",
+      icon:
+        "account_balance",
+
+      users:
+        (
+          senData.results ??
+          []
+        ).map(item => {
+          return {
+            name:
+              item.staff_category,
+
+            count:
+              item.count
+          };
+        }),
+
+      total:
+        senData.count,
+
+      next:
+        senData.next,
+
+      previous:
+        senData.previous,
+
+      currentPage:
+        getCurrentPageFromUrl(
+          senData.next,
+          senData.previous,
+          senData.count
+        ),
+
+      totalPages:
+        Math.ceil(
+          (
+            senData.count ??
+            0
+          ) /
+          page_size
+        ),
+
+      name_:
+        "Staff Category",
+
+      apiFunc:
+        senior_stats
+    };
+
+    const genTab = {
+      id: "tab-gen",
+      label: "Gender",
+      icon:
+        "account_balance",
+
+      users:
+        (
+          genData.results ??
+          []
+        ).map(item => {
+          return {
+            name:
+              item.gender,
+
+            count:
+              item.count
+          };
+        }),
+
+      total:
+        genData.count ??
+        2,
+
+      next:
+        genData.next,
+
+      previous:
+        genData.previous,
+
+      currentPage:
+        getCurrentPageFromUrl(
+          genData.next,
+          genData.previous,
+          genData.count
+        ),
+
+      totalPages:
+        Math.ceil(
+          (
+            genData.count ??
+            0
+          ) /
+          page_size
+        ),
+
+      name_: "Gender",
+
+      apiFunc:
+        gender_stats
+    };
+
+    const ageTab = {
+      id: "tab-age",
+      label: "Age Groups",
+      icon:
+        "account_balance",
+
+      users:
+        (
+          ageData.results ??
+          []
+        ).map(item => {
+          return {
+            name:
+              item.age_range,
+
+            count:
+              item.count
+          };
+        }),
+
+      total:
+        ageData.count,
+
+      next:
+        ageData.next,
+
+      previous:
+        ageData.previous,
+
+      currentPage:
+        getCurrentPageFromUrl(
+          ageData.next,
+          ageData.previous,
+          ageData.count
+        ),
+
+      totalPages:
+        Math.ceil(
+          (
+            ageData.count ??
+            0
+          ) /
+          page_size
+        ),
+
+      name_:
+        "Age Range",
+
+      apiFunc:
+        age_stats
+    };
+
+    const salTab = {
+      id: "tab-sal",
+      label: "Grade Levels",
+      icon:
+        "account_balance",
+
+      users:
+        (
+          salData.results ??
+          []
+        ).map(item => {
+          return {
+            name:
+              item.salary_range,
+
+            count:
+              item.count
+          };
+        }),
+
+      total:
+        salData.count,
+
+      next:
+        salData.next,
+
+      previous:
+        salData.previous,
+
+      currentPage:
+        getCurrentPageFromUrl(
+          salData.next,
+          salData.previous,
+          salData.count
+        ),
+
+      totalPages:
+        Math.ceil(
+          (
+            salData.count ??
+            0
+          ) /
+          page_size
+        ),
+
+      name_:
+        "Salary Level",
+
+      apiFunc:
+        salary_stats
+    };
+
+    table_1.value = [
+      classTab,
+      conTab,
+      proTab,
+      senTab
+    ];
+
+    table_2.value = [
+      manTab,
+      ageTab
+    ];
+
+    table_3.value = [
+      directorateTab,
+      leaTab
+    ];
+
+    table_4.value = [
+      salTab,
+      proTab
+    ];
+
+    table_5.value = [
+      regionTab,
+      genTab
+    ];
+  } catch (error) {
+    console.error(
+      "Unable to load dashboard data:",
+      error.response?.data ||
+      error.message ||
+      error
+    );
+
+    if (
+      error.message?.includes(
+        "Network Error"
+      ) ||
+      error.code ===
+        "ERR_NETWORK"
+    ) {
+      errorMessage.value =
+        "Please check your internet connection.";
+    } else if (
+      error.response?.status ===
+      401
+    ) {
+      errorMessage.value =
+        "Your session has expired. Please sign in again.";
+    } else if (
+      error.response?.status ===
+      403
+    ) {
+      errorMessage.value =
+        "You do not have permission to view this dashboard.";
     } else {
-      errorMessage.value = "Something went wrong while fetching staff data.";
+      errorMessage.value =
+        error.response?.data?.detail ||
+        "Something went wrong while fetching dashboard data.";
     }
-  
   } finally {
     isLoading.value = false;
   }
 });
+
 </script>
 
 

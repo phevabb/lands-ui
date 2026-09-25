@@ -48,24 +48,159 @@ router.beforeEach((to, from, next) => {
     localStorage.getItem("token") ||
     localStorage.getItem("accessToken");
 
-  let account = null;
 
-  try {
-    const storedAccount =
-      localStorage.getItem("account") ||
-      localStorage.getItem("user");
 
-    account = storedAccount
-      ? JSON.parse(storedAccount)
-      : null;
-  } catch (error) {
-    console.error(
-      "Unable to read account information",
-      error
+let account = null;
+
+try {
+  const storedAccount =
+    localStorage.getItem(
+      "account"
+    ) ||
+    localStorage.getItem(
+      "authenticatedUser"
+    ) ||
+    localStorage.getItem(
+      "user"
     );
 
+  if (!storedAccount) {
     account = null;
+  } else {
+    try {
+      const parsedAccount =
+        JSON.parse(
+          storedAccount
+        );
+
+      if (
+        parsedAccount &&
+        typeof parsedAccount ===
+          "object" &&
+        !Array.isArray(
+          parsedAccount
+        )
+      ) {
+        account =
+          parsedAccount;
+      } else if (
+        typeof parsedAccount ===
+          "string"
+      ) {
+        account = {
+          fullName:
+            parsedAccount,
+
+          displayName:
+            parsedAccount,
+
+          userId:
+            localStorage.getItem(
+              "userId"
+            ) || "",
+
+          role:
+            localStorage.getItem(
+              "role"
+            ) || "",
+
+          regionId:
+            localStorage.getItem(
+              "regionId"
+            ) ||
+            localStorage.getItem(
+              "region_id"
+            ) ||
+            "",
+
+          regionName:
+            localStorage.getItem(
+              "regionName"
+            ) ||
+            localStorage.getItem(
+              "region"
+            ) ||
+            ""
+        };
+      } else {
+        account = null;
+      }
+    } catch (parseError) {
+      /*
+       * Legacy support:
+       *
+       * The previous login code stored only the
+       * user's full name instead of a JSON object.
+       */
+      account = {
+        fullName:
+          storedAccount,
+
+        displayName:
+          storedAccount,
+
+        userId:
+          localStorage.getItem(
+            "userId"
+          ) || "",
+
+        role:
+          localStorage.getItem(
+            "role"
+          ) || "",
+
+        regionId:
+          localStorage.getItem(
+            "regionId"
+          ) ||
+          localStorage.getItem(
+            "region_id"
+          ) ||
+          "",
+
+        regionName:
+          localStorage.getItem(
+            "regionName"
+          ) ||
+          localStorage.getItem(
+            "region"
+          ) ||
+          ""
+      };
+
+      /*
+       * Repair all account-storage keys so future
+       * JSON.parse calls receive valid JSON.
+       */
+      const serializedAccount =
+        JSON.stringify(
+          account
+        );
+
+      localStorage.setItem(
+        "account",
+        serializedAccount
+      );
+
+      localStorage.setItem(
+        "authenticatedUser",
+        serializedAccount
+      );
+
+      localStorage.setItem(
+        "user",
+        serializedAccount
+      );
+    }
   }
+} catch (error) {
+  console.error(
+    "Unable to read account information",
+    error
+  );
+
+  account = null;
+}
 
   if (requiresAuth && !token) {
     return next("/login");

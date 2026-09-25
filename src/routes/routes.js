@@ -59,9 +59,20 @@ import super_OnLeaveTypes from "../SUPERADMIN_BOX/pages/super_OnLeaveTypes.vue";
 import super_Positions from "../SUPERADMIN_BOX/pages/super_Positions.vue";
 import super_AllUsers from "../SUPERADMIN_BOX/pages/super_AllUsers.vue";
 import Super_ManagerProfiles from "../SUPERADMIN_BOX/pages/super_ManagerProfiles.vue";
-
+import SuperAdminLogin from "../SUPERADMIN_BOX/pages/SuperAdminLogin.vue";
 
 const routes = [
+
+  {
+  path: "/superadmin/login",
+  name: "SuperAdminLogin",
+  component: SuperAdminLogin,
+  meta: {
+    public: true,
+    guestOnly: true
+  }
+}
+,
   {
   path: "/",
   redirect: "/login",

@@ -11,14 +11,14 @@
     <div class="profile-container">
       <div class="profile-card">
         <img
-          :src="getProfilePictureSrc(staff.profile_picture)"
-          :alt="staff.full_name || 'Profile Image'"
+          :src="getProfilePictureSrc(staff.profilePictureUrl)"
+          :alt="staff.fullName || 'Profile Image'"
           class="profile-image"
           @error="handleImageError"
         /> 
-        <h2 class="profile-name">{{ staff.title }} {{ staff.full_name }}</h2>
-        <p class="profile-title">Staff ID: {{ staff.user_id }}</p>
-        <span class="profile-department">{{ staff.directorate }}</span>
+        <h2 class="profile-name">{{ staff.titleName }} {{ staff.fullName }}</h2>
+        <p class="profile-title">Staff ID: {{ staff.userId }}</p>
+        <span class="profile-department">{{ staff.directorateName}}</span>
 
         <div class="profile-stats">
           <div class="stat">
@@ -26,11 +26,11 @@
             <div class="stat-label">Age</div>
           </div>
           <div class="stat">
-            <div class="stat-value">{{ staff.number_of_years_in_service }}</div>
+            <div class="stat-value">{{ staff.numberOfYearsInService }}</div>
             <div class="stat-label">Years in Service</div>
           </div>
           <div class="stat">
-            <div class="stat-value">{{ formatDate(staff.date_of_retirement) }}</div>
+            <div class="stat-value">{{ formatDate(staff.dateOfRetirement) }}</div>
             <div class="stat-label">Retirement Date</div>
           </div>
         </div>
@@ -46,19 +46,21 @@
             <div class="contact-icon">
               <i class="fas fa-phone"></i>
             </div>
-            <div>{{ staff.phone_number || 'No phone provided' }}</div>
+            <div>{{ staff.phoneNumber || 'No phone provided' }}</div>
           </div>
+
           <div class="contact-item">
             <div class="contact-icon">
               <i class="fas fa-map-marker-alt"></i>
             </div>
-            <div>{{ staff.district }}, {{ staff.region }}</div>
+            <div>{{ staff.districtName }}, {{ staff.regionName }}</div>
           </div>
+
           <div class="contact-item">
             <div class="contact-icon">
               <i class="fas fa-building"></i>
             </div>
-            <div>{{ staff.management_unit_cost_centre }}</div>
+            <div>{{ staff.managementUnitCostCentreName }}</div>
           </div>
           <div class="contact-item">
             <div class="contact-icon">
@@ -76,7 +78,7 @@
             <div class="contact-icon">
               <i class="fas fa-users"></i>
             </div>
-            <div>{{ staff.staff_category }}</div>
+            <div>{{ staff.staffCategory }}</div>
           </div>
         </div>
       </div>
@@ -88,15 +90,15 @@
           <div class="info-grid">
             <div class="info-item">
               <div class="info-label">Full Name</div>
-              <div class="info-value">{{ staff.title }} {{ staff.full_name }}</div>
+              <div class="info-value">{{ staff.titleName }} {{ staff.fullName }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Staff ID</div>
-              <div class="info-value">{{ staff.user_id }}</div>
+              <div class="info-value">{{ staff.userId }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Date of Birth</div>
-              <div class="info-value">{{ formatDate(staff.date_of_birth) }}</div>
+              <div class="info-value">{{ formatDate(staff.dateOfBirth) }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Gender</div>
@@ -104,11 +106,15 @@
             </div>
             <div class="info-item">
               <div class="info-label">Ghana Card Number</div>
-              <div class="info-value">{{ staff.ghana_card_number }}</div>
+              <div class="info-value">{{ staff.ghanaCardNumber }}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Email</div>
+              <div class="info-value">{{ staff.email }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Marital Status</div>
-              <div class="info-value">{{ staff.marital_status }}</div>
+              <div class="info-value">{{ staff.maritalStatus }}</div>
             </div>
           </div>
         </div>
@@ -119,59 +125,59 @@
           <div class="info-grid">
             <div class="info-item">
               <div class="info-label">Directorate</div>
-              <div class="info-value">{{ staff.directorate }}</div>
+              <div class="info-value">{{ staff.directorateName }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Class</div>
-              <div class="info-value">{{ staff.category }}</div>
+              <div class="info-value">{{ staff.categoryName }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Supervisor</div>
-              <div class="info-value">{{ staff.supervisor_name || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.supervisorName || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Substantive Date</div>
-              <div class="info-value">{{ formatDate(staff.substantive_date) }}</div>
+              <div class="info-value">{{ formatDate(staff.substantiveDate) }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Date Of First Appointment</div>
-              <div class="info-value">{{ formatDate(staff.date_of_first_appointment) }}</div>
+              <div class="info-value">{{ formatDate(staff.dateOfFirstAppointment) }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Notional Effective Date</div>
-              <div class="info-value">{{ formatDate(staff.national_effective_date) }}</div>
+              <div class="info-value">{{ formatDate(staff.nationalEffectiveDate) }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Date Of Assumption Of Duty</div>
-              <div class="info-value">{{ formatDate(staff.date_of_assumption_of_duty) }}</div>
+              <div class="info-value">{{ formatDate(staff.dateOfAssumptionOfDuty) }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Date Of Last Promotion</div>
-              <div class="info-value">{{ formatDate(staff.date_of_last_promotion) }}</div>
+              <div class="info-value">{{ formatDate(staff.dateOfLastPromotion) }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Years In Service</div>
-              <div class="info-value">{{ staff.number_of_years_in_service }} years</div>
+              <div class="info-value">{{ staff.numberOfYearsInService }} years</div>
             </div>
             <div class="info-item">
               <div class="info-label">Fulltime / Contract</div>
-              <div class="info-value">{{ staff.fulltime_contract_staff }}</div>
+              <div class="info-value">{{ staff.fulltimeContractStaff }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Change Of Grade</div>
-              <div class="info-value">{{ staff.change_of_grade || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.changeOfGradeName || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Current Grade</div>
-              <div class="info-value">{{ staff.current_grade || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.currentGradeName || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Years On Current Grade</div>
-              <div class="info-value">{{ staff.years_on_current_grade || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.yearsOnCurrentGrade || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Next Grade</div>
-              <div class="info-value">{{ staff.next_grade || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.nextGradeName || 'Not specified' }}</div>
             </div>
           </div>
         </div>
@@ -182,39 +188,39 @@
           <div class="info-grid">
             <div class="info-item">
               <div class="info-label">Single Spine</div>
-              <div class="info-value">{{ staff.single_spine_monthly_salary || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.singleSpineMonthlySalary || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Current Salary Level</div>
-              <div class="info-value">{{ staff.current_salary_level || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.currentSalaryLevel || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Next Salary Level</div>
-              <div class="info-value">{{ staff.next_salary_level || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.nextSalaryLevel || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Current Salary Point</div>
-              <div class="info-value">{{ staff.current_salary_point || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.currentSalaryPoint || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Monthly Gross Pay</div>
-              <div class="info-value">GHS {{ formatCurrency(staff.monthly_gross_pay) }}</div>
+              <div class="info-value">GHS {{ formatCurrency(staff.monthlyGrossPay) }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Annual Salary</div>
-              <div class="info-value">GHS {{ formatCurrency(staff.annual_salary) }}</div>
+              <div class="info-value">GHS {{ formatCurrency(staff.annualSalary) }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Bank Name</div>
-              <div class="info-value">{{ staff.bank_name || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.bankName || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Bank Branch</div>
-              <div class="info-value">{{ staff.bank_account_branch || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.bankAccountBranch || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Account Number</div>
-              <div class="info-value">{{ staff.bank_account_number || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.bankAccountNumber || 'Not specified' }}</div>
             </div>
           </div>
         </div>
@@ -225,36 +231,36 @@
           <div class="info-grid">
             <div class="info-item">
               <div class="info-label">Number Targets</div>
-              <div class="info-value">{{ staff.number_of_targets || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.numberOfTargets || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Number Targets Met</div>
-              <div class="info-value">{{ staff.number_of_targets_met || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.numberOfTargetsMet || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Number Of Targets Not Met</div>
-              <div class="info-value">{{ staff.number_of_targets_not_met || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.numberOfTargetsNotMet || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Number Of Focus Areas</div>
-              <div class="info-value">{{ staff.number_of_focus_areas || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.numberOfFocusAreas || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Self Assessment Description</div>
-              <div class="info-value">{{ staff.self_assessment_description || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.selfAssessmentDescription || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Overall Assessment Score</div>
-              <div class="info-value">{{ staff.overall_assessment_score || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.overallAssessmentScore || 'Not specified' }}</div>
             </div>
             <div class="info-item" style="margin-bottom: 12px; display:flex; flex-direction:column;">
               <div class="info-label" style="font-weight:600; color:#2b2b2b; margin-bottom:6px;">
                 Academic Qualifications
               </div>
               <div class="info-value" style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
-                <template v-if="staff.academic_qualifications && staff.academic_qualifications.length">
+                <template v-if="staff.academicQualifications && staff.academicQualifications.length">
                   <span
-                    v-for="qual in staff.academic_qualifications"
+                    v-for="qual in staff.academicQualifications"
                     :key="qual.id"
                     :title="qual.name"
                     style="
@@ -279,33 +285,38 @@
             </div>
             <div class="info-item">
               <div class="info-label">SSNIT Number</div>
-              <div class="info-value">{{ staff.social_security_number || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.socialSecurityNumber || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">NHIS Number</div>
-              <div class="info-value">{{ staff.national_health_insurance_number || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.nationalHealthInsuranceNumber || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Payroll Status</div>
               <div class="info-value">
-                <span class="badge" :class="getStatusClass(staff.payroll_status)">
-                  {{ staff.payroll_status || 'Not specified' }}
+                <span class="badge" :class="getStatusClass(staff.payrollStatus)">
+                  {{ staff.payrollStatus || 'Not specified' }}
                 </span>
               </div>
             </div>
             <div class="info-item">
               <div class="info-label">Accommodation Status</div>
-              <div class="info-value">{{ staff.accommodation_status || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.accommodationStatus || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">At POST / On Leave</div>
-              <div class="info-value">{{ staff.at_post_on_leave || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.atPostOnLeave || 'Not specified' }}
             </div>
           </div>
         </div>
       </div>
     </div>
+
+
+
+    
   </div>
+   </div>
 </template>
 
 <script setup>
@@ -346,9 +357,10 @@ const fetchUserDetails = async () => {
   try {
     const id_user = route.params.id;
     const res = await get_user_details(id_user);
+    console.log("response from API: print", res.data); // Log the response for debugging
     user.value = res.data;
   } catch (error) {
-
+    console.error("Error fetching user details: print", error);
   }
 };
 
@@ -366,64 +378,308 @@ onMounted(fetchUserDetails);
 
 
 // Computed property for staff details
-const staff = computed(() => ({
-  profile_picture: user.value?.profile_picture || null,
-  at_post_on_leave: user.value?.at_post_on_leave || 'Not specified',
-  change_of_grade: user.value?.change_of_grade || 'Not specified',
-  date_of_assumption_of_duty: user.value?.date_of_assumption_of_duty || 'Not specified',
-  date_of_retirement: user.value?.date_of_retirement || 'Not specified',
-  fulltime_contract_staff: user.value?.fulltime_contract_staff || 'Not specified',
-  management_unit_cost_centre: user.value?.management_unit_cost_centre || 'Not specified',
-  national_effective_date: user.value?.national_effective_date || 'Not specified',
-  next_salary_level: user.value?.next_salary_level || 'Not specified',
-  professional: user.value?.professional || 'Not specified',
-  role: user.value?.role || 'Not specified',
-  years_on_current_grade: user.value?.years_on_current_grade || 'Not specified',
-  substantive_date: user.value?.substantive_date || 'Not specified',
-  staff_category: user.value?.staff_category || 'Not specified',
-  single_spine_monthly_salary: user.value?.single_spine_monthly_salary || 'Not specified',
-  self_assessment_description: user.value?.self_assessment_description || 'Not specified',
-  overall_assessment_score: user.value?.overall_assessment_score || 'Not specified',
-  number_of_targets: user.value?.number_of_targets || 'Not specified',
-  number_of_targets_met: user.value?.number_of_targets_met || 'Not specified',
-  number_of_targets_not_met: user.value?.number_of_targets_not_met || 'Not specified',
-  number_of_focus_areas: user.value?.number_of_focus_areas || 'Not specified',
-  full_name: user.value?.full_name || 'Not specified',
-  directorate: user.value?.directorate || 'Not specified',
-  category: user.value?.category || 'Not specified',
-  district: user.value?.district || 'Not specified',
-  region: user.value?.region || 'Not specified',
-  email: user.value?.email || 'No email provided',
-  user_id: user.value?.user_id || 'Not specified',
-  title: user.value?.title || 'Not specified',
-  gender: user.value?.gender || 'Not specified',
-  date_of_birth: user.value?.date_of_birth || 'Not specified',
-  age: user.value?.age || 'Not specified',
-  marital_status: user.value?.marital_status || 'Not specified',
-  current_salary_level: user.value?.current_salary_level || 'Not specified',
-  current_salary_point: user.value?.current_salary_point || 'Not specified',
-  date_of_first_appointment: user.value?.date_of_first_appointment || 'Not specified',
-  date_of_last_promotion: user.value?.date_of_last_promotion || 'Not specified',
-  number_of_years_in_service: user.value?.number_of_years_in_service || 'Not specified',
-  academic_qualifications: user.value?.academic_qualifications || [],
-  academic_qualifications_details: user.value?.academic_qualifications_details || [],
-  professional_qualification: user.value?.professional_qualification || 'Not specified',
-  monthly_gross_pay: user.value?.monthly_gross_pay || '0.00',
-  annual_salary: user.value?.annual_salary || '0.00',
-  phone_number: user.value?.phone_number || 'No phone provided',
-  ghana_card_number: user.value?.ghana_card_number || 'Not specified',
-  social_security_number: user.value?.social_security_number || 'Not specified',
-  national_health_insurance_number: user.value?.national_health_insurance_number || 'Not specified',
-  bank_name: user.value?.bank_name || 'Not specified',
-  bank_account_branch: user.value?.bank_account_branch || 'Not specified',
-  bank_account_number: user.value?.bank_account_number || 'Not specified',
-  payroll_status: user.value?.payroll_status || 'Not specified',
-  accommodation_status: user.value?.accommodation_status || 'Not specified',
-  supervisor_name: user.value?.supervisor_name || 'Not specified',
-  current_grade: user.value?.current_grade || 'Not specified',
-  next_grade: user.value?.next_grade || 'Not specified',
-  photo: 'https://unsplash.com/photos/a-close-up-of-a-flag-with-a-star-on-it-H1v0E9fiBdg?utm_content=creditShareLink&utm_medium=referral&utm_source=unsplash',
-}));
+
+
+const staff = computed(() => {
+  const account =
+    user.value || {};
+
+  return {
+    id:
+      account.id ?? null,
+
+    profilePictureUrl:
+      account.profilePictureUrl ||
+      DEFAULT_AVATAR,
+
+    profilePicturePublicId:
+      account.profilePicturePublicId ||
+      null,
+
+    userId:
+      account.userId ||
+      "Not specified",
+
+    firstName:
+      account.firstName ||
+      "Not specified",
+
+    middleName:
+      account.middleName ||
+      "Not specified",
+
+    lastName:
+      account.lastName ||
+      "Not specified",
+
+    maidenName:
+      account.maidenName ||
+      "Not specified",
+
+    fullName:
+      account.fullName ||
+      account.displayName ||
+      "Not specified",
+
+    displayName:
+      account.displayName ||
+      account.fullName ||
+      account.userId ||
+      "Not specified",
+
+    role:
+      account.role ||
+      "Not specified",
+
+    isActive:
+      account.isActive ?? false,
+
+    isStaff:
+      account.isStaff ?? false,
+
+    isSuperuser:
+      account.isSuperuser ?? false,
+
+    gender:
+      account.gender ||
+      "Not specified",
+
+    dateOfBirth:
+      account.dateOfBirth ||
+      "Not specified",
+
+    standardRetirementAge:
+      account.standardRetirementAge ??
+      "Not specified",
+
+    maritalStatus:
+      account.maritalStatus ||
+      "Not specified",
+
+    professional:
+      account.professional ||
+      "Not specified",
+
+    professionalQualification:
+      account.professionalQualification ||
+      "Not specified",
+
+    staffCategory:
+      account.staffCategory ||
+      "Not specified",
+
+    fulltimeContractStaff:
+      account.fulltimeContractStaff ||
+      "Not specified",
+
+    atPostOnLeave:
+      account.atPostOnLeave ||
+      "Not specified",
+
+    regionId:
+      account.regionId ?? null,
+
+    regionName:
+      account.regionName ||
+      "Not specified",
+
+    districtId:
+      account.districtId ?? null,
+
+    districtName:
+      account.districtName ||
+      "Not specified",
+
+    directorateId:
+      account.directorateId ?? null,
+
+    directorateName:
+      account.directorateName ||
+      "Not specified",
+
+    categoryId:
+      account.categoryId ?? null,
+
+    categoryName:
+      account.categoryName ||
+      "Not specified",
+
+    managementUnitCostCentreId:
+      account.managementUnitCostCentreId ??
+      null,
+
+    managementUnitCostCentreName:
+      account.managementUnitCostCentreName ||
+      "Not specified",
+
+    currentGradeId:
+      account.currentGradeId ?? null,
+
+    currentGradeName:
+      account.currentGradeName ||
+      "Not specified",
+
+    nextGradeId:
+      account.nextGradeId ?? null,
+
+    nextGradeName:
+      account.nextGradeName ||
+      "Not specified",
+
+    changeOfGradeId:
+      account.changeOfGradeId ?? null,
+
+    changeOfGradeName:
+      account.changeOfGradeName ||
+      "Not specified",
+
+    titleId:
+      account.titleId ?? null,
+
+    titleName:
+      account.titleName ||
+      "Not specified",
+
+    onLeaveTypeId:
+      account.onLeaveTypeId ?? null,
+
+    onLeaveTypeName:
+      account.onLeaveTypeName ||
+      "Not specified",
+
+    dateOfAssumptionOfDuty:
+      account.dateOfAssumptionOfDuty ||
+      "Not specified",
+
+    substantiveDate:
+      account.substantiveDate ||
+      "Not specified",
+
+    nationalEffectiveDate:
+      account.nationalEffectiveDate ||
+      "Not specified",
+
+    dateOfFirstAppointment:
+      account.dateOfFirstAppointment ||
+      "Not specified",
+
+    dateOfLastPromotion:
+      account.dateOfLastPromotion ||
+      "Not specified",
+
+    currentSalaryLevel:
+      account.currentSalaryLevel ||
+      "Not specified",
+
+    currentSalaryPoint:
+      account.currentSalaryPoint ||
+      "Not specified",
+
+    nextSalaryLevel:
+      account.nextSalaryLevel ||
+      "Not specified",
+
+    singleSpineMonthlySalary:
+      account.singleSpineMonthlySalary ??
+      "0.00",
+
+    monthlyGrossPay:
+      account.monthlyGrossPay ??
+      "0.00",
+
+    annualSalary:
+      account.annualSalary ??
+      "0.00",
+
+    numberOfFocusAreas:
+      account.numberOfFocusAreas ??
+      "Not specified",
+
+    numberOfTargets:
+      account.numberOfTargets ??
+      "Not specified",
+
+    numberOfTargetsMet:
+      account.numberOfTargetsMet ??
+      "Not specified",
+
+    numberOfTargetsNotMet:
+      account.numberOfTargetsNotMet ??
+      "Not specified",
+
+    overallAssessmentScore:
+      account.overallAssessmentScore ??
+      "Not specified",
+
+    selfAssessmentDescription:
+      account.selfAssessmentDescription ||
+      "Not specified",
+
+    phoneNumber:
+      account.phoneNumber ||
+      "No phone number provided",
+
+    ghanaCardNumber:
+      account.ghanaCardNumber ||
+      "Not specified",
+
+       email:
+      account.email ||
+      "Not specified",
+
+
+    socialSecurityNumber:
+      account.socialSecurityNumber ||
+      "Not specified",
+
+    nationalHealthInsuranceNumber:
+      account.nationalHealthInsuranceNumber ||
+      "Not specified",
+
+    bankName:
+      account.bankName ||
+      "Not specified",
+
+    bankAccountBranch:
+      account.bankAccountBranch ||
+      "Not specified",
+
+    bankAccountNumber:
+      account.bankAccountNumber ||
+      "Not specified",
+
+    payrollStatus:
+      account.payrollStatus ||
+      "Not specified",
+
+    accommodationStatus:
+      account.accommodationStatus ||
+      "Not specified",
+
+    supervisorName:
+      account.supervisorName ||
+      "Not specified",
+
+    academicQualification:
+      account.academicQualification ||
+      null,
+
+    academicQualificationName:
+      account.academicQualification?.name ||
+      "Not specified",
+
+    dateJoined:
+      account.dateJoined ||
+      "Not specified",
+
+    lastLogin:
+      account.lastLogin ||
+      "Not specified"
+  };
+});
+
+
+
 
 // Format academic qualifications as a comma-separated list
 const formatQualifications = (qualifications) => {

@@ -428,8 +428,11 @@ const removeUser = async () => {
 // Fetch user details from API
 const fetchUserDetails = async () => {
   try {
+    console.log("Fetching user details for ID:", route.params.id);
     const id_user = route.params.id;
     const res = await get_user_details(id_user);
+
+    console.log("User details fetched: print", res.data);
     user.value = res.data;
   } catch (error) {
 
@@ -449,66 +452,304 @@ const goBack = () => {
 onMounted(fetchUserDetails);
 
 // Computed property for staff details
-const staff = computed(() => ({
 
-  profile_picture: user.value?.profile_picture || null,
 
-  at_post_on_leave: user.value?.at_post_on_leave || 'Not specified',
-  change_of_grade: user.value?.change_of_grade || 'Not specified',
-  date_of_assumption_of_duty: user.value?.date_of_assumption_of_duty || 'Not specified',
-  date_of_retirement: user.value?.date_of_retirement || 'Not specified',
-  fulltime_contract_staff: user.value?.fulltime_contract_staff || 'Not specified',
-  management_unit_cost_centre: user.value?.management_unit_cost_centre || 'Not specified',
-  national_effective_date: user.value?.national_effective_date || 'Not specified',
-  next_salary_level: user.value?.next_salary_level || 'Not specified',
-  professional: user.value?.professional || 'Not specified',
-  role: user.value?.role || 'Not specified',
-  years_on_current_grade: user.value?.years_on_current_grade || 'Not specified',
-  substantive_date: user.value?.substantive_date || 'Not specified',
-  staff_category: user.value?.staff_category || 'Not specified',
-  single_spine_monthly_salary: user.value?.single_spine_monthly_salary || 'Not specified',
-  self_assessment_description: user.value?.self_assessment_description || 'Not specified',
-  overall_assessment_score: user.value?.overall_assessment_score || 'Not specified',
-  number_of_targets: user.value?.number_of_targets || 'Not specified',
-  number_of_targets_met: user.value?.number_of_targets_met || 'Not specified',
-  number_of_targets_not_met: user.value?.number_of_targets_not_met || 'Not specified',
-  number_of_focus_areas: user.value?.number_of_focus_areas || 'Not specified',
-  full_name: user.value?.full_name || 'Not specified',
-  directorate: user.value?.directorate || 'Not specified',
-  category: user.value?.category || 'Not specified',
-  district: user.value?.district || 'Not specified',
-  region: user.value?.region || 'Not specified',
-  email: user.value?.email || 'No email provided',
-  user_id: user.value?.user_id || 'Not specified',
-  title: user.value?.title || 'Not specified',
-  gender: user.value?.gender || 'Not specified',
-  date_of_birth: user.value?.date_of_birth || 'Not specified',
-  age: user.value?.age || 'Not specified',
-  marital_status: user.value?.marital_status || 'Not specified',
-  current_salary_level: user.value?.current_salary_level || 'Not specified',
-  current_salary_point: user.value?.current_salary_point || 'Not specified',
-  date_of_first_appointment: user.value?.date_of_first_appointment || 'Not specified',
-  date_of_last_promotion: user.value?.date_of_last_promotion || 'Not specified',
-  number_of_years_in_service: user.value?.number_of_years_in_service || 'Not specified',
-  academic_qualifications: user.value?.academic_qualifications || [],
-  academic_qualifications_details: user.value?.academic_qualifications_details || [],
-  professional_qualification: user.value?.professional_qualification || 'Not specified',
-  monthly_gross_pay: user.value?.monthly_gross_pay || '0.00',
-  annual_salary: user.value?.annual_salary || '0.00',
-  phone_number: user.value?.phone_number || 'No phone provided',
-  ghana_card_number: user.value?.ghana_card_number || 'Not specified',
-  social_security_number: user.value?.social_security_number || 'Not specified',
-  national_health_insurance_number: user.value?.national_health_insurance_number || 'Not specified',
-  bank_name: user.value?.bank_name || 'Not specified',
-  bank_account_branch: user.value?.bank_account_branch || 'Not specified',
-  bank_account_number: user.value?.bank_account_number || 'Not specified',
-  payroll_status: user.value?.payroll_status || 'Not specified',
-  accommodation_status: user.value?.accommodation_status || 'Not specified',
-  supervisor_name: user.value?.supervisor_name || 'Not specified',
-  current_grade: user.value?.current_grade || 'Not specified',
-  next_grade: user.value?.next_grade || 'Not specified',
-  photo: 'https://unsplash.com/photos/a-close-up-of-a-flag-with-a-star-on-it-H1v0E9fiBdg?utm_content=creditShareLink&utm_medium=referral&utm_source=unsplash',
-}));
+const staff = computed(() => {
+  const account =
+    user.value || {};
+
+  return {
+    id:
+      account.id ?? null,
+
+    profilePictureUrl:
+      account.profilePictureUrl ||
+      DEFAULT_AVATAR,
+
+    profilePicturePublicId:
+      account.profilePicturePublicId ||
+      null,
+
+    userId:
+      account.userId ||
+      "Not specified",
+
+    firstName:
+      account.firstName ||
+      "Not specified",
+
+    middleName:
+      account.middleName ||
+      "Not specified",
+
+    lastName:
+      account.lastName ||
+      "Not specified",
+
+    maidenName:
+      account.maidenName ||
+      "Not specified",
+
+    fullName:
+      account.fullName ||
+      account.displayName ||
+      "Not specified",
+
+    displayName:
+      account.displayName ||
+      account.fullName ||
+      account.userId ||
+      "Not specified",
+
+    role:
+      account.role ||
+      "Not specified",
+
+    isActive:
+      account.isActive ?? false,
+
+    isStaff:
+      account.isStaff ?? false,
+
+    isSuperuser:
+      account.isSuperuser ?? false,
+
+    gender:
+      account.gender ||
+      "Not specified",
+
+    dateOfBirth:
+      account.dateOfBirth ||
+      "Not specified",
+
+    standardRetirementAge:
+      account.standardRetirementAge ??
+      "Not specified",
+
+    maritalStatus:
+      account.maritalStatus ||
+      "Not specified",
+
+    professional:
+      account.professional ||
+      "Not specified",
+
+    professionalQualification:
+      account.professionalQualification ||
+      "Not specified",
+
+    staffCategory:
+      account.staffCategory ||
+      "Not specified",
+
+    fulltimeContractStaff:
+      account.fulltimeContractStaff ||
+      "Not specified",
+
+    atPostOnLeave:
+      account.atPostOnLeave ||
+      "Not specified",
+
+    regionId:
+      account.regionId ?? null,
+
+    regionName:
+      account.regionName ||
+      "Not specified",
+
+    districtId:
+      account.districtId ?? null,
+
+    districtName:
+      account.districtName ||
+      "Not specified",
+
+    directorateId:
+      account.directorateId ?? null,
+
+    directorateName:
+      account.directorateName ||
+      "Not specified",
+
+    categoryId:
+      account.categoryId ?? null,
+
+    categoryName:
+      account.categoryName ||
+      "Not specified",
+
+    managementUnitCostCentreId:
+      account.managementUnitCostCentreId ??
+      null,
+
+    managementUnitCostCentreName:
+      account.managementUnitCostCentreName ||
+      "Not specified",
+
+    currentGradeId:
+      account.currentGradeId ?? null,
+
+    currentGradeName:
+      account.currentGradeName ||
+      "Not specified",
+
+    nextGradeId:
+      account.nextGradeId ?? null,
+
+    nextGradeName:
+      account.nextGradeName ||
+      "Not specified",
+
+    changeOfGradeId:
+      account.changeOfGradeId ?? null,
+
+    changeOfGradeName:
+      account.changeOfGradeName ||
+      "Not specified",
+
+    titleId:
+      account.titleId ?? null,
+
+    titleName:
+      account.titleName ||
+      "Not specified",
+
+    onLeaveTypeId:
+      account.onLeaveTypeId ?? null,
+
+    onLeaveTypeName:
+      account.onLeaveTypeName ||
+      "Not specified",
+
+    dateOfAssumptionOfDuty:
+      account.dateOfAssumptionOfDuty ||
+      "Not specified",
+
+    substantiveDate:
+      account.substantiveDate ||
+      "Not specified",
+
+    nationalEffectiveDate:
+      account.nationalEffectiveDate ||
+      "Not specified",
+
+    dateOfFirstAppointment:
+      account.dateOfFirstAppointment ||
+      "Not specified",
+
+    dateOfLastPromotion:
+      account.dateOfLastPromotion ||
+      "Not specified",
+
+    currentSalaryLevel:
+      account.currentSalaryLevel ||
+      "Not specified",
+
+    currentSalaryPoint:
+      account.currentSalaryPoint ||
+      "Not specified",
+
+    nextSalaryLevel:
+      account.nextSalaryLevel ||
+      "Not specified",
+
+    singleSpineMonthlySalary:
+      account.singleSpineMonthlySalary ??
+      "0.00",
+
+    monthlyGrossPay:
+      account.monthlyGrossPay ??
+      "0.00",
+
+    annualSalary:
+      account.annualSalary ??
+      "0.00",
+
+    numberOfFocusAreas:
+      account.numberOfFocusAreas ??
+      "Not specified",
+
+    numberOfTargets:
+      account.numberOfTargets ??
+      "Not specified",
+
+    numberOfTargetsMet:
+      account.numberOfTargetsMet ??
+      "Not specified",
+
+    numberOfTargetsNotMet:
+      account.numberOfTargetsNotMet ??
+      "Not specified",
+
+    overallAssessmentScore:
+      account.overallAssessmentScore ??
+      "Not specified",
+
+    selfAssessmentDescription:
+      account.selfAssessmentDescription ||
+      "Not specified",
+
+    phoneNumber:
+      account.phoneNumber ||
+      "No phone number provided",
+
+    ghanaCardNumber:
+      account.ghanaCardNumber ||
+      "Not specified",
+
+    socialSecurityNumber:
+      account.socialSecurityNumber ||
+      "Not specified",
+
+    nationalHealthInsuranceNumber:
+      account.nationalHealthInsuranceNumber ||
+      "Not specified",
+
+    bankName:
+      account.bankName ||
+      "Not specified",
+
+    bankAccountBranch:
+      account.bankAccountBranch ||
+      "Not specified",
+
+    bankAccountNumber:
+      account.bankAccountNumber ||
+      "Not specified",
+
+    payrollStatus:
+      account.payrollStatus ||
+      "Not specified",
+
+    accommodationStatus:
+      account.accommodationStatus ||
+      "Not specified",
+
+    supervisorName:
+      account.supervisorName ||
+      "Not specified",
+
+    academicQualification:
+      account.academicQualification ||
+      null,
+
+    academicQualificationName:
+      account.academicQualification?.name ||
+      "Not specified",
+
+    dateJoined:
+      account.dateJoined ||
+      "Not specified",
+
+    lastLogin:
+      account.lastLogin ||
+      "Not specified"
+  };
+});
+
+
+
+
 
 // Format academic qualifications as a comma-separated list
 const formatQualifications = (qualifications) => {
