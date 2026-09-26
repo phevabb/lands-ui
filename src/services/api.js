@@ -727,14 +727,128 @@ export const class_stats =
     );
   };
 
-  export const region_stats = (params) => api.get("/admin/dashboard-summary", { params });
-export const management_stats = (params) => api.get("/admin/dashboard-summary", { params });
-export const senior_stats = (params) => api.get("/admin/dashboard-summary", { params });
-export const gender_stats = (params) => api.get("/admin/dashboard-summary", { params });
+
+  export const management_stats =
+  (params = {}) => {
+    return api.get(
+      "/admin/management-stats",
+      {
+        params: {
+          page:
+            params.page ??
+            1,
+
+          page_size:
+            params.page_size ??
+            params.pageSize ??
+            10
+        }
+      }
+    );
+  };
+
+
+
+ export const region_stats =
+  (params = {}) => {
+    return api.get(
+      "/admin/region-stats",
+      {
+        params: {
+          page:
+            params.page ??
+            1,
+
+          page_size:
+            params.page_size ??
+            params.pageSize ??
+            10
+        }
+      }
+    );
+  };
+
+export const senior_stats =
+  (params = {}) => {
+    return api.get(
+      "/admin/senior-stats",
+      {
+        params: {
+          page:
+            params.page ??
+            1,
+
+          page_size:
+            params.page_size ??
+            params.pageSize ??
+            10
+        }
+      }
+    );
+  }; 
+export const gender_stats =
+  (params = {}) => {
+    return api.get(
+      "/admin/gender-stats",
+      {
+        params: {
+          page:
+            params.page ??
+            1,
+
+          page_size:
+            params.page_size ??
+            params.pageSize ??
+            10
+        }
+      }
+    );
+  };
+
+  export const leave_stats =
+  (params = {}) => {
+    return api.get(
+      "/admin/leave-stats",
+      {
+        params: {
+          page:
+            params.page ??
+            1,
+
+          page_size:
+            params.page_size ??
+            params.pageSize ??
+            10
+        }
+      }
+    );
+  };
+
+
+  export const contract_stats =
+  (params = {}) => {
+    return api.get(
+      "/admin/contract-stats",
+      {
+        params: {
+          page:
+            params.page ??
+            1,
+
+          page_size:
+            params.page_size ??
+            params.pageSize ??
+            10
+        }
+      }
+    );
+  };
+  
+
+
 export const age_stats = (params) => api.get("/admin/dashboard-summary", { params });
 export const salary_stats = (params) => api.get("/admin/dashboard-summary", { params });
-export const leave_stats = (params) => api.get("/admin/dashboard-summary", { params });
-export const contract_stats = (params) => api.get("/admin/dashboard-summary", { params });
+
 
 
 export {

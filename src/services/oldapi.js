@@ -56,19 +56,20 @@ export const resetpasswordconfirm = (data) => api.post('api/v1/auth/password-res
 export const directorate_stats = (params) => api.get("superadmin/api/v1/directorate-stats", { params });
 export const class_stats = (params) => api.get("superadmin/api/v1/class-stats", { params });
 export const region_stats = (params) => api.get("superadmin/api/v1/region-stats", { params });
-
 export const management_stats = (params) => api.get("superadmin/api/v1/management-stats", { params });
 export const senior_stats = (params) => api.get("superadmin/api/v1/senior-stats", { params });
 export const gender_stats = (params) => api.get("superadmin/api/v1/gender-stats", { params });
-export const age_stats = (params) => api.get("superadmin/api/v1/age-stats", { params });
-export const salary_stats = (params) => api.get("superadmin/api/v1/salary-grade-stats", { params });
+export const pro_stats = (params) => api.get("superadmin/api/v1/pro-stats", { params });
 export const leave_stats = (params) => api.get("superadmin/api/v1/leave-stats", { params });
 export const contract_stats = (params) => api.get("superadmin/api/v1/contract-stats", { params });
-export const pro_stats = (params) => api.get("superadmin/api/v1/pro-stats", { params });
+
+export const age_stats = (params) => api.get("superadmin/api/v1/age-stats", { params });
+export const salary_stats = (params) => api.get("superadmin/api/v1/salary-grade-stats", { params });
+
+
+
 
 export const admin_dashboard_summary = (params = {}) => api.get("superadmin/api/v1/admin-dashboard-summary", { params });
-
-
 export const all_users = (params) => api.get("superadmin/api/v1/all-users", { params });
 
 // Users (Superadmin)
