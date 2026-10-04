@@ -46,8 +46,8 @@
         </thead>
         <tbody>
           <tr
-            v-for="item in rows"
-            :key="item.user_id"
+            v-for="item in normalizedRows"
+            :key="item.id"
             @click="selectUser(item)"
             class="table-row"
             role="button"
@@ -102,7 +102,7 @@
             <tbody>
               <tr
                 v-for="item in filteredRows2"
-                :key="item.user_id"
+                :key="item.id"
                 @click="selectUser(item)"
                 class="table-row"
                 role="button"
@@ -325,13 +325,19 @@ function normalizeAccount(item) {
     ...item,
 
     id:
-      item.id ??
-      null,
+      Number(
+        item.id ??
+        item.accountId ??
+        item.account_id
+      ) || null,
 
     userId:
-      item.userId ??
-      item.user_id ??
-      "",
+      String(
+        item.userId ??
+        item.staffId ??
+        item.staff_id ??
+        ""
+      ).trim(),
 
     firstName:
       item.firstName ??
@@ -352,15 +358,6 @@ function normalizeAccount(item) {
       item.fullName ??
       item.full_name ??
       createFullName(item),
-
-    displayName:
-      item.displayName ??
-      item.display_name ??
-      item.fullName ??
-      item.full_name ??
-      item.userId ??
-      item.user_id ??
-      "",
 
     phoneNumber:
       item.phoneNumber ??
@@ -424,6 +421,41 @@ function normalizeAccount(item) {
   };
 }
 
+
+
+function handleUserSelected(accountId) {
+  const normalizedAccountId =
+    Number(accountId);
+
+  if (
+    !Number.isInteger(
+      normalizedAccountId
+    ) ||
+    normalizedAccountId <= 0
+  ) {
+    console.error(
+      "Cannot open staff details because the account ID is invalid:",
+      accountId
+    );
+
+    return;
+  }
+
+  console.log(
+    "Opening Manager staff details:",
+    normalizedAccountId
+  );
+
+  router.push(
+    `/manager/staff-details/${normalizedAccountId}`
+  );
+}
+
+
+
+
+
+
 function createFullName(item) {
   return [
     item.firstName ??
@@ -455,14 +487,22 @@ function handlePageChanged(page) {
   );
 }
 
-function selectUser(item) {
-  const userId =
-    item.userId ||
-    item.user_id;
 
-  if (!userId) {
+
+
+function selectUser(item) {
+  const accountId =
+    Number(
+      item.id ??
+      item.user_id
+    );
+
+  if (
+    !Number.isInteger(accountId) ||
+    accountId <= 0
+  ) {
     console.error(
-      "Selected account has no staff user ID:",
+      "Selected account has no valid database ID:",
       item
     );
 
@@ -470,17 +510,20 @@ function selectUser(item) {
   }
 
   console.log(
-    "Selected Manager-region user ID:",
-    userId
+    "Selected Manager-region account ID:",
+    accountId
   );
 
   emit(
     "user-selected",
-    userId
+    accountId
   );
 
   clearSearch();
 }
+
+
+
 
 function getProfilePictureSrc(
   profilePictureUrl

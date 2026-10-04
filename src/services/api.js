@@ -1171,12 +1171,91 @@ export function manager_gender_stats(
   );
 }
 
+export function manager_age_stats(
+  params = {}
+) {
+  return api.get(
+    "/manager/age-stats",
+    {
+      params: {
+        page:
+          params.page ??
+          1,
+
+        page_size:
+          params.page_size ??
+          params.pageSize ??
+          10
+      }
+    }
+  );
+}
+
+export function manager_region_stats(
+  params = {}
+) {
+  return api.get(
+    "/manager/region-stats",
+    {
+      params: {
+        page:
+          params.page ??
+          1,
+
+        page_size:
+          params.page_size ??
+          params.pageSize ??
+          10
+      }
+    }
+  );
+}
+
+export function manager_all_users_to_excel() {
+  return api.get(
+    "/manager/all-users-to-excel"
+  );
+}
 
 
 
-export const manager_region_stats = (params) => api.get("/manager/users", { params });
-export const manager_age_stats = (params) => api.get("/manager/users", { params });
-export const manager_all_users_to_excel = (params = {}) => api.get("/manager/users", { params });
+export function manager_create_user(
+  payload
+) {
+  return api.post(
+    "/manager/users/create",
+    payload,
+    {
+      headers: {
+        "Content-Type":
+          "application/json",
+
+        Accept:
+          "application/json"
+      }
+    }
+  );
+}
+
+
+export function manager_user_fields() {
+  return api.get(
+    "/manager/user-fields"
+  );
+}
+
+export function manager_remove_user(payload) {
+  return api.post(
+    "/manager/remove-user",
+    payload
+  );
+}
+
+export function manager_update_user(userId) {
+  return api.get(
+    `/manager/user-update/${userId}/`
+  );
+}
 
 
 export {

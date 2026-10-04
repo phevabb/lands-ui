@@ -427,6 +427,7 @@ const fetchUserDetails = async () => {
     console.log("Fetching user details for ID:", route.params.id);
     const id_user = route.params.id;
     const res = await admin_get_user_details(id_user);
+    
     console.log("User details fetched: print details", res.data);
     console.log("User details fetched: print", res.data);
     user.value = res.data;
