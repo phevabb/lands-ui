@@ -400,12 +400,6 @@ const routes = [
     },
 
 
-    
-
-
-
-    
-
     {
       path: "allusers",
       name: "Superadmin All Users",

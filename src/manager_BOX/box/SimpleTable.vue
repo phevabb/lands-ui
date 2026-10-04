@@ -51,18 +51,18 @@
             @click="selectUser(item)"
             class="table-row"
             role="button"
-            :aria-label="`Select ${item.full_name}`"
+            :aria-label="`Select ${item.fullName}`"
           >
             <td>
               <img
-                :src="getProfilePictureSrc(item.profile_picture)"
-                :alt="item.full_name || 'Profile Image'"
+                :src="getProfilePictureSrc(item.profilePictureUrl)"
+                :alt="item.fullName || 'Profile Image'"
                 class="profile-image"
               />
             </td>
-            <td>{{ item.user_id || 'N/A' }}</td>
-            <td>{{ item.full_name || 'N/A' }}</td>
-            <td>{{ item.phone_number || 'N/A' }}</td>
+            <td>{{ item.userId || 'N/A' }}</td>
+            <td>{{ item.fullName || 'N/A' }}</td>
+            <td>{{ item.phoneNumber || 'N/A' }}</td>
           </tr>
         </tbody>
       </table>
@@ -106,18 +106,18 @@
                 @click="selectUser(item)"
                 class="table-row"
                 role="button"
-                :aria-label="`Select ${item.full_name}`"
+                :aria-label="`Select ${item.fullName}`"
               >
                 <td>
                   <img
-                    :src="getProfilePictureSrc(item.profile_picture)"
-                    :alt="item.full_name || 'Profile Image'"
+                    :src="getProfilePictureSrc(item.profilePictureUrl)"
+                    :alt="item.fullName || 'Profile Image'"
                     class="profile-image"
                   />
                 </td>
-                <td>{{ item.user_id || 'N/A' }}</td>
-                <td>{{ item.full_name || 'N/A' }}</td>
-                <td>{{ item.phone_number || 'N/A' }}</td>
+                <td>{{ item.userId || 'N/A' }}</td>
+                <td>{{ item.fullName || 'N/A' }}</td>
+                <td>{{ item.phoneNumber || 'N/A' }}</td>
               </tr>
             </tbody>
           </table>
@@ -130,153 +130,533 @@
   </div>
 </template>
 
+
+
+
+
+
+
 <script setup>
-import { defineProps, defineEmits, ref, computed, onMounted, watch } from 'vue';
-import * as XLSX from 'xlsx';
-import Pagination from '../../components/Pagination.vue';
+import {
+  computed,
+  onMounted,
+  ref,
+  watch
+} from "vue";
 
+import * as XLSX from "xlsx";
 
-import { manager_all_users_to_excel } from '../../services/api';
-import api from '../../services/api'; // Import api instance for baseURL
-import { DEFAULT_AVATAR } from '../../services/api';
+import Pagination from "../../components/Pagination.vue";
+
+import api, {
+  DEFAULT_AVATAR,
+  manager_all_users_to_excel
+} from "../../services/api";
+
+const props = defineProps({
+  tableHeaderColor: {
+    type: String,
+    default: ""
+  },
+
+  next: {
+    type: String,
+    default: ""
+  },
+
+  previous: {
+    type: String,
+    default: ""
+  },
+
+  totalPages: {
+    type: Number,
+    default: 1
+  },
+
+  currentPage: {
+    type: Number,
+    default: 1
+  },
+
+  rows: {
+    type: Array,
+    default: () => []
+  }
+});
+
+const emit = defineEmits([
+  "user-selected",
+  "page-changed",
+  "export-error"
+]);
+
 const loading = ref(false);
-const searchQuery = ref('');
+const searchLoading = ref(false);
+const searchQuery = ref("");
 const rows2 = ref([]);
 const showModal = ref(false);
 
-const props = defineProps({
-  tableHeaderColor: { type: String, default: '' },
-  next: { type: String, default: 'iik' },
-  previous: { type: String, default: 'fatts' },
-  totalPages: { type: Number, required: true, default: 4 },
-  currentPage: { type: Number, required: true, default: 2 },
-  rows: {
-    type: Array,
-    default: () => [
-      {
-        user_id: '1111',
-        full_name: 'None None',
-        phone_number: null,
-        profile_picture: null,
-      },
-      {
-        user_id: '1293399',
-        full_name: 'Rachel Korang',
-        phone_number: null,
-        profile_picture: null,
-      },
-      {
-        user_id: '892652',
-        full_name: 'Joyce Oppong',
-        phone_number: null,
-        profile_picture: null,
-      },
-    ],
-  },
+const normalizedRows = computed(() => {
+  return props.rows.map(item => {
+    return normalizeAccount(item);
+  });
 });
 
-const emit = defineEmits(['user-selected', 'page-changed', 'export-error']);
+const filteredRows2 = computed(() => {
+  const query =
+    searchQuery.value
+      .trim()
+      .toLowerCase();
+
+  if (!query) {
+    return [];
+  }
+
+  return rows2.value.filter(item => {
+    const searchableValues = [
+      item.userId,
+      item.fullName,
+      item.displayName,
+      item.firstName,
+      item.middleName,
+      item.lastName,
+      item.phoneNumber,
+      item.email,
+      item.role,
+      item.gender,
+      item.regionName,
+      item.districtName,
+      item.directorateName,
+      item.categoryName,
+      item.currentGradeName,
+      item.managementUnitCostCentreName
+    ];
+
+    return searchableValues.some(value => {
+      return String(value ?? "")
+        .toLowerCase()
+        .includes(query);
+    });
+  });
+});
 
 onMounted(async () => {
-  try {
-    const region = localStorage.getItem("region") || "";
-   
-    const res = await manager_all_users_to_excel({region});
-  
-    if (Array.isArray(res.data)) {
-      rows2.value = res.data;
-    } else {
+  await loadSearchRecords();
+});
 
-      emit('export-error', 'Invalid data received from server');
-    }
+async function loadSearchRecords() {
+  searchLoading.value = true;
+
+  try {
+    const response =
+      await manager_all_users_to_excel();
+
+    console.log(
+      "Manager region users response:",
+      response.data
+    );
+
+    const accounts =
+      extractAccounts(
+        response.data
+      );
+
+    rows2.value =
+      accounts.map(item => {
+        return normalizeAccount(item);
+      });
+
+    console.log(
+      "Manager users available for search:",
+      rows2.value.length
+    );
   } catch (error) {
+    rows2.value = [];
 
-    emit('export-error', 'Failed to fetch data for table');
+    console.error(
+      "Unable to load Manager region users:",
+      error.response?.data ||
+      error.message ||
+      error
+    );
+
+    emit(
+      "export-error",
+      error.response?.data?.detail ||
+      "Failed to load regional staff records."
+    );
+  } finally {
+    searchLoading.value = false;
   }
-});
+}
 
-// Filter rows2 based on search query for the modal
-const filteredRows2 = computed(() => {
-  if (!searchQuery.value.trim()) return [];
-  const query = searchQuery.value.toLowerCase().trim();
-  return rows2.value.filter(
-    (item) =>
-      (item.user_id && item.user_id.toLowerCase().includes(query)) ||
-      (item.full_name && item.full_name.toLowerCase().includes(query))
-  );
-});
-
-const getProfilePictureSrc = (profilePicture) => {
-  if (profilePicture && profilePicture !== '-') {
-    if (profilePicture.startsWith('http')) {
-      return profilePicture;
-    }
-    return `${api.defaults.baseURL}/${profilePicture.replace(/^\/+/, '')}`;
+function extractAccounts(responseData) {
+  if (Array.isArray(responseData)) {
+    return responseData;
   }
-  return DEFAULT_AVATAR;
-};
 
-const visibleEntries = (item) => {
-  const labelMap = {
-    profile_picture: 'Profile Picture',
-    full_name: 'Full Name',
-    phone_number: 'Contact',
-    user_id: 'Staff ID',
+  if (
+    responseData &&
+    Array.isArray(responseData.results)
+  ) {
+    return responseData.results;
+  }
+
+  if (
+    responseData &&
+    Array.isArray(responseData.accounts)
+  ) {
+    return responseData.accounts;
+  }
+
+  if (
+    responseData &&
+    Array.isArray(responseData.data)
+  ) {
+    return responseData.data;
+  }
+
+  return [];
+}
+
+function normalizeAccount(item) {
+  return {
+    ...item,
+
+    id:
+      item.id ??
+      null,
+
+    userId:
+      item.userId ??
+      item.user_id ??
+      "",
+
+    firstName:
+      item.firstName ??
+      item.first_name ??
+      "",
+
+    middleName:
+      item.middleName ??
+      item.middle_name ??
+      "",
+
+    lastName:
+      item.lastName ??
+      item.last_name ??
+      "",
+
+    fullName:
+      item.fullName ??
+      item.full_name ??
+      createFullName(item),
+
+    displayName:
+      item.displayName ??
+      item.display_name ??
+      item.fullName ??
+      item.full_name ??
+      item.userId ??
+      item.user_id ??
+      "",
+
+    phoneNumber:
+      item.phoneNumber ??
+      item.phone_number ??
+      "",
+
+    email:
+      item.email ??
+      "",
+
+    role:
+      item.role ??
+      "",
+
+    gender:
+      item.gender ??
+      "",
+
+    regionName:
+      item.regionName ??
+      item.region_name ??
+      item.region ??
+      "",
+
+    districtName:
+      item.districtName ??
+      item.district_name ??
+      item.district ??
+      "",
+
+    directorateName:
+      item.directorateName ??
+      item.directorate_name ??
+      item.directorate ??
+      "",
+
+    categoryName:
+      item.categoryName ??
+      item.category_name ??
+      item.category ??
+      "",
+
+    currentGradeName:
+      item.currentGradeName ??
+      item.current_grade_name ??
+      item.current_grade ??
+      "",
+
+    managementUnitCostCentreName:
+      item.managementUnitCostCentreName ??
+      item.management_unit_cost_centre_name ??
+      item.management_unit_cost_centre ??
+      "",
+
+    profilePictureUrl:
+      item.profilePictureUrl ??
+      item.profile_picture_url ??
+      item.profilePicture ??
+      item.profile_picture ??
+      null
   };
+}
 
-  return Object.entries(item)
-    .filter(([key]) => [
-      'profile_picture',
-      'full_name',
-      'phone_number',
-      'user_id',
-    ].includes(key))
-    .map(([key, value]) => [
-      key,
-      key === 'profile_picture' ? getProfilePictureSrc(value) : (value ?? 'N/A'),
-      labelMap[key] || key,
-    ]);
-};
+function createFullName(item) {
+  return [
+    item.firstName ??
+      item.first_name,
 
-const selectUser = (item) => {
-  emit('user-selected', item.id);
-  showModal.value = false;
-};
+    item.middleName ??
+      item.middle_name,
 
-const exportExcel = async () => {
+    item.lastName ??
+      item.last_name
+  ]
+    .filter(value => {
+      return (
+        value !== null &&
+        value !== undefined &&
+        String(value).trim() !== ""
+      );
+    })
+    .map(value => {
+      return String(value).trim();
+    })
+    .join(" ");
+}
+
+function handlePageChanged(page) {
+  emit(
+    "page-changed",
+    page
+  );
+}
+
+function selectUser(item) {
+  const userId =
+    item.userId ||
+    item.user_id;
+
+  if (!userId) {
+    console.error(
+      "Selected account has no staff user ID:",
+      item
+    );
+
+    return;
+  }
+
+  console.log(
+    "Selected Manager-region user ID:",
+    userId
+  );
+
+  emit(
+    "user-selected",
+    userId
+  );
+
+  clearSearch();
+}
+
+function getProfilePictureSrc(
+  profilePictureUrl
+) {
+  if (
+    !profilePictureUrl ||
+    profilePictureUrl === "-"
+  ) {
+    return DEFAULT_AVATAR;
+  }
+
+  const picture =
+    String(
+      profilePictureUrl
+    ).trim();
+
+  if (
+    picture.startsWith("http://") ||
+    picture.startsWith("https://") ||
+    picture.startsWith("data:") ||
+    picture.startsWith("blob:")
+  ) {
+    return picture;
+  }
+
+  const baseUrl =
+    String(
+      api.defaults.baseURL || ""
+    ).replace(
+      /\/+$/,
+      ""
+    );
+
+  const picturePath =
+    picture.replace(
+      /^\/+/,
+      ""
+    );
+
+  return `${baseUrl}/${picturePath}`;
+}
+
+async function exportExcel() {
+  if (loading.value) {
+    return;
+  }
+
+  loading.value = true;
+
   try {
+    let exportAccounts =
+      rows2.value;
 
-    loading.value = true;
-    const region = localStorage.getItem("region") || "";
-   
-    const res = await manager_all_users_to_excel({region});
-    const exportData = res.data;
+    if (
+      exportAccounts.length === 0
+    ) {
+      const response =
+        await manager_all_users_to_excel();
 
-    if (!Array.isArray(exportData) || exportData.length === 0) {
-      emit('export-error', 'No data available to export');
+      exportAccounts =
+        extractAccounts(
+          response.data
+        ).map(item => {
+          return normalizeAccount(item);
+        });
+    }
+
+    if (
+      exportAccounts.length === 0
+    ) {
+      emit(
+        "export-error",
+        "No regional staff data is available to export."
+      );
+
       return;
     }
 
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'StaffData');
-    XLSX.writeFile(workbook, 'staff_data.xlsx');
+    const exportData =
+      exportAccounts.map(item => {
+        return {
+          "Staff ID":
+            item.userId || "",
+
+          "Full Name":
+            item.fullName || "",
+
+          "Phone Number":
+            item.phoneNumber || "",
+
+          "Email":
+            item.email || "",
+
+          "Role":
+            item.role || "",
+
+          "Gender":
+            item.gender || "",
+
+          "Region":
+            item.regionName || "",
+
+          "District":
+            item.districtName || "",
+
+          "Directorate":
+            item.directorateName || "",
+
+          "Class":
+            item.categoryName || "",
+
+          "Current Grade":
+            item.currentGradeName || "",
+
+          "Management Unit":
+            item.managementUnitCostCentreName || ""
+        };
+      });
+
+    const worksheet =
+      XLSX.utils.json_to_sheet(
+        exportData
+      );
+
+    const workbook =
+      XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "RegionalStaff"
+    );
+
+    XLSX.writeFile(
+      workbook,
+      "regional_staff_data.xlsx"
+    );
   } catch (error) {
-    emit('export-error', 'Failed to export data to Excel');
+    console.error(
+      "Unable to export Manager region users:",
+      error.response?.data ||
+      error.message ||
+      error
+    );
+
+    emit(
+      "export-error",
+      error.response?.data?.detail ||
+      "Failed to export regional staff data."
+    );
   } finally {
     loading.value = false;
   }
-};
+}
 
-const clearSearch = () => {
-  searchQuery.value = '';
+function clearSearch() {
+  searchQuery.value = "";
   showModal.value = false;
-};
+}
 
-watch(searchQuery, (newQuery) => {
-  showModal.value = !!newQuery.trim();
-});
+watch(
+  searchQuery,
+  newQuery => {
+    showModal.value =
+      newQuery.trim().length > 0;
+  }
+);
 </script>
+
+
+
+
+
+
+
+
 
 <style scoped>
 .table-container {

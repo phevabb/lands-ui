@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from "vue"
-import { all_users } from "../../services/api"
+import { all_users, getAccounts } from "../../services/api"
 import { SimpleTable } from "@/components"
 import StaffDetails from "./StaffDetails.vue"
 import { useRouter } from "vue-router/composables";
@@ -24,34 +24,403 @@ const errorMessage = ref("");
 const checkLoading = () => isLoading.value
 
 
-
-
 async function fetchUsers(page = 1) {
   isLoading.value = true;
+  errorMessage.value = "";
+
   try {
-    const response = await all_users({ page });
+    const pageSize = Number(
+      itemsPerPage.value || 10
+    );
 
+    const response = await getAccounts({
+      page,
+      page_size: pageSize
+    });
 
+    console.log(
+      "Accounts API response: print",
+      response
+    );
 
-    rows.value = response.data.results
-    
-    itemsPerPage.value = 10
-    totalPages.value = Math.ceil(response.data.count / 10);
-    currentPage.value = getCurrentPageFromUrl(response.data.next, response.data.previous);
-    next.value = response.data.next;
-    previous.value = response.data.previous;
-  } catch (err) {
+    const responseData =
+      response.data;
 
-     if (err.message.includes("Network Error") || err.code === "ERR_NETWORK") {
-      errorMessage.value = "Please check your internet connection.";
-    } else {
-      errorMessage.value = "Something went wrong while fetching staff data.";
+    console.log(
+      "Accounts API response:",
+      responseData
+    );
+
+    /*
+     * Paginated response:
+     *
+     * {
+     *   count: 20,
+     *   next: "...",
+     *   previous: null,
+     *   results: [...]
+     * }
+     */
+    if (
+      responseData &&
+      Array.isArray(
+        responseData.results
+      )
+    ) {
+      rows.value =
+        responseData.results;
+
+      const totalRecords =
+        Number(
+          responseData.count ??
+          responseData.results.length
+        );
+
+      totalPages.value =
+        Math.max(
+          1,
+          Math.ceil(
+            totalRecords /
+            pageSize
+          )
+        );
+
+      currentPage.value =
+        Math.min(
+          Math.max(
+            Number(page) || 1,
+            1
+          ),
+          totalPages.value
+        );
+
+      next.value =
+        responseData.next ??
+        null;
+
+      previous.value =
+        responseData.previous ??
+        null;
+
+      console.log(
+        "Paginated accounts:",
+        rows.value
+      );
+
+      console.log(
+        "Account pagination:",
+        {
+          currentPage:
+            currentPage.value,
+
+          totalPages:
+            totalPages.value,
+
+          totalRecords,
+
+          pageSize,
+
+          next:
+            next.value,
+
+          previous:
+            previous.value
+        }
+      );
+
+      return;
     }
-   
+
+    /*
+     * Wrapped Ktor response:
+     *
+     * {
+     *   accounts: [...]
+     * }
+     */
+    if (
+      responseData &&
+      Array.isArray(
+        responseData.accounts
+      )
+    ) {
+      applyClientPagination(
+        responseData.accounts,
+        page
+      );
+
+      return;
+    }
+
+    /*
+     * Wrapped response:
+     *
+     * {
+     *   data: [...]
+     * }
+     */
+    if (
+      responseData &&
+      Array.isArray(
+        responseData.data
+      )
+    ) {
+      applyClientPagination(
+        responseData.data,
+        page
+      );
+
+      return;
+    }
+
+    /*
+     * Plain Ktor array:
+     *
+     * [...]
+     */
+    if (
+      Array.isArray(
+        responseData
+      )
+    ) {
+      applyClientPagination(
+        responseData,
+        page
+      );
+
+      return;
+    }
+
+    console.error(
+      "Unexpected accounts response:",
+      responseData
+    );
+
+    resetAccountResults();
+
+    errorMessage.value =
+      "The accounts response has an unexpected format.";
+  } catch (error) {
+    console.error(
+      "Unable to fetch accounts:",
+      error.response?.data ||
+      error.message ||
+      error
+    );
+
+    resetAccountResults();
+
+    if (
+      error.message?.includes(
+        "Network Error"
+      ) ||
+      error.code ===
+        "ERR_NETWORK"
+    ) {
+      errorMessage.value =
+        "Please check your internet connection.";
+    } else if (
+      error.response?.status ===
+        400
+    ) {
+      errorMessage.value =
+        error.response?.data?.detail ||
+        "The accounts request is invalid.";
+    } else if (
+      error.response?.status ===
+        401
+    ) {
+      errorMessage.value =
+        "Your session has expired. Please sign in again.";
+    } else if (
+      error.response?.status ===
+        403
+    ) {
+      errorMessage.value =
+        "You do not have permission to view accounts.";
+    } else if (
+      error.response?.status ===
+        404
+    ) {
+      errorMessage.value =
+        "The accounts endpoint could not be found.";
+    } else if (
+      error.response?.status ===
+        500
+    ) {
+      errorMessage.value =
+        error.response?.data?.detail ||
+        "The server could not retrieve the accounts.";
+    } else {
+      errorMessage.value =
+        error.response?.data?.detail ||
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        "Something went wrong while fetching account data.";
+    }
   } finally {
     isLoading.value = false;
   }
 }
+
+function applyClientPagination(
+  accounts,
+  page = 1
+) {
+  const safeAccounts =
+    Array.isArray(accounts)
+      ? accounts
+      : [];
+
+  const pageSize =
+    Math.max(
+      1,
+      Number(
+        itemsPerPage.value ||
+        10
+      )
+    );
+
+  const totalRecords =
+    safeAccounts.length;
+
+  totalPages.value =
+    Math.max(
+      1,
+      Math.ceil(
+        totalRecords /
+        pageSize
+      )
+    );
+
+  const requestedPage =
+    Number(page) || 1;
+
+  const safePage =
+    Math.min(
+      Math.max(
+        requestedPage,
+        1
+      ),
+      totalPages.value
+    );
+
+  const startIndex =
+    (
+      safePage - 1
+    ) * pageSize;
+
+  const endIndex =
+    startIndex +
+    pageSize;
+
+  rows.value =
+    safeAccounts.slice(
+      startIndex,
+      endIndex
+    );
+
+  currentPage.value =
+    safePage;
+
+  next.value =
+    safePage <
+    totalPages.value
+      ? safePage + 1
+      : null;
+
+  previous.value =
+    safePage > 1
+      ? safePage - 1
+      : null;
+
+  console.log(
+    "Client-paginated accounts:",
+    rows.value
+  );
+
+  console.log(
+    "Client pagination information:",
+    {
+      currentPage:
+        currentPage.value,
+
+      totalPages:
+        totalPages.value,
+
+      totalRecords,
+
+      pageSize,
+
+      next:
+        next.value,
+
+      previous:
+        previous.value
+    }
+  );
+}
+
+function resetAccountResults() {
+  rows.value = [];
+  totalPages.value = 1;
+  currentPage.value = 1;
+  next.value = null;
+  previous.value = null;
+}
+
+function goToNextPage() {
+  if (
+    currentPage.value <
+    totalPages.value
+  ) {
+    fetchUsers(
+      currentPage.value + 1
+    );
+  }
+}
+
+function goToPreviousPage() {
+  if (
+    currentPage.value > 1
+  ) {
+    fetchUsers(
+      currentPage.value - 1
+    );
+  }
+}
+
+function goToPage(page) {
+  const targetPage =
+    Number(page);
+
+  if (
+    !Number.isInteger(
+      targetPage
+    )
+  ) {
+    return;
+  }
+
+  if (
+    targetPage < 1 ||
+    targetPage >
+      totalPages.value
+  ) {
+    return;
+  }
+
+  fetchUsers(
+    targetPage
+  );
+}
+
+function changePageSize() {
+  currentPage.value = 1;
+
+  fetchUsers(1);
+}
+
 
 
 function getCurrentPageFromUrl(next, previous) {
@@ -74,7 +443,7 @@ onMounted(async () => {
   isLoading.value = true
   fetchUsers(1);
   try {
-    const response = await all_users({ page: 1  })
+    const response = await getAccounts({ page: 1  })
  
     itemsPerPage.value = 10
 

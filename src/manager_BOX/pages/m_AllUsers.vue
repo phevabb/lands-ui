@@ -78,6 +78,8 @@ onMounted(async () => {
   try {
      const region = localStorage.getItem("region") || "";
     const response = await manager_all_users({ page: 1, region  })
+
+    console.log("Response data print:", response.data); // Log the response data for debugging
  
     itemsPerPage.value = 10
 

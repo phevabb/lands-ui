@@ -5,32 +5,52 @@
       <div class="search-container">
         <span class="material-icons search-icon">search</span>
         <input
-          v-model="searchQuery"
-          type="text"
-          placeholder="Search by Staff ID or Name..."
-          class="search-input"
-          aria-label="Search staff by ID or name"
-        />
+  v-model.trim="searchQuery"
+  type="search"
+  placeholder="Search by Staff ID or Name..."
+  class="search-input"
+  aria-label="Search staff by ID or name"
+  :disabled="searchLoading"
+/>
         <button
-          v-if="searchQuery"
-          class="clear-btn"
-          @click="clearSearch"
-          aria-label="Clear search"
-        >
-          <span class="material-icons">close</span>
-        </button>
+  v-if="searchQuery"
+  type="button"
+  class="clear-btn"
+  aria-label="Clear search"
+  @click="clearSearch"
+>
+  <span class="material-icons">
+    close
+  </span>
+</button>
       </div>
-      <button
-        class="export-btn"
-        @click="exportExcel"
-        :disabled="loading"
-        aria-label="Export to Excel"
-      >
-        <span class="material-icons" style="font-size: 16px; margin-right: 6px;">
-          {{ loading ? 'hourglass_top' : 'download' }}
-        </span>
-        {{ loading ? 'Exporting...' : 'Export' }}
-      </button>
+  <button
+  type="button"
+  class="export-btn"
+  :disabled="loading"
+  aria-label="Export to Excel"
+  @click="exportExcel"
+>
+  <span
+    class="material-icons"
+    style="
+      font-size: 16px;
+      margin-right: 6px;
+    "
+  >
+    {{
+      loading
+        ? "hourglass_top"
+        : "download"
+    }}
+  </span>
+
+  {{
+    loading
+      ? "Exporting..."
+      : "Export"
+  }}
+</button>
     </div>
 
     <!-- Table -->
@@ -46,230 +66,645 @@
         </thead>
         <tbody>
           <tr
-            v-for="item in rows"
-            :key="item.user_id"
-            @click="selectUser(item)"
-            class="table-row"
-            role="button"
-            :aria-label="`Select ${item.full_name}`"
-          >
+v-for="item in normalizedRows"
+
+  :key="item.id || item.userId"
+  class="table-row"
+  role="button"
+  tabindex="0"
+  :aria-label="`Select ${item.fullName || item.userId || 'account'}`"
+  @click="selectUser(item)"
+  @keydown.enter="selectUser(item)"
+>
             <td>
               <img
-                :src="getProfilePictureSrc(item.profile_picture)"
-                :alt="item.full_name || 'Profile Image'"
+                :src="getProfilePictureSrc(item.profilePictureUrl)"
+                :alt="item.fullName || 'Profile Image'"
                 class="profile-image"
               />
             </td>
-            <td>{{ item.user_id || 'N/A' }}</td>
-            <td>{{ item.full_name || 'N/A' }}</td>
-            <td>{{ item.phone_number || 'N/A' }}</td>
+            <td>{{ item.userId || 'N/A' }}</td>
+            <td>{{ item.fullName || 'N/A' }}</td>
+            <td>{{ item.phoneNumber || 'N/A' }}</td>
           </tr>
         </tbody>
       </table>
-      <div v-if="rows.length === 0" class="no-results">
-        No results found
-      </div>
+      <div
+  v-if="normalizedRows.length === 0"
+  class="no-results"
+>
+  No results found
+</div>
     </div>
 
     <!-- Pagination -->
-    <div class="table-footer">
-      <pagination
-        :current-page="currentPage"
-        :total-pages="totalPages"
-        @page-changed="(page) => emit('page-changed', page)"
-      />
-    </div>
+    <Pagination
+  :current-page="currentPage"
+  :total-pages="totalPages"
+  @page-changed="
+    page => emit(
+      'page-changed',
+      page
+    )
+  "
+/>
 
     <!-- Search Results Modal -->
     <div v-if="showModal" class="modal-overlay" @click.self="clearSearch">
       <div class="modal-content">
         <div class="modal-header">
           <h2>Search Results</h2>
-          <button class="modal-close-btn" @click="clearSearch" aria-label="Close modal">
-            <span class="material-icons">close</span>
-          </button>
+
+
+          <button
+  type="button"
+  class="modal-close-btn"
+  aria-label="Close modal"
+  @click="clearSearch"
+>
+  <span class="material-icons">
+    close
+  </span>
+</button>
         </div>
-        <div class="modal-body">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Profile Picture</th>
-                <th>Staff ID</th>
-                <th>Full Name</th>
-                <th>Contact</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="item in filteredRows2"
-                :key="item.user_id"
-                @click="selectUser(item)"
-                class="table-row"
-                role="button"
-                :aria-label="`Select ${item.full_name}`"
-              >
-                <td>
-                  <img
-                    :src="getProfilePictureSrc(item.profile_picture)"
-                    :alt="item.full_name || 'Profile Image'"
-                    class="profile-image"
-                  />
-                </td>
-                <td>{{ item.user_id || 'N/A' }}</td>
-                <td>{{ item.full_name || 'N/A' }}</td>
-                <td>{{ item.phone_number || 'N/A' }}</td>
-              </tr>
-            </tbody>
-          </table>
-          <div v-if="filteredRows2.length === 0" class="no-results">
-            No results found for "{{ searchQuery }}"
-          </div>
-        </div>
+
+
+
+       <div class="modal-body">
+  <div
+    v-if="searchLoading"
+    class="no-results"
+  >
+    Loading account records...
+  </div>
+
+  <template v-else>
+    <table
+      v-if="filteredRows2.length > 0"
+      class="data-table"
+    >
+      <thead>
+        <tr>
+          <th>Profile Picture</th>
+          <th>Staff ID</th>
+          <th>Full Name</th>
+          <th>Contact</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr
+          v-for="item in filteredRows2"
+          :key="
+            item.id ||
+            item.userId
+          "
+          class="table-row"
+          role="button"
+          tabindex="0"
+          :aria-label="
+            `Select ${
+              item.fullName ||
+              item.userId ||
+              'account'
+            }`
+          "
+          @click="selectUser(item)"
+          @keydown.enter="selectUser(item)"
+          @keydown.space.prevent="
+            selectUser(item)
+          "
+        >
+          <td>
+            <img
+              :src="
+                getProfilePictureSrc(
+                  item.profilePictureUrl
+                )
+              "
+              :alt="
+                item.fullName ||
+                'Profile image'
+              "
+              class="profile-image"
+            />
+          </td>
+
+          <td>
+            {{ item.userId || "N/A" }}
+          </td>
+
+          <td>
+            {{ item.fullName || "N/A" }}
+          </td>
+
+          <td>
+            {{ item.phoneNumber || "N/A" }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div
+      v-else
+      class="no-results"
+    >
+      No results found for
+      "{{ searchQuery }}"
+    </div>
+  </template>
+</div>
+
+
+
+
+
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { defineProps, defineEmits, ref, computed, onMounted, watch } from 'vue';
-import * as XLSX from 'xlsx';
-import Pagination from '../Pagination.vue';
+import {
+  computed,
+  onMounted,
+  ref,
+  watch
+} from "vue";
 
-import { all_users_to_excel } from '../../services/api';
-import api from '../../services/api'; // Import api instance for baseURL
-import { DEFAULT_AVATAR } from '../../services/api';
+import * as XLSX from "xlsx";
+
+import Pagination from "../Pagination.vue";
+
+import api, {
+  all_users_to_excel,
+  DEFAULT_AVATAR
+} from "../../services/api";
+
 const loading = ref(false);
-const searchQuery = ref('');
+const searchLoading = ref(false);
+const searchQuery = ref("");
 const rows2 = ref([]);
 const showModal = ref(false);
 
 const props = defineProps({
-  tableHeaderColor: { type: String, default: '' },
-  next: { type: String, default: 'iik' },
-  previous: { type: String, default: 'fatts' },
-  totalPages: { type: Number, required: true, default: 4 },
-  currentPage: { type: Number, required: true, default: 2 },
+  tableHeaderColor: {
+    type: String,
+    default: ""
+  },
+
+  next: {
+    type: String,
+    default: ""
+  },
+
+  previous: {
+    type: String,
+    default: ""
+  },
+
+  totalPages: {
+    type: Number,
+    default: 1
+  },
+
+  currentPage: {
+    type: Number,
+    default: 1
+  },
+
   rows: {
     type: Array,
-    default: () => [
-      {
-        user_id: '1111',
-        full_name: 'None None',
-        phone_number: null,
-        profile_picture: null,
-      },
-      {
-        user_id: '1293399',
-        full_name: 'Rachel Korang',
-        phone_number: null,
-        profile_picture: null,
-      },
-      {
-        user_id: '892652',
-        full_name: 'Joyce Oppong',
-        phone_number: null,
-        profile_picture: null,
-      },
-    ],
-  },
+    default: () => []
+  }
 });
 
-const emit = defineEmits(['user-selected', 'page-changed', 'export-error']);
+const emit = defineEmits([
+  "user-selected",
+  "page-changed",
+  "export-error"
+]);
+
+
+
+const normalizedRows =
+  computed(() => {
+    return props.rows.map(account => {
+      return normalizeAccount(account);
+    });
+  });
 
 onMounted(async () => {
-  try {
-    const res = await all_users_to_excel();
-    if (Array.isArray(res.data)) {
-      rows2.value = res.data;
-    } else {
+  await loadSearchRecords();
+});
 
-      emit('export-error', 'Invalid data received from server');
-    }
+async function loadSearchRecords() {
+  searchLoading.value = true;
+
+  try {
+    const response =
+      await all_users_to_excel();
+
+    const responseData =
+      response.data;
+
+    console.log(
+      "All accounts search response:",
+      responseData
+    );
+
+    const accounts =
+      extractAccounts(
+        responseData
+      );
+
+    rows2.value =
+      accounts.map(account => {
+        return normalizeAccount(
+          account
+        );
+      });
+
+    console.log(
+      "Normalized search accounts:",
+      rows2.value
+    );
   } catch (error) {
+    console.error(
+      "Unable to retrieve accounts for searching:",
+      error.response?.data ||
+      error.message ||
+      error
+    );
 
-    emit('export-error', 'Failed to fetch data for table');
+    rows2.value = [];
+
+    emit(
+      "export-error",
+      error.response?.data?.detail ||
+      "Failed to fetch account data for searching."
+    );
+  } finally {
+    searchLoading.value = false;
   }
-});
+}
 
-// Filter rows2 based on search query for the modal
-const filteredRows2 = computed(() => {
-  if (!searchQuery.value.trim()) return [];
-  const query = searchQuery.value.toLowerCase().trim();
-  return rows2.value.filter(
-    (item) =>
-      (item.user_id && item.user_id.toLowerCase().includes(query)) ||
-      (item.full_name && item.full_name.toLowerCase().includes(query))
-  );
-});
-
-const getProfilePictureSrc = (profilePicture) => {
-  if (profilePicture && profilePicture !== '-') {
-    if (profilePicture.startsWith('http')) {
-      return profilePicture;
-    }
-    return `${api.defaults.baseURL}/${profilePicture.replace(/^\/+/, '')}`;
+function extractAccounts(
+  responseData
+) {
+  if (
+    Array.isArray(
+      responseData
+    )
+  ) {
+    return responseData;
   }
-  return DEFAULT_AVATAR;
-};
 
-const visibleEntries = (item) => {
-  const labelMap = {
-    profile_picture: 'Profile Picture',
-    full_name: 'Full Name',
-    phone_number: 'Contact',
-    user_id: 'Staff ID',
+  if (
+    responseData &&
+    Array.isArray(
+      responseData.results
+    )
+  ) {
+    return responseData.results;
+  }
+
+  if (
+    responseData &&
+    Array.isArray(
+      responseData.accounts
+    )
+  ) {
+    return responseData.accounts;
+  }
+
+  if (
+    responseData &&
+    Array.isArray(
+      responseData.data
+    )
+  ) {
+    return responseData.data;
+  }
+
+  return [];
+}
+
+function normalizeAccount(account) {
+  return {
+    ...account,
+
+    id:
+      account.id ??
+      null,
+
+    userId:
+      account.userId ??
+      account.user_id ??
+      "",
+
+    firstName:
+      account.firstName ??
+      account.first_name ??
+      "",
+
+    middleName:
+      account.middleName ??
+      account.middle_name ??
+      "",
+
+    lastName:
+      account.lastName ??
+      account.last_name ??
+      "",
+
+    fullName:
+      account.fullName ??
+      account.full_name ??
+      createFullName(account),
+
+    displayName:
+      account.displayName ??
+      account.display_name ??
+      account.fullName ??
+      account.full_name ??
+      account.userId ??
+      account.user_id ??
+      "",
+
+    phoneNumber:
+      account.phoneNumber ??
+      account.phone_number ??
+      "",
+
+    email:
+      account.email ??
+      "",
+
+    role:
+      account.role ??
+      "",
+
+    regionName:
+      account.regionName ??
+      account.region_name ??
+      account.region ??
+      "",
+
+    profilePictureUrl:
+      account.profilePictureUrl ??
+      account.profile_picture_url ??
+      account.profilePicture ??
+      account.profile_picture ??
+      null
   };
+}
 
-  return Object.entries(item)
-    .filter(([key]) => [
-      'profile_picture',
-      'full_name',
-      'phone_number',
-      'user_id',
-    ].includes(key))
-    .map(([key, value]) => [
-      key,
-      key === 'profile_picture' ? getProfilePictureSrc(value) : (value ?? 'N/A'),
-      labelMap[key] || key,
-    ]);
-};
+function createFullName(
+  account
+) {
+  return [
+    account.firstName ??
+      account.first_name,
 
-const selectUser = (item) => {
-  emit('user-selected', item.id);
-  showModal.value = false;
-};
+    account.middleName ??
+      account.middle_name,
 
-const exportExcel = async () => {
+    account.lastName ??
+      account.last_name
+  ]
+    .filter(value => {
+      return (
+        value !== null &&
+        value !== undefined &&
+        String(value).trim() !== ""
+      );
+    })
+    .map(value => {
+      return String(value).trim();
+    })
+    .join(" ");
+}
+
+const filteredRows2 =
+  computed(() => {
+    const query =
+      searchQuery.value
+        .trim()
+        .toLowerCase();
+
+    if (!query) {
+      return [];
+    }
+
+    return rows2.value.filter(
+      account => {
+        const searchableValues = [
+          account.userId,
+          account.fullName,
+          account.displayName,
+          account.firstName,
+          account.middleName,
+          account.lastName,
+          account.phoneNumber,
+          account.email,
+          account.role,
+          account.regionName
+        ];
+
+        return searchableValues.some(
+          value => {
+            return String(
+              value ?? ""
+            )
+              .toLowerCase()
+              .includes(query);
+          }
+        );
+      }
+    );
+  });
+
+function getProfilePictureSrc(profilePicture) {
+  if (
+    !profilePicture ||
+    profilePicture === "-"
+  ) {
+    return DEFAULT_AVATAR;
+  }
+
+  const picture =
+    String(profilePicture).trim();
+
+  if (
+    picture.startsWith("http://") ||
+    picture.startsWith("https://") ||
+    picture.startsWith("data:") ||
+    picture.startsWith("blob:")
+  ) {
+    return picture;
+  }
+
+  const baseUrl =
+    String(
+      api.defaults.baseURL || ""
+    ).replace(
+      /\/+$/,
+      ""
+    );
+
+  const picturePath =
+    picture.replace(
+      /^\/+/,
+      ""
+    );
+
+  return `${baseUrl}/${picturePath}`;
+}
+
+function selectUser(
+  item
+) {
+  if (
+    item.id === null ||
+    item.id === undefined
+  ) {
+    console.error(
+      "Selected account has no database ID:",
+      item
+    );
+
+    return;
+  }
+
+  emit(
+    "user-selected",
+    item.id
+  );
+
+  clearSearch();
+}
+
+async function exportExcel() {
+  if (loading.value) {
+    return;
+  }
+
+  loading.value = true;
+
   try {
-    loading.value = true;
-    const res = await all_users_to_excel();
-    const exportData = res.data;
+    let exportAccounts =
+      rows2.value;
 
-    if (!Array.isArray(exportData) || exportData.length === 0) {
-      emit('export-error', 'No data available to export');
+    if (
+      exportAccounts.length === 0
+    ) {
+      const response =
+        await all_users_to_excel();
+
+      exportAccounts =
+        extractAccounts(
+          response.data
+        ).map(account => {
+          return normalizeAccount(
+            account
+          );
+        });
+    }
+
+    if (
+      exportAccounts.length === 0
+    ) {
+      emit(
+        "export-error",
+        "No account data is available to export."
+      );
+
       return;
     }
 
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'StaffData');
-    XLSX.writeFile(workbook, 'staff_data.xlsx');
+    const exportData =
+      exportAccounts.map(
+        account => {
+          return {
+            "Staff ID":
+              account.userId ||
+              "",
+
+            "Full Name":
+              account.fullName ||
+              "",
+
+            "Phone Number":
+              account.phoneNumber ||
+              "",
+
+            "Email":
+              account.email ||
+              "",
+
+            "Role":
+              account.role ||
+              "",
+
+            "Region":
+              account.regionName ||
+              ""
+          };
+        }
+      );
+
+    const worksheet =
+      XLSX.utils.json_to_sheet(
+        exportData
+      );
+
+    const workbook =
+      XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "StaffData"
+    );
+
+    XLSX.writeFile(
+      workbook,
+      "staff_data.xlsx"
+    );
   } catch (error) {
-    emit('export-error', 'Failed to export data to Excel');
+    console.error(
+      "Unable to export account data:",
+      error.response?.data ||
+      error.message ||
+      error
+    );
+
+    emit(
+      "export-error",
+      error.response?.data?.detail ||
+      "Failed to export account data to Excel."
+    );
   } finally {
     loading.value = false;
   }
-};
+}
 
-const clearSearch = () => {
-  searchQuery.value = '';
+function clearSearch() {
+  searchQuery.value = "";
   showModal.value = false;
-};
+}
 
-watch(searchQuery, (newQuery) => {
-  showModal.value = !!newQuery.trim();
-});
+watch(
+  searchQuery,
+  newQuery => {
+    showModal.value =
+      newQuery.trim()
+        .length > 0;
+  }
+);
 </script>
+
 
 <style scoped>
 .table-container {

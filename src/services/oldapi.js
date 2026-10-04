@@ -62,9 +62,8 @@ export const gender_stats = (params) => api.get("superadmin/api/v1/gender-stats"
 export const pro_stats = (params) => api.get("superadmin/api/v1/pro-stats", { params });
 export const leave_stats = (params) => api.get("superadmin/api/v1/leave-stats", { params });
 export const contract_stats = (params) => api.get("superadmin/api/v1/contract-stats", { params });
-
-export const age_stats = (params) => api.get("superadmin/api/v1/age-stats", { params });
 export const salary_stats = (params) => api.get("superadmin/api/v1/salary-grade-stats", { params });
+export const age_stats = (params) => api.get("superadmin/api/v1/age-stats", { params });
 
 
 
@@ -104,15 +103,18 @@ export const users_per_department_no_pages = (dept, params = {}) => {
 export const manager_directorate_stats = (params) => api.get("manager/api/v1/directorate-stats", { params });
 export const manager_class_stats = (params) => api.get("manager/api/v1/class-stats", { params });
 export const manager_region_stats = (params) => api.get("manager/api/v1/region-stats", { params });
-export const manager_management_stats = (params) => api.get("manager/api/v1/management-stats", { params });
+//export const manager_management_stats = (params) => api.get("manager/api/v1/management-stats", { params });
+
 export const manager_senior_stats = (params) => api.get("manager/api/v1/senior-stats", { params });
 export const manager_gender_stats = (params) => api.get("manager/api/v1/gender-stats", { params });
 export const manager_age_stats = (params) => api.get("manager/api/v1/age-stats", { params });
 export const manager_salary_stats = (params) => api.get("manager/api/v1/salary-grade-stats", { params });
 export const manager_leave_stats = (params) => api.get("manager/api/v1/leave-stats", { params });
-export const manager_contract_stats = (params) => api.get("manager/api/v1/contract-stats", { params });
-export const manager_pro_stats = (params) => api.get("manager/api/v1/pro-stats", { params });
-export const manager_admin_dashboard_summary = (params = {}) => api.get("manager/api/v1/admin-dashboard-summary", { params });
+
+//export const manager_contract_stats = (params) => api.get("manager/api/v1/contract-stats", { params });
+//export const manager_pro_stats = (params) => api.get("manager/api/v1/pro-stats", { params });
+//export const manager_admin_dashboard_summary = (params = {}) => api.get("manager/api/v1/admin-dashboard-summary", { params });
+
 export const manager_all_users = (params) => api.get("manager/api/v1/all-users", { params });
 export const manager_all_users_to_excel = (params = {}) => api.get("manager/api/v1/all-users-to-excel", { params });
 
@@ -123,6 +125,7 @@ export const manager_user_fields = () => api.get("manager/api/v1/user-fields");
 export const manager_get_user_details = (userId) => api.get(`manager/api/v1/users/${userId}`);
 export const manager_update_user = (userId) => api.get(`manager/api/v1/user-update/${userId}/`);
 export const manager_put_user = (userId, payload) => {
+ 
   for (let [key, value] of payload.entries()) {}
   return api.put(`manager/api/v1/user-update/${userId}/`, payload);
 };

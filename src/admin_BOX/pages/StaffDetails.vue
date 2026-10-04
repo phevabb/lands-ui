@@ -49,15 +49,15 @@
     <div class="profile-container">
       <div class="profile-card">
         <img
-          :src="getProfilePictureSrc(staff.profile_picture)"
-          :alt="staff.full_name || 'Profile Image'"
+          :src="getProfilePictureSrc(staff.profilePictureUrl)"
+          :alt="staff.fullName || 'Profile Image'"
           class="profile-image"
           @error="handleImageError"
         /> 
 
-        <h2 class="profile-name">{{ staff.title }} {{ staff.full_name }}</h2>
-        <p class="profile-title">Staff ID: {{ staff.user_id }}</p>
-        <span class="profile-department">{{ staff.directorate }}</span>
+        <h2 class="profile-name">{{ staff.titleName }} {{ staff.fullName }}</h2>
+        <p class="profile-title">Staff ID: {{ staff.userId }}</p>
+        <span class="profile-department">{{ staff.directorateName }}</span>
 
         <div class="profile-stats">
           <div class="stat">
@@ -65,11 +65,11 @@
             <div class="stat-label">Age</div>
           </div>
           <div class="stat">
-            <div class="stat-value">{{ staff.number_of_years_in_service }}</div>
+            <div class="stat-value">{{ staff.numberOfYearsInService }}</div>
             <div class="stat-label">Years in Service</div>
           </div>
           <div class="stat">
-            <div class="stat-value">{{ formatDate(staff.date_of_retirement) }}</div>
+            <div class="stat-value">{{ formatDate(staff.dateOfRetirement) }}</div>
             <div class="stat-label">Retirement Date</div>
           </div>
         </div>
@@ -85,37 +85,37 @@
             <div class="contact-icon">
               <i class="fas fa-phone"></i>
             </div>
-            <div>{{ staff.phone_number || 'No phone provided' }}</div>
+            <div>{{ staff.phoneNumber || 'No phone provided' }}</div>
           </div>
           <div class="contact-item">
             <div class="contact-icon">
               <i class="fas fa-map-marker-alt"></i>
             </div>
-            <div>{{ staff.district }}, {{ staff.region }}</div>
+            <div>{{ staff.districtName }}, {{ staff.regionName }}</div>
           </div>
           <div class="contact-item">
             <div class="contact-icon">
               <i class="fas fa-building"></i>
             </div>
-            <div>{{ staff.management_unit_cost_centre }}</div>
+            <div>{{ staff.managementUnitCostCentreName || 'No management unit provided' }}</div>
           </div>
           <div class="contact-item">
             <div class="contact-icon">
               <i class="fas fa-user-tie"></i>
             </div>
-            <div>{{ staff.professional }}</div>
+            <div>{{ staff.professional || 'No professional information provided' }}</div>
           </div>
           <div class="contact-item">
             <div class="contact-icon">
               <i class="fas fa-user-tag"></i>
             </div>
-            <div>{{ staff.role }}</div>
+            <div>{{ staff.role || 'No role provided' }}</div>
           </div>
           <div class="contact-item">
             <div class="contact-icon">
               <i class="fas fa-users"></i>
             </div>
-            <div>{{ staff.staff_category }}</div>
+            <div>{{ staff.staffCategory || 'No staff category provided' }}</div>
           </div>
         </div>
       </div>
@@ -127,15 +127,15 @@
           <div class="info-grid">
             <div class="info-item">
               <div class="info-label">Full Name</div>
-              <div class="info-value">{{ staff.title }} {{ staff.full_name }}</div>
+              <div class="info-value">{{ staff.titleName }} {{ staff.fullName }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Staff ID</div>
-              <div class="info-value">{{ staff.user_id }}</div>
+              <div class="info-value">{{ staff.userId }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Date of Birth</div>
-              <div class="info-value">{{ formatDate(staff.date_of_birth) }}</div>
+              <div class="info-value">{{ formatDate(staff.dateOfBirth) }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Gender</div>
@@ -143,11 +143,11 @@
             </div>
             <div class="info-item">
               <div class="info-label">Ghana Card Number</div>
-              <div class="info-value">{{ staff.ghana_card_number }}</div>
+              <div class="info-value">{{ staff.ghanaCardNumber }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Marital Status</div>
-              <div class="info-value">{{ staff.marital_status }}</div>
+              <div class="info-value">{{ staff.maritalStatus }}</div>
             </div>
           </div>
         </div>
@@ -158,59 +158,55 @@
           <div class="info-grid">
             <div class="info-item">
               <div class="info-label">Directorate</div>
-              <div class="info-value">{{ staff.directorate }}</div>
+              <div class="info-value">{{ staff.directorateName }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Class</div>
-              <div class="info-value">{{ staff.category }}</div>
+              <div class="info-value">{{ staff.categoryName || 'No category provided' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Supervisor</div>
-              <div class="info-value">{{ staff.supervisor_name || 'Not specified' }}</div>
-            </div>
-            <div class="info-item">
-              <div class="info-label">Substantive Date</div>
-              <div class="info-value">{{ formatDate(staff.substantive_date) }}</div>
+              <div class="info-value">{{ staff.supervisorName || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Date Of First Appointment</div>
-              <div class="info-value">{{ formatDate(staff.date_of_first_appointment) }}</div>
+              <div class="info-value">{{ formatDate(staff.dateOfFirstAppointment) }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Notional Effective Date</div>
-              <div class="info-value">{{ formatDate(staff.national_effective_date) }}</div>
+              <div class="info-value">{{ formatDate(staff.nationalEffectiveDate) }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Date Of Assumption Of Duty</div>
-              <div class="info-value">{{ formatDate(staff.date_of_assumption_of_duty) }}</div>
+              <div class="info-value">{{ formatDate(staff.dateOfAssumptionOfDuty) }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Date Of Last Promotion</div>
-              <div class="info-value">{{ formatDate(staff.date_of_last_promotion) }}</div>
+              <div class="info-value">{{ formatDate(staff.dateOfLastPromotion) }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Years In Service</div>
-              <div class="info-value">{{ staff.number_of_years_in_service }} years</div>
+              <div class="info-value">{{ staff.numberOfYearsInService }} years</div>
             </div>
             <div class="info-item">
               <div class="info-label">Fulltime / Contract</div>
-              <div class="info-value">{{ staff.fulltime_contract_staff }}</div>
+              <div class="info-value">{{ staff.fulltimeContractStaff }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Change Of Grade</div>
-              <div class="info-value">{{ staff.change_of_grade || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.changeOfGrade || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Current Grade</div>
-              <div class="info-value">{{ staff.current_grade || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.currentGrade || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Years On Current Grade</div>
-              <div class="info-value">{{ staff.years_on_current_grade || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.yearsOnCurrentGrade || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Next Grade</div>
-              <div class="info-value">{{ staff.next_grade || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.nextGrade || 'Not specified' }}</div>
             </div>
           </div>
         </div>
@@ -221,39 +217,39 @@
           <div class="info-grid">
             <div class="info-item">
               <div class="info-label">Single Spine</div>
-              <div class="info-value">{{ staff.single_spine_monthly_salary || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.singleSpineMonthlySalary || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Current Salary Level</div>
-              <div class="info-value">{{ staff.current_salary_level || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.currentSalaryLevel || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Next Salary Level</div>
-              <div class="info-value">{{ staff.next_salary_level || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.nextSalaryLevel || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Current Salary Point</div>
-              <div class="info-value">{{ staff.current_salary_point || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.currentSalaryPoint || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Monthly Gross Pay</div>
-              <div class="info-value">GHS {{ formatCurrency(staff.monthly_gross_pay) }}</div>
+              <div class="info-value">GHS {{ formatCurrency(staff.monthlyGrossPay) }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Annual Salary</div>
-              <div class="info-value">GHS {{ formatCurrency(staff.annual_salary) }}</div>
+              <div class="info-value">GHS {{ formatCurrency(staff.annualSalary) }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Bank Name</div>
-              <div class="info-value">{{ staff.bank_name || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.bankName || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Bank Branch</div>
-              <div class="info-value">{{ staff.bank_account_branch || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.bankAccountBranch || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Account Number</div>
-              <div class="info-value">{{ staff.bank_account_number || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.bankAccountNumber || 'Not specified' }}</div>
             </div>
           </div>
         </div>
@@ -264,36 +260,36 @@
           <div class="info-grid">
             <div class="info-item">
               <div class="info-label">Number Targets</div>
-              <div class="info-value">{{ staff.number_of_targets || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.numberOfTargets || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Number Targets Met</div>
-              <div class="info-value">{{ staff.number_of_targets_met || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.numberOfTargetsMet || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Number Of Targets Not Met</div>
-              <div class="info-value">{{ staff.number_of_targets_not_met || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.numberOfTargetsNotMet || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Number Of Focus Areas</div>
-              <div class="info-value">{{ staff.number_of_focus_areas || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.numberOfFocusAreas || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Self Assessment Description</div>
-              <div class="info-value">{{ staff.self_assessment_description || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.selfAssessmentDescription || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Overall Assessment Score</div>
-              <div class="info-value">{{ staff.overall_assessment_score || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.overallAssessmentScore || 'Not specified' }}</div>
             </div>
             <div class="info-item" style="margin-bottom: 12px; display:flex; flex-direction:column;">
               <div class="info-label" style="font-weight:600; color:#2b2b2b; margin-bottom:6px;">
                 Academic Qualifications
               </div>
               <div class="info-value" style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
-                <template v-if="staff.academic_qualifications && staff.academic_qualifications.length">
+                <template v-if="staff.academicQualifications && staff.academicQualifications.length">
                   <span
-                    v-for="qual in staff.academic_qualifications"
+                    v-for="qual in staff.academicQualifications"
                     :key="qual.id"
                     :title="qual.name"
                     style="
@@ -318,27 +314,27 @@
             </div>
             <div class="info-item">
               <div class="info-label">SSNIT Number</div>
-              <div class="info-value">{{ staff.social_security_number || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.socialSecurityNumber || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">NHIS Number</div>
-              <div class="info-value">{{ staff.national_health_insurance_number || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.nationalHealthInsuranceNumber || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Payroll Status</div>
               <div class="info-value">
-                <span class="badge" :class="getStatusClass(staff.payroll_status)">
-                  {{ staff.payroll_status || 'Not specified' }}
+                <span class="badge" :class="getStatusClass(staff.payrollStatus)">
+                  {{ staff.payrollStatus || 'Not specified' }}
                 </span>
               </div>
             </div>
             <div class="info-item">
               <div class="info-label">Accommodation Status</div>
-              <div class="info-value">{{ staff.accommodation_status || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.accommodationStatus || 'Not specified' }}</div>
             </div>
             <div class="info-item">
               <div class="info-label">At POST / On Leave</div>
-              <div class="info-value">{{ staff.at_post_on_leave || 'Not specified' }}</div>
+              <div class="info-value">{{ staff.atPostOnLeave || 'Not specified' }}</div>
             </div>
           </div>
         </div>
@@ -352,11 +348,11 @@ import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router/composables';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import { get_user_details, remove_user, DEFAULT_AVATAR } from '@/services/api';
+import { admin_get_user_details, remove_user, DEFAULT_AVATAR } from '@/services/api';
 
 // Initialize refs
 const user = ref(null);
-const route = useRoute();
+const  route = useRoute();
 const router = useRouter();
 const showRemoveModal = ref(false);
 const reason = ref('');
@@ -430,12 +426,12 @@ const fetchUserDetails = async () => {
   try {
     console.log("Fetching user details for ID:", route.params.id);
     const id_user = route.params.id;
-    const res = await get_user_details(id_user);
-
+    const res = await admin_get_user_details(id_user);
+    console.log("User details fetched: print details", res.data);
     console.log("User details fetched: print", res.data);
     user.value = res.data;
   } catch (error) {
-
+    console.error("Error fetching user details:", error);
   }
 };
 
@@ -448,6 +444,9 @@ const editStaff = () => {
 const goBack = () => {
   router.push('/allusers');
 };
+
+
+
 
 onMounted(fetchUserDetails);
 
@@ -692,6 +691,10 @@ const staff = computed(() => {
     phoneNumber:
       account.phoneNumber ||
       "No phone number provided",
+
+      email:
+      account.email ||
+      "No email provided",
 
     ghanaCardNumber:
       account.ghanaCardNumber ||
