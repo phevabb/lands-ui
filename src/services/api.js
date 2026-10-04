@@ -1068,15 +1068,114 @@ export function manager_management_stats(
   );
 }
 
-export const manager_directorate_stats = (params) => api.get("/manager/users", { params });
+export function manager_directorate_stats(
+  params = {}
+) {
+  return api.get(
+    "/manager/directorate-stats",
+    {
+      params: {
+        page:
+          params.page ??
+          1,
+
+        page_size:
+          params.page_size ??
+          params.pageSize ??
+          10
+      }
+    }
+  );
+}
+
+
+export function manager_leave_stats(
+  params = {}
+) {
+  return api.get(
+    "/manager/leave-stats",
+    {
+      params: {
+        page:
+          params.page ??
+          1,
+
+        page_size:
+          params.page_size ??
+          params.pageSize ??
+          10
+      }
+    }
+  );
+}
+
+export function manager_salary_stats(
+  params = {}
+) {
+  return api.get(
+    "/manager/salary-grade-stats",
+    {
+      params: {
+        page:
+          params.page ??
+          1,
+
+        page_size:
+          params.page_size ??
+          params.pageSize ??
+          10
+      }
+    }
+  );
+}
+
+
+export function manager_senior_stats(
+  params = {}
+) {
+  return api.get(
+    "/manager/senior-stats",
+    {
+      params: {
+        page:
+          params.page ??
+          1,
+
+        page_size:
+          params.page_size ??
+          params.pageSize ??
+          10
+      }
+    }
+  );
+}
+
+
+export function manager_gender_stats(
+  params = {}
+) {
+  return api.get(
+    "/manager/gender-stats",
+    {
+      params: {
+        page:
+          params.page ??
+          1,
+
+        page_size:
+          params.page_size ??
+          params.pageSize ??
+          10
+      }
+    }
+  );
+}
+
+
+
 
 export const manager_region_stats = (params) => api.get("/manager/users", { params });
-export const manager_senior_stats = (params) => api.get("/manager/users", { params });
-export const manager_gender_stats = (params) => api.get("/manager/users", { params });
 export const manager_age_stats = (params) => api.get("/manager/users", { params });
-export const manager_salary_stats = (params) => api.get("/manager/users", { params });
-export const manager_leave_stats = (params) => api.get("/manager/users", { params });
-
 export const manager_all_users_to_excel = (params = {}) => api.get("/manager/users", { params });
 
 
