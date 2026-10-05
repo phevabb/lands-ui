@@ -1257,6 +1257,44 @@ export function manager_update_user(userId) {
   );
 }
 
+export function manager_users_per_department(
+  dept,
+  params = {}
+) {
+  return api.get(
+    "/manager/users-per-department",
+    {
+      params: {
+        dept,
+
+        page:
+          params.page ??
+          1,
+
+        page_size:
+          params.page_size ??
+          params.pageSize ??
+          10
+      }
+    }
+  );
+}
+
+
+
+export function manager_users_per_department_no_pages(
+  dept
+) {
+  return api.get(
+    "/manager/users-per-department-no-pages",
+    {
+      params: {
+        dept
+      }
+    }
+  );
+}
+
 
 export {
   api,

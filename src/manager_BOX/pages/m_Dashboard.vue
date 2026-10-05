@@ -34,42 +34,101 @@ const totalAdmins = ref(0);
 const totalManagers = ref(0);
 const totalStaffMembers = ref(0);
 
-async function fetchUsers(tab, apiFunc, page, name_) {
-  isLoading.value = true;
+async function fetchUsers(
+  tab,
+  page
+) {
+  if (
+    !tab ||
+    typeof tab.apiFunc !==
+      "function"
+  ) {
+    console.error(
+      "The selected tab has no valid API function:",
+      tab
+    );
+
+    return;
+  }
+
+  tab.loading = true;
+  tab.errorMessage = "";
+
   try {
-    const region = localStorage.getItem("region") || "";
-    const { data } = await apiFunc({ page, region }); // Send region as query param
+    const response =
+      await tab.apiFunc({
+        page,
+        page_size:
+          page_size
+      });
 
+    const data =
+      response.data || {};
 
-    tab.users = data.results.map((d) => ({
-      name:
-        d.professional ||
-        d.gender ||
-        d.age_range ||
-        d.salary_range ||
-        d.staff_category ||
-     
-        d.contract_type ||
-        d.leave_type ||
-        d.name ||
-        d.department ||
-        d.class ||
-        d.management_unit,
-      count: d.count,
-    }));
-    tab.total = data.count;
-    tab.currentPage = getCurrentPageFromUrl(data.next, data.previous, data.count);
-    tab.totalPages = Math.ceil(data.count / page_size);
-    tab.next = data.next;
-    tab.previous = data.previous;
-  } catch (err) {
-    if (err.message.includes("Network Error") || err.code === "ERR_NETWORK") {
-      errorMessage.value = "Please check your internet connection.";
-    } else {
-      errorMessage.value = "Something went wrong while fetching staff data.";
-    }
+    const results =
+      Array.isArray(data.results)
+        ? data.results
+        : [];
+
+    tab.users =
+      results.map(item => {
+        return {
+          name:
+            getStatisticName(
+              item
+            ),
+
+          count:
+            Number(
+              item.count ??
+              0
+            )
+        };
+      });
+
+    tab.total =
+      Number(
+        data.count ??
+        0
+      );
+
+    tab.currentPage =
+      getCurrentPageFromUrl(
+        data.next,
+        data.previous,
+        tab.total,
+        page_size
+      );
+
+    tab.totalPages =
+      Math.max(
+        1,
+        Math.ceil(
+          tab.total /
+          page_size
+        )
+      );
+
+    tab.next =
+      data.next ??
+      null;
+
+    tab.previous =
+      data.previous ??
+      null;
+  } catch (error) {
+    console.error(
+      `Unable to load ${tab.label}:`,
+      error.response?.data ||
+      error.message ||
+      error
+    );
+
+    tab.errorMessage =
+      error.response?.data?.detail ||
+      `Unable to load ${tab.label}.`;
   } finally {
-    isLoading.value = false;
+    tab.loading = false;
   }
 }
 
@@ -94,40 +153,111 @@ function getCurrentPageFromUrl(next, previous, count, pageSize = 10) {
   }
 }
 
+
+
+function getStatisticName(
+  item
+) {
+  return (
+    item.professional ??
+    item.gender ??
+    item.age_range ??
+    item.salary_range ??
+    item.staff_category ??
+    item.contract_type ??
+    item.leave_type ??
+    item.department ??
+    item.class ??
+    item.management_unit ??
+    item.region ??
+    item.name ??
+    "Unknown"
+  );
+}
+
+
+
 onMounted(async () => {
   isLoading.value = true;
   errorMessage.value = "";
 
   try {
-    const region = localStorage.getItem("region") || "";
-    const [
-      { data: summaryData },
-      { data: proData },
-      { data: conData },
-      { data: leaData },
-      { data: classData },
-      { data: dirData },
+   
+const [
+  { data: summaryData },
+  { data: proData },
+  { data: conData },
+  { data: leaData },
+  { data: classData },
+  { data: dirData },
+  { data: manData },
+  { data: senData },
+  { data: genData },
+  { data: ageData },
+  { data: salData }
+] = await Promise.all([
+  manager_admin_dashboard_summary(),
 
-      { data: manData },
-      { data: senData },
-      { data: genData },
-      { data: ageData },
-      { data: salData },
-    ] = await Promise.all([
-      manager_admin_dashboard_summary({ region }),
-      manager_pro_stats({ region }),
-      manager_contract_stats({ region }),
-      manager_leave_stats({ region }),
-      manager_class_stats({ region }),
-      manager_directorate_stats({ region }),
-      
-      manager_management_stats({ region }),
-      manager_senior_stats({ region }),
-      manager_gender_stats({ region }),
-      manager_age_stats({ region }),
-      manager_salary_stats({ region }),
-    ]);
+  manager_pro_stats({
+    page: 1,
+    page_size:
+      page_size
+  }),
 
+  manager_contract_stats({
+    page: 1,
+    page_size:
+      page_size
+  }),
+
+  manager_leave_stats({
+    page: 1,
+    page_size:
+      page_size
+  }),
+
+  manager_class_stats({
+    page: 1,
+    page_size:
+      page_size
+  }),
+
+  manager_directorate_stats({
+    page: 1,
+    page_size:
+      page_size
+  }),
+
+  manager_management_stats({
+    page: 1,
+    page_size:
+      page_size
+  }),
+
+  manager_senior_stats({
+    page: 1,
+    page_size:
+      page_size
+  }),
+
+  manager_gender_stats({
+    page: 1,
+    page_size:
+      page_size
+  }),
+
+  manager_age_stats({
+    page: 1,
+    page_size:
+      page_size
+  }),
+
+  manager_salary_stats({
+    page: 1,
+    page_size:
+      page_size
+  })
+]);
     allUsers.value = summaryData.num_of_users;
     totalMales.value = summaryData.num_of_males;
     totalFemales.value = summaryData.num_of_females;
@@ -150,6 +280,12 @@ onMounted(async () => {
       totalPages: Math.ceil(proData.count / page_size),
       name_: "Professionals and Sub Professionals",
       apiFunc: manager_pro_stats,
+
+      loading:
+  false,
+
+errorMessage:
+  ""
     };
 
     const conTab = {
@@ -167,6 +303,12 @@ onMounted(async () => {
       totalPages: Math.ceil(conData.count / page_size),
       name_: "Contract Type",
       apiFunc: manager_contract_stats,
+
+      loading:
+      false,
+
+    errorMessage:
+      ""
     };
 
     const leaTab = {
@@ -184,6 +326,8 @@ onMounted(async () => {
       totalPages: Math.ceil(leaData.count / page_size),
       name_: "Leave Type",
       apiFunc: manager_leave_stats,
+      loading: false,
+      errorMessage: ""
     };
 
     const classTab = {
@@ -201,6 +345,8 @@ onMounted(async () => {
       totalPages: Math.ceil(classData.count / page_size),
       name_: "Class",
       apiFunc: manager_class_stats,
+      loading: false,
+      errorMessage: ""
     };
 
     const directorateTab = {
@@ -218,6 +364,8 @@ onMounted(async () => {
       totalPages: Math.ceil(dirData.count / page_size),
       name_: "Directorate",
       apiFunc: manager_directorate_stats,
+      loading: false,
+      errorMessage: ""
     };
 
    
@@ -237,6 +385,8 @@ onMounted(async () => {
       totalPages: Math.ceil(manData.count / page_size),
       name_: "Management Unit",
       apiFunc: manager_management_stats,
+      loading: false,
+      errorMessage: ""
     };
 
     const senTab = {
@@ -254,6 +404,8 @@ onMounted(async () => {
       totalPages: Math.ceil(senData.count / page_size),
       name_: "Staff Category",
       apiFunc: manager_senior_stats,
+      loading: false,
+      errorMessage: ""
     };
 
     const genTab = {
@@ -271,6 +423,8 @@ onMounted(async () => {
       totalPages: Math.ceil(genData.count / page_size),
       name_: "Gender",
       apiFunc: manager_gender_stats,
+      loading: false,
+      errorMessage: ""
     };
 
     const ageTab = {
@@ -288,6 +442,8 @@ onMounted(async () => {
       totalPages: Math.ceil(ageData.count / page_size),
       name_: "Age Range",
       apiFunc: manager_age_stats,
+      loading: false,
+      errorMessage: ""
     };
 
     const salTab = {
@@ -401,16 +557,21 @@ onMounted(async () => {
           <template #content>
             <md-tabs class="md-success" md-alignment="left">
               <md-tab v-for="tab in table_1" :key="tab.id" :id="tab.id" :md-label="tab.label" :md-icon="tab.icon">
-                <nav-tabs-table
-                  @page-changed="(page, name_) => fetchUsers(tab, tab.apiFunc, page, name_)"
-                  :next="tab.next"
-                  :previous="tab.previous"
-                  :currentPage="tab.currentPage"
-                  :totalPages="tab.totalPages"
-                  :users="tab.users"
-                  :total="tab.total"
-                  :name_="tab.name_"
-                ></nav-tabs-table>
+                <NavTabsTable
+  :next="tab.next"
+  :previous="tab.previous"
+  :current-page="tab.currentPage"
+  :total-pages="tab.totalPages"
+  :users="tab.users"
+  :total="tab.total"
+  :name_="tab.name_"
+  @page-changed="
+    page => fetchUsers(
+      tab,
+      page
+    )
+  "
+/>
               </md-tab>
             </md-tabs>
           </template>
@@ -423,16 +584,21 @@ onMounted(async () => {
           <template #content>
             <md-tabs class="md-success" md-alignment="left">
               <md-tab v-for="tab in table_2" :key="tab.id" :id="tab.id" :md-label="tab.label" :md-icon="tab.icon">
-                <nav-tabs-table
-                  @page-changed="(page, name_) => fetchUsers(tab, tab.apiFunc, page, name_)"
-                  :next="tab.next"
-                  :previous="tab.previous"
-                  :currentPage="tab.currentPage"
-                  :totalPages="tab.totalPages"
-                  :users="tab.users"
-                  :total="tab.total"
-                  :name_="tab.name_"
-                ></nav-tabs-table>
+                <NavTabsTable
+  :next="tab.next"
+  :previous="tab.previous"
+  :current-page="tab.currentPage"
+  :total-pages="tab.totalPages"
+  :users="tab.users"
+  :total="tab.total"
+  :name_="tab.name_"
+  @page-changed="
+    page => fetchUsers(
+      tab,
+      page
+    )
+  "
+/>
               </md-tab>
             </md-tabs>
           </template>
@@ -445,16 +611,21 @@ onMounted(async () => {
           <template #content>
             <md-tabs class="md-success" md-alignment="left">
               <md-tab v-for="tab in table_3" :key="tab.id" :id="tab.id" :md-label="tab.label" :md-icon="tab.icon">
-                <nav-tabs-table
-                  @page-changed="(page, name_) => fetchUsers(tab, tab.apiFunc, page, name_)"
-                  :next="tab.next"
-                  :previous="tab.previous"
-                  :currentPage="tab.currentPage"
-                  :totalPages="tab.totalPages"
-                  :users="tab.users"
-                  :total="tab.total"
-                  :name_="tab.name_"
-                ></nav-tabs-table>
+                <NavTabsTable
+  :next="tab.next"
+  :previous="tab.previous"
+  :current-page="tab.currentPage"
+  :total-pages="tab.totalPages"
+  :users="tab.users"
+  :total="tab.total"
+  :name_="tab.name_"
+  @page-changed="
+    page => fetchUsers(
+      tab,
+      page
+    )
+  "
+/>
               </md-tab>
             </md-tabs>
           </template>
@@ -467,16 +638,21 @@ onMounted(async () => {
           <template #content>
             <md-tabs class="md-success" md-alignment="left">
               <md-tab v-for="tab in table_4" :key="tab.id" :id="tab.id" :md-label="tab.label" :md-icon="tab.icon">
-                <nav-tabs-table
-                  @page-changed="(page, name_) => fetchUsers(tab, tab.apiFunc, page, name_)"
-                  :next="tab.next"
-                  :previous="tab.previous"
-                  :currentPage="tab.currentPage"
-                  :totalPages="tab.totalPages"
-                  :users="tab.users"
-                  :total="tab.total"
-                  :name_="tab.name_"
-                ></nav-tabs-table>
+                <NavTabsTable
+  :next="tab.next"
+  :previous="tab.previous"
+  :current-page="tab.currentPage"
+  :total-pages="tab.totalPages"
+  :users="tab.users"
+  :total="tab.total"
+  :name_="tab.name_"
+  @page-changed="
+    page => fetchUsers(
+      tab,
+      page
+    )
+  "
+/>
               </md-tab>
             </md-tabs>
           </template>
@@ -489,16 +665,21 @@ onMounted(async () => {
           <template #content>
             <md-tabs class="md-success" md-alignment="left">
               <md-tab v-for="tab in table_5" :key="tab.id" :id="tab.id" :md-label="tab.label" :md-icon="tab.icon">
-                <nav-tabs-table
-                  @page-changed="(page, name_) => fetchUsers(tab, tab.apiFunc, page, name_)"
-                  :next="tab.next"
-                  :previous="tab.previous"
-                  :currentPage="tab.currentPage"
-                  :totalPages="tab.totalPages"
-                  :users="tab.users"
-                  :total="tab.total"
-                  :name_="tab.name_"
-                ></nav-tabs-table>
+                <NavTabsTable
+  :next="tab.next"
+  :previous="tab.previous"
+  :current-page="tab.currentPage"
+  :total-pages="tab.totalPages"
+  :users="tab.users"
+  :total="tab.total"
+  :name_="tab.name_"
+  @page-changed="
+    page => fetchUsers(
+      tab,
+      page
+    )
+  "
+/>
               </md-tab>
             </md-tabs>
           </template>

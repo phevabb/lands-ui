@@ -19,6 +19,8 @@ const props = defineProps({
   pageSize: { type: Number, default: 10 } // page size from API
 })
 
+console.log("NavTabsTable props: print", props)
+
 const selected = ref([])
 const tableVisible = ref(true)
 const emit = defineEmits(["page-changed"])
@@ -126,3 +128,123 @@ const showingRange = computed(() => {
     </div>
   </div>
 </template>
+
+
+
+
+
+
+
+<style scoped>
+.nav-tabs-table {
+  width: 100%;
+}
+
+.table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.table-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.table-title-name {
+  color: #34495e;
+}
+
+.table-title-count {
+  color: #7f8c8d;
+}
+
+.table-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.action-icon {
+  margin-right: 6px;
+  font-size: 16px;
+}
+
+.table-container {
+  width: 100%;
+}
+
+.statistics-table {
+  width: 100%;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.clickable-row {
+  cursor: pointer;
+}
+
+.clickable-row:hover {
+  background-color: #f5f5f5;
+}
+
+.table-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.showing-range {
+  color: #7f8c8d;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.empty-state {
+  padding: 32px 16px;
+  color: #7f8c8d;
+  text-align: center;
+}
+
+.empty-state .md-icon {
+  margin-bottom: 8px;
+  font-size: 42px;
+}
+
+.empty-state p {
+  margin: 0;
+}
+
+@media screen and (max-width: 600px) {
+  .table-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .table-actions {
+    justify-content: flex-end;
+    width: 100%;
+  }
+
+  .table-footer {
+    align-items: center;
+    flex-direction: column;
+  }
+
+  .showing-range {
+    width: 100%;
+    text-align: center;
+  }
+}
+</style>
+
+

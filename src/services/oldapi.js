@@ -117,10 +117,10 @@ export const users_per_department_no_pages = (dept, params = {}) => {
 
 // Users (Managers)
 //export const manager_create_user = (payload) => api.post("manager/api/v1/users/create", payload);
-export const manager_remove_user = (payload) => api.post("manager/api/v1/remove-user", payload);
-export const manager_user_fields = () => api.get("manager/api/v1/user-fields");
+//export const manager_remove_user = (payload) => api.post("manager/api/v1/remove-user", payload);
+//xport const manager_user_fields = () => api.get("manager/api/v1/user-fields");
 //export const manager_get_user_details = (userId) => api.get(`manager/api/v1/users/${userId}`);
-export const manager_update_user = (userId) => api.get(`manager/api/v1/user-update/${userId}/`);
+//export const manager_update_user = (userId) => api.get(`manager/api/v1/user-update/${userId}/`);
 
 export const manager_put_user = (userId, payload) => {
  
@@ -132,17 +132,17 @@ export const manager_patch_user = (userId, payload) => {
   return api.patch(`manager/api/v1/user-update/${userId}/`, payload);
 };
 
-export const manager_users_per_department = (dept, params = {}) => {
-  return api.get("manager/api/v1/users-per-department/", {
-    params: { dept, ...params },
-  });
-};
+// export const manager_users_per_department = (dept, params = {}) => {
+//   return api.get("manager/api/v1/users-per-department/", {
+//     params: { dept, ...params },
+//   });
+// };
 
-export const manager_users_per_department_no_pages = (dept, params = {}) => {
-  return api.get("manager/api/v1/users-per-department-no-pages/", {
-    params: { dept, ...params },
-  });
-};
+// export const manager_users_per_department_no_pages = (dept, params = {}) => {
+//   return api.get("manager/api/v1/users-per-department-no-pages/", {
+//     params: { dept, ...params },
+//   });
+// };
 
 export default api;
 

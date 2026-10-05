@@ -1,5 +1,14 @@
+
+
+
 <template>
-  <div class="wrapper" :class="{ 'nav-open': proxy.$sidebar.showSidebar }">
+  <div
+  class="wrapper"
+  :class="{
+    'nav-open':
+      proxy?.$sidebar?.showSidebar
+  }"
+>
     <Notifications />
 
     <SideBar title="GH Lands"
@@ -62,47 +71,91 @@
 
 
 
-        <!-- Account Dropdown -->
-  <div  class="sidebar-link"
-    :class="{ active: activeAccountItem === 'account' }"
-    @mouseenter="setActive('account')"
-    @mouseleave="setActive(null)"
-    @click="toggleAccountDropdown"
-    style="cursor:pointer;"
+       <!-- Account Dropdown -->
+<div
+  class="sidebar-link"
+  :class="{
+    active:
+      activeAccountItem === 'account' ||
+      showAccountDropdown
+  }"
+  style="cursor: pointer;"
+  @mouseenter="setActive('account')"
+  @mouseleave="
+    !showAccountDropdown &&
+    setActive(null)
+  "
+  @click="toggleAccountDropdown"
+>
+  <span class="sidebar-item">
+    <md-icon>
+      account_circle
+    </md-icon>
+
+    <span class="sidebar-text">
+      Account
+    </span>
+
+    <md-icon
+      style="margin-left: auto;"
     >
+      {{
+        showAccountDropdown
+          ? "arrow_drop_up"
+          : "arrow_drop_down"
+      }}
+    </md-icon>
+  </span>
+</div>
+
+<div
+  v-if="showAccountDropdown"
+  class="sidebar-dropdown"
+>
+  <div
+    class="sidebar-link"
+    :class="{
+      active:
+        activeAccountItem === 'logout'
+    }"
+    style="cursor: pointer;"
+    @mouseenter="setActive('logout')"
+    @mouseleave="setActive(null)"
+    @click="handleLogout"
+  >
     <span class="sidebar-item">
-      <md-icon>account_circle</md-icon>
-      <span class="sidebar-text">Account</span>
-      <md-icon style="margin-left:auto;">arrow_drop_down</md-icon>
+      <md-icon>
+        logout
+      </md-icon>
+
+      <span class="sidebar-text">
+        Logout
+      </span>
     </span>
   </div>
-  <div v-if="showAccountDropdown" class="sidebar-dropdown">
-    <div class="sidebar-link"
-      :class="{ active: activeAccountItem === 'logout' }"
-      @mouseenter="setActive('logout')"
-      @mouseleave="setActive(null)"
-      @click="handleLogout"
-      style="cursor:pointer;"
-        >
-      <span class="sidebar-item">
-        <md-icon>logout</md-icon>
-        <span class="sidebar-text">Logout</span>
-      </span>
-    </div>
-    <div class="sidebar-link"
-      :class="{ active: activeAccountItem === 'change' }"
-      @mouseenter="setActive('change')"
-      @mouseleave="setActive(null)"
-      @click="goToChangePassword"
-      style="cursor:pointer;"
-      >
-      <span class="sidebar-item">
-        <md-icon>lock</md-icon>
-        <span class="sidebar-text">Change Password</span>
-      </span>
-    </div>
-  </div>
 
+  <div
+    class="sidebar-link"
+    :class="{
+      active:
+        activeAccountItem === 'change'
+    }"
+    style="cursor: pointer;"
+    @mouseenter="setActive('change')"
+    @mouseleave="setActive(null)"
+    @click="goToChangePassword"
+  >
+    <span class="sidebar-item">
+      <md-icon>
+        lock
+      </md-icon>
+
+      <span class="sidebar-text">
+        Change Password
+      </span>
+    </span>
+  </div>
+</div>
         
 
       </template>
@@ -120,16 +173,30 @@
 
       <DashboardContent />
 
-      <ContentFooter v-if="!proxy.$route.meta.hideFooter" />
+      <ContentFooter
+  v-if="
+    !proxy?.$route?.meta?.hideFooter
+  "
+/>
     </div>
   </div>
 </template>
 
-<script setup>
-import { ref, getCurrentInstance } from "vue";
-import { useRouter } from "vue-router/composables";
-import { logout } from "../../../services/api";
 
+
+<script setup>
+import {
+  getCurrentInstance,
+  ref
+} from "vue";
+
+import {
+  useRouter
+} from "vue-router/composables";
+
+import {
+  logout
+} from "../../../services/api";
 
 // Components
 import TopNavbar from "./TopNavbar.vue";
@@ -140,43 +207,122 @@ import SideBar from "@/components/SidebarPlugin/SideBar.vue";
 import SidebarLink from "@/components/SidebarPlugin/SidebarLink.vue";
 import Notifications from "@/components/NotificationPlugin/Notifications.vue";
 
-// Access global properties (like $sidebar and $route)
+const router =
+  useRouter();
 
-const router = useRouter();
-const showAccountDropdown = ref(false);
+const currentInstance =
+  getCurrentInstance();
 
-const toggleAccountDropdown = () => {
-  showAccountDropdown.value = !showAccountDropdown.value;
-};
+const proxy =
+  currentInstance?.proxy;
 
-const goToChangePassword = () => {
-  router.push("/manager/change-password"); // Make sure this route exists
-};
+const showAccountDropdown =
+  ref(false);
 
-const handleLogout = async () => {
+const activeAccountItem =
+  ref(null);
+
+const sidebarBackground =
+  ref("green");
+
+const sidebarBackgroundImage =
+  ref(
+    require(
+      "@/assets/img/new.jpg"
+    )
+  );
+
+function setActive(
+  itemName
+) {
+  activeAccountItem.value =
+    itemName;
+}
+
+function toggleAccountDropdown() {
+  showAccountDropdown.value =
+    !showAccountDropdown.value;
+
+  activeAccountItem.value =
+    showAccountDropdown.value
+      ? "account"
+      : null;
+}
+
+function goToChangePassword() {
+  activeAccountItem.value =
+    "change";
+
+  router.push(
+    "/manager/change-password"
+  );
+}
+
+async function handleLogout() {
+  activeAccountItem.value =
+    "logout";
+
   try {
     await logout();
-    localStorage.removeItem("token"); // Remove token before redirect
-    localStorage.removeItem("user");
-        localStorage.removeItem("user_id");
-    localStorage.removeItem("region");
-    
-    localStorage.removeItem("region_id");
-   
 
-    router.push("/login");
+    clearAuthenticationStorage();
+
+    router.push(
+      "/login"
+    );
   } catch (error) {
+    console.error(
+      "Unable to log out:",
+      error.response?.data ||
+      error.message ||
+      error
+    );
 
+    /*
+     * Clear local authentication data even when
+     * the server logout request fails.
+     */
+    clearAuthenticationStorage();
+
+    router.push(
+      "/login"
+    );
   }
-};
+}
 
+function clearAuthenticationStorage() {
+  localStorage.removeItem(
+    "token"
+  );
 
-const { proxy } = getCurrentInstance();
+  localStorage.removeItem(
+    "accessToken"
+  );
 
-// Sidebar state
-const sidebarBackground = ref("green");
-const sidebarBackgroundImage = ref(require("@/assets/img/new.jpg"));
+  localStorage.removeItem(
+    "refreshToken"
+  );
+
+  localStorage.removeItem(
+    "user"
+  );
+
+  localStorage.removeItem(
+    "user_id"
+  );
+
+  localStorage.removeItem(
+    "region"
+  );
+
+  localStorage.removeItem(
+    "region_id"
+  );
+}
 </script>
+
+
+
 
 <style scoped>
 /* Style for all sidebar text */
