@@ -942,7 +942,51 @@ export function user_fields() {
 
 
 
+//admin
 
+
+
+export function users_per_department(
+  dept,
+  params = {}
+) {
+  return api.get(
+    "/manager/users-per-department/admin",
+    {
+      params: {
+        dept:
+          String(
+            dept ?? ""
+          ).trim(),
+
+        page:
+          params.page ??
+          1,
+
+        page_size:
+          params.page_size ??
+          params.pageSize ??
+          10
+      }
+    }
+  );
+}
+
+export function users_per_department_no_pages(
+  dept
+) {
+  return api.get(
+    "/manager/users-per-department-no-pages/admin",
+    {
+      params: {
+        dept:
+          String(
+            dept ?? ""
+          ).trim()
+      }
+    }
+  );
+}
 
 
 
@@ -1262,7 +1306,7 @@ export function manager_users_per_department(
   params = {}
 ) {
   return api.get(
-    "/manager/users-per-department",
+    "/manager/users-per-department/manager",
     {
       params: {
         dept,
@@ -1286,7 +1330,7 @@ export function manager_users_per_department_no_pages(
   dept
 ) {
   return api.get(
-    "/manager/users-per-department-no-pages",
+    "/manager/users-per-department-no-pages/manager",
     {
       params: {
         dept
@@ -1294,6 +1338,7 @@ export function manager_users_per_department_no_pages(
     }
   );
 }
+
 
 
 export {

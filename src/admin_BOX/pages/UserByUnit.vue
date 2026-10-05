@@ -1,426 +1,1488 @@
+
+
+
+
+
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import {
+  computed,
+  onMounted,
+  ref,
+  watch
+} from "vue";
+
+import {
+  useRoute,
+  useRouter
+} from "vue-router/composables";
+
 import * as XLSX from "xlsx";
-import { useRoute, useRouter } from "vue-router/composables";
-import { saveAs } from "file-saver";
-import { users_per_department, users_per_department_no_pages } from "../../services/api";
-import Pagination from "../../components/Pagination.vue"; 
 
-import api from "../../services/api";
-import { DEFAULT_AVATAR } from "../../services/api";
+import {
+  saveAs
+} from "file-saver";
 
+import Pagination from "../../components/Pagination.vue";
 
-const route = useRoute();
-const router = useRouter()
-const users = ref([]);
-const users_no_pages = ref([]);
-const dept = ref("");
-const searchQuery = ref("");
-const selectedRow = ref(null);
-const staffid = ref("");
-const isLoading = ref(true);
-const loading = ref(false)
-const errorMessage = ref("");
-const totalCount = ref(0);
-const next = ref("")
-const previous = ref("")
-const totalPages = ref(1);       // default to 1 page
-const currentPage = ref(1);      // start at page 1
-const page_size = 10
+import api, {
+  DEFAULT_AVATAR,
+  users_per_department,
+  users_per_department_no_pages
+} from "../../services/api";
 
+const route =
+  useRoute();
 
+const router =
+  useRouter();
 
-async function fetchUsers(page = 1) {
-  isLoading.value = true;
-  errorMessage.value = "";
-  try {
-    const response = await users_per_department(dept.value, { page, page_size });
+const users =
+  ref([]);
 
+const usersNoPages =
+  ref([]);
 
-    totalCount.value = response.data.count;
+const dept =
+  ref("");
 
-    users.value = response.data.results.users || [];
+const filterType =
+  ref("");
 
-    totalPages.value = Math.ceil(response.data.count / page_size);
-    currentPage.value = getCurrentPageFromUrl(
-      response.data.next,
-      response.data.previous,
-      response.data.count,
-      page_size
+const searchQuery =
+  ref("");
+
+const selectedRow =
+  ref(null);
+
+const isLoading =
+  ref(true);
+
+const exportLoading =
+  ref(false);
+
+const errorMessage =
+  ref("");
+
+const totalCount =
+  ref(0);
+
+const next =
+  ref(null);
+
+const previous =
+  ref(null);
+
+const totalPages =
+  ref(1);
+
+const currentPage =
+  ref(1);
+
+const PAGE_SIZE =
+  10;
+
+const filteredUsers =
+  computed(() => {
+    const query =
+      searchQuery.value
+        .trim()
+        .toLowerCase();
+
+    if (!query) {
+      return users.value;
+    }
+
+    return users.value.filter(
+      staff => {
+        const searchableValues = [
+          staff.userId,
+          staff.fullName,
+          staff.firstName,
+          staff.middleName,
+          staff.lastName,
+          staff.phoneNumber,
+          staff.email,
+          staff.supervisorName
+        ];
+
+        return searchableValues.some(
+          value => {
+            return String(
+              value ?? ""
+            )
+              .toLowerCase()
+              .includes(query);
+          }
+        );
+      }
     );
-    next.value = response.data.next;
-    previous.value = response.data.previous;
-  } catch (err) {
+  });
 
-    if (err.message.includes("Network Error") || err.code === "ERR_NETWORK") {
-      errorMessage.value = "Please check your internet connection.";
-    } else {
-      errorMessage.value = "Something went wrong while fetching staff data.";
-    }
-  } finally {
-    isLoading.value = false;
-  }
-}
-
-
-const getProfilePictureSrc = (profilePicture) => {
-  if (profilePicture && profilePicture !== '-') {
-    if (profilePicture.startsWith('http')) {
-      return profilePicture;
-    }
-    return `${api.defaults.baseURL}${profilePicture.replace(/^\/+/, '')}`;
-  }
-  return DEFAULT_AVATAR;
-};
-
-const showingRange = computed(() => {
-  if (totalCount.value === 0) return `Showing 0 of 0`;
-
-  const start = (currentPage.value - 1) * page_size + 1;
-  const end = Math.min(currentPage.value * page_size, totalCount.value);
-  return `Showing ${start}–${end} of ${totalCount.value}`;
-});
-
-
-
-function getCurrentPageFromUrl(next, previous, count, pageSize = 10) {
-  try {
-    // Case: only one page
-    if (!previous && !next) return 1;
-
-    // Extract page numbers from URLs if available
-    const nextPage = next ? parseInt(new URL(next, window.location.origin).searchParams.get("page")) : null;
-    const prevPage = previous ? parseInt(new URL(previous, window.location.origin).searchParams.get("page")) : null;
-
-    // First page
-    if (!previous) return nextPage ? nextPage - 1 : 1;
-
-    // Last page
-    if (!next) {
-      const totalPages = Math.ceil(count / pageSize);
-      return totalPages;
+const showingRange =
+  computed(() => {
+    if (
+      totalCount.value === 0
+    ) {
+      return "Showing 0 of 0";
     }
 
-    // Middle pages
-    if (nextPage !== null && prevPage !== null) {
-      if (nextPage - prevPage === 2) return prevPage + 1; // handle 2-page edge case
-      return nextPage - 1; // normal case
-    }
+    const start =
+      (
+        (
+          currentPage.value -
+          1
+        ) *
+        PAGE_SIZE
+      ) + 1;
 
-    return 1; // fallback
-  } catch (e) {
-
-    return 1;
-  }
-}
-
-onMounted(async () => {
-  isLoading.value = true;
-  errorMessage.value = "";
-  try {
-    const deptName = route.query.dept;
-    if (deptName) {
-      const [res, res2] = await Promise.all([
-  users_per_department(deptName),
-  users_per_department_no_pages(deptName)
-]);
-
-
-
-      totalPages.value = Math.ceil(res.data.count / page_size);
-      next.value = res.data.next;
-      previous.value = res.data.previous;
-      currentPage.value = getCurrentPageFromUrl(
-        res.data.next,
-        res.data.previous,
-        res.data.count,
-        page_size
+    const end =
+      Math.min(
+        currentPage.value *
+          PAGE_SIZE,
+        totalCount.value
       );
 
+    return (
+      `Showing ${start}-${end} ` +
+      `of ${totalCount.value}`
+    );
+  });
 
-      users.value = res.data.results.users;
-      users_no_pages.value = res2.data.users;
+const canExport =
+  computed(() => {
+    return (
+      usersNoPages.value.length >
+      0
+    );
+  });
 
-      dept.value = res.data.results.dept;
+onMounted(async () => {
+  await loadPage();
+});
+
+watch(
+  () => route.query.dept,
+  async (
+    newDepartment,
+    oldDepartment
+  ) => {
+    if (
+      newDepartment ===
+      oldDepartment
+    ) {
+      return;
     }
-  } catch (err) {
 
-    if (err.message.includes("Network Error") || err.code === "ERR_NETWORK") {
-      errorMessage.value = "Please check your internet connection.";
-    } else {
-      errorMessage.value = "Something went wrong while fetching staff data.";
-    }
+    currentPage.value = 1;
+    searchQuery.value = "";
+
+    await loadPage();
+  }
+);
+
+async function loadPage() {
+  const departmentName =
+    getDepartmentFromRoute();
+
+  if (!departmentName) {
+    resetPage();
+
+    errorMessage.value =
+      "A department or staff category is required.";
+
+    isLoading.value = false;
+
+    return;
+  }
+
+  isLoading.value = true;
+  errorMessage.value = "";
+  dept.value = departmentName;
+
+  try {
+    const [
+      paginatedResponse,
+      nonPaginatedResponse
+    ] = await Promise.all([
+      users_per_department(
+        departmentName,
+        {
+          page: 1,
+          page_size:
+            PAGE_SIZE
+        }
+      ),
+
+      users_per_department_no_pages(
+        departmentName
+      )
+    ]);
+
+    applyPaginatedResponse(
+      paginatedResponse?.data,
+      1
+    );
+
+    applyNonPaginatedResponse(
+      nonPaginatedResponse?.data
+    );
+
+    console.log(
+      "Filtered staff loaded:",
+      {
+        dept:
+          dept.value,
+
+        filterType:
+          filterType.value,
+
+        totalCount:
+          totalCount.value,
+
+        currentPageUsers:
+          users.value.length,
+
+        exportUsers:
+          usersNoPages.value.length
+      }
+    );
+  } catch (error) {
+    resetPage();
+
+    console.error(
+      "Unable to load filtered staff:",
+      error.response?.data ||
+      error.message ||
+      error
+    );
+
+    errorMessage.value =
+      getErrorMessage(
+        error
+      );
   } finally {
     isLoading.value = false;
   }
-});
-
-// function to check loading state
-const checkLoading = () => isLoading.value
-
-
-function selectRow(staff) {
-  selectedRow.value = staff;
-  staffid.value = staff.id;
-  router.push({ name: "Staff Details", params: { id: staff.id } });
 }
 
-function exportExcel() {
-  const ws = XLSX.utils.json_to_sheet(users_no_pages.value);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Staff");
-  const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-  const data = new Blob([excelBuffer], { type: "application/octet-stream" });
-  saveAs(data, `${dept.value}.xlsx`);
+async function fetchUsers(
+  page = 1
+) {
+  const requestedPage =
+    normalizePage(
+      page
+    );
 
+  const departmentName =
+    dept.value ||
+    getDepartmentFromRoute();
+
+  if (!departmentName) {
+    errorMessage.value =
+      "A department or staff category is required.";
+
+    return;
+  }
+
+  isLoading.value = true;
+  errorMessage.value = "";
+
+  try {
+    const response =
+      await users_per_department(
+        departmentName,
+        {
+          page:
+            requestedPage,
+
+          page_size:
+            PAGE_SIZE
+        }
+      );
+
+    applyPaginatedResponse(
+      response?.data,
+      requestedPage
+    );
+  } catch (error) {
+    console.error(
+      "Unable to retrieve filtered staff page:",
+      error.response?.data ||
+      error.message ||
+      error
+    );
+
+    errorMessage.value =
+      getErrorMessage(
+        error
+      );
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+function applyPaginatedResponse(
+  responseData,
+  requestedPage
+) {
+  const data =
+    responseData &&
+    typeof responseData ===
+      "object"
+      ? responseData
+      : {};
+
+  const results =
+    data.results &&
+    typeof data.results ===
+      "object"
+      ? data.results
+      : {};
+
+  users.value =
+    Array.isArray(
+      results.users
+    )
+      ? results.users.map(
+          normalizeAccount
+        )
+      : [];
+
+  dept.value =
+    String(
+      results.dept ??
+      dept.value
+    ).trim();
+
+  filterType.value =
+    String(
+      results.filter_type ??
+      results.filterType ??
+      ""
+    );
+
+  totalCount.value =
+    normalizeCount(
+      data.count ??
+      results.count
+    );
+
+  next.value =
+    typeof data.next ===
+      "string"
+      ? data.next
+      : null;
+
+  previous.value =
+    typeof data.previous ===
+      "string"
+      ? data.previous
+      : null;
+
+  totalPages.value =
+    Math.max(
+      1,
+      Math.ceil(
+        totalCount.value /
+        PAGE_SIZE
+      )
+    );
+
+  currentPage.value =
+    getCurrentPageFromUrl(
+      next.value,
+      previous.value,
+      totalCount.value,
+      PAGE_SIZE,
+      requestedPage
+    );
+
+  selectedRow.value = null;
+}
+
+function applyNonPaginatedResponse(
+  responseData
+) {
+  const data =
+    responseData &&
+    typeof responseData ===
+      "object"
+      ? responseData
+      : {};
+
+  usersNoPages.value =
+    Array.isArray(
+      data.users
+    )
+      ? data.users.map(
+          normalizeAccount
+        )
+      : [];
+}
+
+function normalizeAccount(
+  account
+) {
+  return {
+    ...account,
+
+    id:
+      normalizeAccountId(
+        account.id ??
+        account.accountId ??
+        account.account_id
+      ),
+
+    userId:
+      String(
+        account.userId ??
+        account.user_id ??
+        ""
+      ),
+
+    firstName:
+      String(
+        account.firstName ??
+        account.first_name ??
+        ""
+      ),
+
+    middleName:
+      String(
+        account.middleName ??
+        account.middle_name ??
+        ""
+      ),
+
+    lastName:
+      String(
+        account.lastName ??
+        account.last_name ??
+        ""
+      ),
+
+    fullName:
+      String(
+        account.fullName ??
+        account.full_name ??
+        createFullName(account)
+      ),
+
+    phoneNumber:
+      String(
+        account.phoneNumber ??
+        account.phone_number ??
+        ""
+      ),
+
+    email:
+      String(
+        account.email ??
+        ""
+      ),
+
+    supervisorName:
+      String(
+        account.supervisorName ??
+        account.supervisor_name ??
+        ""
+      ),
+
+    profilePictureUrl:
+      account.profilePictureUrl ??
+      account.profile_picture_url ??
+      account.profilePicture ??
+      account.profile_picture ??
+      null,
+
+    role:
+      String(
+        account.role ??
+        ""
+      ),
+
+    gender:
+      String(
+        account.gender ??
+        ""
+      ),
+
+    staffCategory:
+      String(
+        account.staffCategory ??
+        account.staff_category ??
+        ""
+      ),
+
+    directorateName:
+      String(
+        account.directorateName ??
+        account.directorate_name ??
+        account.directorate ??
+        ""
+      ),
+
+    categoryName:
+      String(
+        account.categoryName ??
+        account.category_name ??
+        account.category ??
+        ""
+      ),
+
+    districtName:
+      String(
+        account.districtName ??
+        account.district_name ??
+        account.district ??
+        ""
+      ),
+
+    regionName:
+      String(
+        account.regionName ??
+        account.region_name ??
+        account.region ??
+        ""
+      ),
+
+    currentGradeName:
+      String(
+        account.currentGradeName ??
+        account.current_grade_name ??
+        account.current_grade ??
+        ""
+      ),
+
+    managementUnitCostCentreName:
+      String(
+        account.managementUnitCostCentreName ??
+        account.management_unit_cost_centre_name ??
+        account.management_unit_cost_centre ??
+        ""
+      )
+  };
+}
+
+function createFullName(
+  account
+) {
+  return [
+    account.firstName ??
+      account.first_name,
+
+    account.middleName ??
+      account.middle_name,
+
+    account.lastName ??
+      account.last_name
+  ]
+    .filter(
+      value => {
+        return (
+          value !== null &&
+          value !== undefined &&
+          String(value).trim()
+        );
+      }
+    )
+    .map(
+      value => {
+        return String(
+          value
+        ).trim();
+      }
+    )
+    .join(" ");
+}
+
+function selectRow(
+  staff
+) {
+  const accountId =
+    normalizeAccountId(
+      staff?.id
+    );
+
+  if (!accountId) {
+    console.error(
+      "Selected staff record has no valid account ID:",
+      staff
+    );
+
+    return;
+  }
+
+  selectedRow.value =
+    staff;
+
+  router.push({
+    name:
+      "Staff Details",
+
+    params: {
+      id:
+        accountId
+    }
+  });
+}
+
+function getProfilePictureSrc(
+  profilePicture
+) {
+  if (
+    !profilePicture ||
+    profilePicture ===
+      "-"
+  ) {
+    return DEFAULT_AVATAR;
+  }
+
+  const picture =
+    String(
+      profilePicture
+    ).trim();
+
+  if (
+    picture.startsWith(
+      "http://"
+    ) ||
+    picture.startsWith(
+      "https://"
+    ) ||
+    picture.startsWith(
+      "data:"
+    ) ||
+    picture.startsWith(
+      "blob:"
+    )
+  ) {
+    return picture;
+  }
+
+  const baseUrl =
+    String(
+      api.defaults.baseURL ??
+      ""
+    ).replace(
+      /\/+$/,
+      ""
+    );
+
+  const path =
+    picture.replace(
+      /^\/+/,
+      ""
+    );
+
+  if (!baseUrl) {
+    return `/${path}`;
+  }
+
+  return `${baseUrl}/${path}`;
+}
+
+async function exportExcel() {
+  if (exportLoading.value) {
+    return;
+  }
+
+  exportLoading.value = true;
+  errorMessage.value = "";
+
+  try {
+    let exportUsers =
+      usersNoPages.value;
+
+    if (
+      exportUsers.length === 0 &&
+      dept.value
+    ) {
+      const response =
+        await users_per_department_no_pages(
+          dept.value
+        );
+
+      applyNonPaginatedResponse(
+        response?.data
+      );
+
+      exportUsers =
+        usersNoPages.value;
+    }
+
+    if (
+      exportUsers.length === 0
+    ) {
+      errorMessage.value =
+        "No staff records are available to export.";
+
+      return;
+    }
+
+    const exportData =
+      exportUsers.map(
+        staff => {
+          return {
+            "Account ID":
+              staff.id ??
+              "",
+
+            "Staff ID":
+              staff.userId ||
+              "",
+
+            "Full Name":
+              staff.fullName ||
+              "",
+
+            "Phone Number":
+              staff.phoneNumber ||
+              "",
+
+            "Email":
+              staff.email ||
+              "",
+
+            "Role":
+              staff.role ||
+              "",
+
+            "Gender":
+              staff.gender ||
+              "",
+
+            "Staff Category":
+              staff.staffCategory ||
+              "",
+
+            "Supervisor's Name":
+              staff.supervisorName ||
+              "",
+
+            "Directorate":
+              staff.directorateName ||
+              "",
+
+            "Class":
+              staff.categoryName ||
+              "",
+
+            "District":
+              staff.districtName ||
+              "",
+
+            "Region":
+              staff.regionName ||
+              "",
+
+            "Current Grade":
+              staff.currentGradeName ||
+              "",
+
+            "Management Unit":
+              staff.managementUnitCostCentreName ||
+              ""
+          };
+        }
+      );
+
+    const worksheet =
+      XLSX.utils.json_to_sheet(
+        exportData
+      );
+
+    const workbook =
+      XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      createWorksheetName(
+        dept.value
+      )
+    );
+
+    const excelBuffer =
+      XLSX.write(
+        workbook,
+        {
+          bookType:
+            "xlsx",
+
+          type:
+            "array"
+        }
+      );
+
+    const excelFile =
+      new Blob(
+        [
+          excelBuffer
+        ],
+        {
+          type:
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        }
+      );
+
+    saveAs(
+      excelFile,
+      `${createFileName(dept.value)}.xlsx`
+    );
+  } catch (error) {
+    console.error(
+      "Unable to export filtered staff:",
+      error.response?.data ||
+      error.message ||
+      error
+    );
+
+    errorMessage.value =
+      error.response?.data?.detail ||
+      "The staff records could not be exported.";
+  } finally {
+    exportLoading.value = false;
+  }
+}
+
+function clearSearch() {
+  searchQuery.value = "";
+}
+
+function getDepartmentFromRoute() {
+  const queryValue =
+    route.query.dept;
+
+  if (
+    queryValue === null ||
+    queryValue === undefined
+  ) {
+    return "";
+  }
+
+  try {
+    return decodeURIComponent(
+      String(queryValue)
+    ).trim();
+  } catch (error) {
+    return String(
+      queryValue
+    ).trim();
+  }
+}
+
+function getCurrentPageFromUrl(
+  nextUrl,
+  previousUrl,
+  count,
+  pageSize = PAGE_SIZE,
+  fallbackPage = 1
+) {
+  const safeFallbackPage =
+    normalizePage(
+      fallbackPage
+    );
+
+  try {
+    const nextPage =
+      extractPageFromUrl(
+        nextUrl
+      );
+
+    const previousPage =
+      extractPageFromUrl(
+        previousUrl
+      );
+
+    if (
+      previousPage !== null
+    ) {
+      return previousPage + 1;
+    }
+
+    if (
+      nextPage !== null
+    ) {
+      return Math.max(
+        1,
+        nextPage - 1
+      );
+    }
+
+    const calculatedPages =
+      Math.max(
+        1,
+        Math.ceil(
+          normalizeCount(count) /
+          pageSize
+        )
+      );
+
+    return Math.min(
+      safeFallbackPage,
+      calculatedPages
+    );
+  } catch (error) {
+    return safeFallbackPage;
+  }
+}
+
+function extractPageFromUrl(
+  url
+) {
+  if (
+    typeof url !==
+      "string" ||
+    !url.trim()
+  ) {
+    return null;
+  }
+
+  const parsedUrl =
+    new URL(
+      url,
+      window.location.origin
+    );
+
+  const page =
+    Number(
+      parsedUrl.searchParams.get(
+        "page"
+      )
+    );
+
+  return (
+    Number.isInteger(page) &&
+    page > 0
+  )
+    ? page
+    : null;
+}
+
+function normalizePage(
+  page
+) {
+  const normalizedPage =
+    Number(page);
+
+  return (
+    Number.isInteger(
+      normalizedPage
+    ) &&
+    normalizedPage > 0
+  )
+    ? normalizedPage
+    : 1;
+}
+
+function normalizeCount(
+  value
+) {
+  const count =
+    Number(value);
+
+  return (
+    Number.isFinite(count) &&
+    count >= 0
+  )
+    ? count
+    : 0;
+}
+
+function normalizeAccountId(
+  value
+) {
+  const accountId =
+    Number(value);
+
+  return (
+    Number.isInteger(accountId) &&
+    accountId > 0
+  )
+    ? accountId
+    : null;
+}
+
+function createWorksheetName(
+  value
+) {
+  const name =
+    String(
+      value ||
+      "Staff"
+    )
+      .replace(
+        /[\\/?*[\]:]/g,
+        ""
+      )
+      .trim();
+
+  return (
+    name ||
+    "Staff"
+  ).slice(
+    0,
+    31
+  );
+}
+
+function createFileName(
+  value
+) {
+  const name =
+    String(
+      value ||
+      "staff"
+    )
+      .trim()
+      .replace(
+        /[^a-zA-Z0-9_-]+/g,
+        "_"
+      )
+      .replace(
+        /^_+|_+$/g,
+        ""
+      );
+
+  return name ||
+    "staff";
+}
+
+function getErrorMessage(
+  error
+) {
+  if (
+    error.message?.includes(
+      "Network Error"
+    ) ||
+    error.code ===
+      "ERR_NETWORK"
+  ) {
+    return "Please check your internet connection.";
+  }
+
+  if (
+    error.response?.status ===
+      401
+  ) {
+    return "Authentication is required.";
+  }
+
+  if (
+    error.response?.status ===
+      403
+  ) {
+    return (
+      error.response?.data?.detail ||
+      "Access is denied."
+    );
+  }
+
+  return (
+    error.response?.data?.detail ||
+    "Something went wrong while fetching staff data."
+  );
+}
+
+function resetPage() {
+  users.value = [];
+  usersNoPages.value = [];
+  dept.value = "";
+  filterType.value = "";
+  searchQuery.value = "";
+  selectedRow.value = null;
+  totalCount.value = 0;
+  next.value = null;
+  previous.value = null;
+  totalPages.value = 1;
+  currentPage.value = 1;
 }
 </script>
+
 
 <template>
   <div class="premium-container">
     <div class="premium-header">
       <div class="premium-title">
-        <i class="material-icons">{{ dept }}</i>
+        <md-icon>
+          group
+        </md-icon>
+
+        <div>
+          <h2>
+            {{ dept || "Filtered Staff" }}
+          </h2>
+
+          <p v-if="filterType">
+            Filter type:
+            {{ filterType }}
+          </p>
+        </div>
       </div>
-    </div>
 
-    <div class="table-footer">
-      
+      <div class="header-actions">
+        <div class="search-container">
+          <md-icon>
+            search
+          </md-icon>
 
-      <!-- Modern Export Button -->
-    
+          <input
+            v-model="searchQuery"
+            type="text"
+            class="search-input"
+            placeholder="Search by Staff ID, name or contact..."
+            aria-label="Search staff"
+          />
 
+          <button
+            v-if="searchQuery"
+            type="button"
+            class="clear-search-button"
+            aria-label="Clear search"
+            @click="clearSearch"
+          >
+            <md-icon>
+              close
+            </md-icon>
+          </button>
+        </div>
 
-   <md-button
-  class="md-dense md-primary"
-  @click="exportExcel"
-  :disabled="loading"
-  style="padding: 6px 12px; font-size: 13px; min-width: 120px; margin-bottom: 16px;"
->
-  <md-icon v-if="loading" style="font-size: 16px; margin-right: 6px;">hourglass_top</md-icon>
-  {{ loading ? "Exporting..." : "Export" }}
-</md-button>
+        <md-button
+          class="
+            md-dense
+            md-primary
+            export-button
+          "
+          :disabled="
+            exportLoading ||
+            !canExport
+          "
+          @click="exportExcel"
+        >
+          <md-icon>
+            {{
+              exportLoading
+                ? "hourglass_top"
+                : "download"
+            }}
+          </md-icon>
 
-
-
-
-
-      
+          {{
+            exportLoading
+              ? "Exporting..."
+              : "Export"
+          }}
+        </md-button>
+      </div>
     </div>
 
     <div class="table-container">
-      <!-- Show loader while fetching -->
-      <div v-if="checkLoading()" class="loading-message">
+      <div
+        v-if="isLoading"
+        class="loading-message"
+      >
         Loading users...
       </div>
 
-      <!-- Error message -->
-      <div v-else-if="errorMessage" class="error-message">
+      <div
+        v-else-if="errorMessage"
+        class="error-message"
+      >
         {{ errorMessage }}
       </div>
 
-      <!-- Show table after loading -->
-      <table v-else class="premium-table">
-  <thead>
-    <tr>
-      <th>picture</th>
-      <th>Staff ID</th>
-      <th>Full Name</th>
-      <th>Contact</th>
-      <th>Supervisor's Name</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr
-      v-for="staff in users.filter(
-        (s) =>
-          s.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          s.user_id?.toLowerCase().includes(searchQuery.toLowerCase())
-      )"
-      :key="staff.id"
-      @click="selectRow(staff)"
-      :class="{ 'row-selected': selectedRow?.id === staff.id }"
-    >
-      <img
-        :src="getProfilePictureSrc(staff.profile_picture)"
-        :alt="staff.full_name || 'Profile Image'"
-        class="profile-image"
-      />
-      <td>{{ staff.user_id }}</td>
-      <td>{{ staff.full_name }}</td>
-      <td>{{ staff.phone_number }}</td>
-      <td>{{ staff.supervisor_name }}</td>
-    </tr>
-  </tbody>
-</table>
+      <template v-else>
+        <div class="table-wrapper">
+          <table class="premium-table">
+            <thead>
+              <tr>
+                <th>
+                  Picture
+                </th>
 
-<!-- Pagination + Range -->
-<div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px;">
-  <pagination
-    :current-page="currentPage"
-    :total-pages="totalPages"
-    @page-changed="page => fetchUsers(page)"
-  ></pagination>
+                <th>
+                  Staff ID
+                </th>
 
-  <div style="font-size: 14px; color: #7f8c8d;">
-    {{ showingRange }}
-  </div>
-</div>
+                <th>
+                  Full Name
+                </th>
 
+                <th>
+                  Contact
+                </th>
 
+                <th>
+                  Supervisor's Name
+                </th>
+              </tr>
+            </thead>
 
+            <tbody>
+              <tr
+                v-for="staff in filteredUsers"
+                :key="
+                  staff.id ||
+                  staff.userId
+                "
+                :class="{
+                  'row-selected':
+                    selectedRow?.id ===
+                    staff.id
+                }"
+                role="button"
+                tabindex="0"
+                :aria-label="
+                  `Open ${staff.fullName || staff.userId || 'staff'}`
+                "
+                @click="selectRow(staff)"
+                @keydown.enter="
+                  selectRow(staff)
+                "
+                @keydown.space.prevent="
+                  selectRow(staff)
+                "
+              >
+                <td>
+                  <img
+                    :src="
+                      getProfilePictureSrc(
+                        staff.profilePictureUrl
+                      )
+                    "
+                    :alt="
+                      staff.fullName ||
+                      'Profile image'
+                    "
+                    class="profile-image"
+                  />
+                </td>
 
-            
+                <td>
+                  {{
+                    staff.userId ||
+                    "N/A"
+                  }}
+                </td>
 
+                <td>
+                  {{
+                    staff.fullName ||
+                    "N/A"
+                  }}
+                </td>
+
+                <td>
+                  {{
+                    staff.phoneNumber ||
+                    "N/A"
+                  }}
+                </td>
+
+                <td>
+                  {{
+                    staff.supervisorName ||
+                    "N/A"
+                  }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div
+          v-if="
+            filteredUsers.length ===
+            0
+          "
+          class="no-results"
+        >
+          <md-icon>
+            person_search
+          </md-icon>
+
+          <p v-if="searchQuery">
+            No staff records match
+            "{{ searchQuery }}".
+          </p>
+
+          <p v-else>
+            No staff records were found for
+            {{ dept }}.
+          </p>
+        </div>
+
+        <div
+          v-if="totalCount > 0"
+          class="table-footer"
+        >
+          <Pagination
+            :current-page="currentPage"
+            :total-pages="totalPages"
+            @page-changed="fetchUsers"
+          />
+
+          <div class="showing-range">
+            {{ showingRange }}
+          </div>
+        </div>
+      </template>
     </div>
-
-    
   </div>
 </template>
 
 
-
 <style scoped>
-
-* {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            color: #334155;
-        }
-
-        .export-btn-wrapper {
-  display: inline-block;
-  position: relative;
+.premium-container {
+  width: 100%;
+  padding: 20px;
+  background-color: #ffffff;
 }
 
-.export-btn {
-  background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
-  color: white;
+/* Header */
+
+.premium-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.premium-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.premium-title h2 {
+  margin: 0;
+  color: #333333;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.premium-title p {
+  margin: 4px 0 0;
+  color: #777777;
+  font-size: 0.9rem;
+}
+
+.premium-title .md-icon {
+  color: #2e7d32;
+  font-size: 30px;
+}
+
+/* Header actions */
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Search */
+
+.search-container {
+  display: flex;
+  align-items: center;
+  width: 320px;
+  height: 42px;
+  padding: 0 12px;
+  background-color: #ffffff;
+  border: 1px solid #cccccc;
+  border-radius: 6px;
+}
+
+.search-container:focus-within {
+  border-color: #2e7d32;
+  box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.12);
+}
+
+.search-container .md-icon {
+  margin-right: 8px;
+  color: #777777;
+  font-size: 20px;
+}
+
+.search-input {
+  flex: 1;
+  width: 100%;
+  padding: 8px 0;
+  color: #333333;
+  font-size: 0.9rem;
+  background: transparent;
   border: none;
-  padding: 14px 28px;
-  font-size: 15px;
-  font-weight: 600;
-  border-radius: 50px;
-  cursor: pointer;
+  outline: none;
+}
+
+.search-input::placeholder {
+  color: #999999;
+}
+
+.clear-search-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
-  transition: all 0.3s ease;
+  padding: 2px;
+  color: #777777;
+  background: transparent;
+  border: none;
+  cursor: pointer;
 }
 
-.profile-image {
-  width: 40px;
-  height: 40px;
-  object-fit: cover;
-  border-radius: 50%;
-  border: 1px solid #ccc;
+.clear-search-button:hover {
+  color: #d32f2f;
 }
 
-.export-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+.clear-search-button .md-icon {
+  margin: 0;
+  font-size: 19px;
 }
 
-.export-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+/* Export button */
+
+.export-button,
+.export-btn {
+  min-width: 120px;
+  min-height: 40px;
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background-color: #2e7d32;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
 }
 
-.export-btn i {
+.export-button:hover:not(:disabled),
+.export-btn:hover:not(:disabled) {
+  background-color: #1b5e20;
+}
+
+.export-button:disabled,
+.export-btn:disabled {
+  background-color: #aaaaaa;
+  cursor: not-allowed;
+}
+
+.export-button .md-icon,
+.export-btn .md-icon {
+  margin-right: 6px;
   font-size: 18px;
 }
 
-.tooltip {
-  position: absolute;
-  bottom: -35px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #333;
-  color: white;
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-size: 13px;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  width: max-content;
-}
+/* Loading and errors */
 
-.export-btn:hover + .tooltip {
-  opacity: 1;
-}
-
-        
-        .premium-container {
-            width: 100%;
-            max-width: 1400px;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
-            overflow: hidden;
-            border: 1px solid #e2e8f0;
-        }
-        
-        .premium-header {
-            padding: 24px 32px;
-            background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        
-        .premium-title {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: white;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .premium-title i {
-            font-size: 2rem;
-        }
-        
-        .export-btn {
-            background: linear-gradient(90deg, #10b981 0%, #059669 100%);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 10px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
-        }
-        
-        .export-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
-        }
-        .error-message {
+.error-message {
   color: red;
   font-weight: bold;
   font-size: 1.2rem;
   text-align: center;
   margin: 1rem 0;
 }
+
 .loading-message {
   font-weight: bold;
   font-size: 1.5rem;
@@ -429,271 +1491,331 @@ function exportExcel() {
   animation: pulse 1.5s infinite;
 }
 
-@keyframes pulse {
-  0% { opacity: 0.3; }
-  50% { opacity: 1; }
-  100% { opacity: 0.3; }
+.loading-message .md-icon,
+.error-message .md-icon {
+  margin-right: 6px;
 }
-        
-        .export-btn:disabled {
-            background: linear-gradient(90deg, #94a3b8 0%, #64748b 100%);
-            cursor: not-allowed;
-            transform: none;
-        }
-        
-        .table-container {
-            overflow-x: auto;
-            padding: 0 20px;
-        }
 
+@keyframes pulse {
+  0% {
+    opacity: 0.3;
+  }
 
-        
-        .premium-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            margin: 24px 0;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        }
-        
-        .premium-table thead {
-            background: linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 100%);
-        }
-        
-        .premium-table th {
-            padding: 18px 16px;
-            text-align: left;
-            font-weight: 600;
-            color: #1e293b;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            position: relative;
-            border-bottom: 2px solid #e2e8f0;
-        }
-        
-        .premium-table th:not(:last-child)::after {
-            content: "";
-            position: absolute;
-            right: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            height: 60%;
-            width: 1px;
-            background: #cbd5e1;
-        }
-        
-        .premium-table tbody tr {
-            background: white;
-            transition: all 0.3s ease;
-            border-bottom: 1px solid #f1f5f9;
-        }
-        
-        .premium-table tbody tr:last-child {
-            border-bottom: none;
-        }
-        
-        .premium-table tbody tr:hover {
-            background: #83acd4;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        }
-        
-        .premium-table td {
-            padding: 16px;
-            color: #334155;
-            font-size: 0.95rem;
-            position: relative;
-        }
-        
-        .premium-table tbody tr {
-            cursor: pointer;
-        }
-        
-        .status-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 100px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-        
-        .status-active {
-            background: rgba(16, 185, 129, 0.15);
-            color: #059669;
-        }
-        
-        .status-inactive {
-            background: rgba(239, 68, 68, 0.15);
-            color: #dc2626;
-        }
-        
-        .pagination {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 32px;
-            border-top: 1px solid #e2e8f0;
-        }
-        
-        .pagination-info {
-            font-size: 0.9rem;
-            color: #64748b;
-        }
-        
-        .pagination-controls {
-            display: flex;
-            gap: 12px;
-        }
-        
-        .pagination-btn {
-            background: white;
-            color: #334155;
-            border: 1px solid #cbd5e1;
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-        }
-        
-        .pagination-btn:hover {
-            background: #f1f5f9;
-            border-color: #94a3b8;
-        }
-        
-        .pagination-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        .page-numbers {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            margin: 0 12px;
-        }
-        
-        .page-number {
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-weight: 500;
-            background: white;
-            border: 1px solid #e2e8f0;
-        }
-        
-        .page-number:hover {
-            background: #f1f5f9;
-        }
-        
-        .page-number.active {
-            background: #3b82f6;
-            color: white;
-            border-color: #3b82f6;
-        }
-        
-        .loading-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(255, 255, 255, 0.9);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
-            border-radius: 20px;
-        }
-        
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid rgba(0, 0, 0, 0.1);
-            border-radius: 50%;
-            border-top: 5px solid #3b82f6;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .table-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 32px;
-            background: #f8fafc;
-            border-top: 1px solid #e2e8f0;
-        }
-        
-        .rows-info {
-            font-size: 0.9rem;
-            color: #64748b;
-        }
-        
-        .search-box {
-            display: flex;
-            align-items: center;
-            background: white;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            padding: 8px 16px;
-            width: 300px;
-        }
-        
-        .search-box i {
-            color: #94a3b8;
-            margin-right: 8px;
-        }
-        
-        .search-box input {
-            border: none;
-            outline: none;
-            width: 100%;
-            background: transparent;
-            color: #334155;
-        }
-        
-        @media (max-width: 768px) {
-            .premium-header {
-                flex-direction: column;
-                gap: 16px;
-                align-items: flex-start;
-            }
-            
-            .pagination {
-                flex-direction: column;
-                gap: 16px;
-            }
-            
-            .premium-table {
-                min-width: 800px;
-            }
-            
-            .table-footer {
-                flex-direction: column;
-                gap: 16px;
-                align-items: flex-start;
-            }
-            
-            .search-box {
-                width: 100%;
-            }
-        }
+  50% {
+    opacity: 1;
+  }
 
+  100% {
+    opacity: 0.3;
+  }
+}
 
+/* Table */
+
+.table-container {
+  width: 100%;
+}
+
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid #dddddd;
+  border-radius: 6px;
+}
+
+.premium-table {
+  width: 100%;
+  min-width: 780px;
+  border-collapse: collapse;
+  background-color: #ffffff;
+}
+
+.premium-table th {
+  padding: 14px 16px;
+  color: #333333;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-align: left;
+  text-transform: uppercase;
+  background-color: #f5f5f5;
+  border-bottom: 2px solid #dddddd;
+}
+
+.premium-table td {
+  padding: 12px 16px;
+  color: #444444;
+  font-size: 0.9rem;
+  vertical-align: middle;
+  border-bottom: 1px solid #eeeeee;
+}
+
+.premium-table tbody tr {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.premium-table tbody tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+.premium-table tbody tr:hover {
+  background-color: #e8f5e9;
+}
+
+.premium-table tbody tr.row-selected {
+  background-color: #c8e6c9;
+}
+
+.premium-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Profile image */
+
+.profile-image {
+  display: block;
+  width: 42px;
+  height: 42px;
+  object-fit: cover;
+  background-color: #eeeeee;
+  border: 1px solid #cccccc;
+  border-radius: 50%;
+}
+
+/* Empty state */
+
+.no-results {
+  padding: 30px 20px;
+  color: #777777;
+  font-size: 1rem;
+  text-align: center;
+}
+
+.no-results .md-icon {
+  display: block;
+  margin: 0 auto 8px;
+  color: #999999;
+  font-size: 38px;
+}
+
+.no-results p {
+  margin: 0;
+}
+
+/* Pagination footer */
+
+.table-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 0;
+}
+
+.showing-range {
+  color: #777777;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+/*
+ * Pagination.vue is a child component.
+ * The deep selector is needed because this
+ * component uses scoped CSS.
+ */
+
+::v-deep .pagination {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+}
+
+::v-deep .pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+::v-deep .pagination-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 38px;
+  height: 38px;
+  padding: 0 12px;
+  color: #333333;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background-color: #ffffff;
+  border: 1px solid #cccccc;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+::v-deep .pagination-btn:hover:not(:disabled) {
+  color: #ffffff;
+  background-color: #2e7d32;
+  border-color: #2e7d32;
+}
+
+::v-deep .pagination-btn:disabled {
+  color: #999999;
+  background-color: #eeeeee;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+::v-deep .page-numbers {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+::v-deep .page-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  color: #333333;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background-color: #ffffff;
+  border: 1px solid #cccccc;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+::v-deep .page-number:hover {
+  color: #ffffff;
+  background-color: #43a047;
+  border-color: #43a047;
+}
+
+::v-deep .page-number.active {
+  color: #ffffff;
+  background-color: #2e7d32;
+  border-color: #2e7d32;
+}
+
+/*
+ * Support Pagination.vue implementations
+ * that use ordinary button elements.
+ */
+
+::v-deep .pagination button {
+  min-width: 38px;
+  min-height: 38px;
+  padding: 6px 10px;
+  color: #333333;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background-color: #ffffff;
+  border: 1px solid #cccccc;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+::v-deep .pagination button:hover:not(:disabled) {
+  color: #ffffff;
+  background-color: #2e7d32;
+  border-color: #2e7d32;
+}
+
+::v-deep .pagination button:disabled {
+  color: #999999;
+  background-color: #eeeeee;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+::v-deep .pagination button.active {
+  color: #ffffff;
+  background-color: #2e7d32;
+  border-color: #2e7d32;
+}
+
+/* Tablet */
+
+@media screen and (max-width: 900px) {
+  .premium-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .header-actions {
+    width: 100%;
+  }
+
+  .search-container {
+    flex: 1;
+    width: auto;
+  }
+}
+
+/* Mobile */
+
+@media screen and (max-width: 600px) {
+  .premium-container {
+    padding: 12px;
+  }
+
+  .premium-title h2 {
+    font-size: 1.2rem;
+  }
+
+  .header-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .search-container {
+    width: 100%;
+  }
+
+  .export-button,
+  .export-btn {
+    width: 100%;
+  }
+
+  .premium-table {
+    min-width: 700px;
+  }
+
+  .premium-table th,
+  .premium-table td {
+    padding: 11px 12px;
+  }
+
+  .table-footer {
+    align-items: center;
+    flex-direction: column;
+  }
+
+  .showing-range {
+    width: 100%;
+    text-align: center;
+  }
+
+  ::v-deep .pagination {
+    justify-content: center;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  ::v-deep .pagination-controls {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  ::v-deep .page-numbers {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+}
 </style>
+
+
+

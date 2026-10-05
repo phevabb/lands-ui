@@ -491,7 +491,7 @@ function normalizeAccount(
 
     profilePictureUrl:
       account.profilePictureUrl ??
-      account.profile_picture_url ??
+      account.profilePictureUrl ??
       account.profilePicture ??
       account.profile_picture ??
       null,
@@ -1322,6 +1322,13 @@ function resetPageData() {
     </div>
   </div>
 </template>
+
+
+
+
+
+
+
 
 <style scoped>
 .premium-container {

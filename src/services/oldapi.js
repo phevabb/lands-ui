@@ -87,17 +87,17 @@ export const patch_user = (userId, payload) => {
 };
 export const all_users_to_excel = (params = {}) => api.get("superadmin/api/v1/all-users-to-excel", { params });
 
-export const users_per_department = (dept, params = {}) => {
-  return api.get("superadmin/api/v1/users-per-department/", {
-    params: { dept, ...params },
-  });
-};
+// export const users_per_department = (dept, params = {}) => {
+//   return api.get("superadmin/api/v1/users-per-department/", {
+//     params: { dept, ...params },
+//   });
+// };
 
-export const users_per_department_no_pages = (dept, params = {}) => {
-  return api.get("superadmin/api/v1/users-per-department-no-pages/", {
-    params: { dept, ...params },
-  });
-};
+// export const users_per_department_no_pages = (dept, params = {}) => {
+//   return api.get("superadmin/api/v1/users-per-department-no-pages/", {
+//     params: { dept, ...params },
+//   });
+// };
 
 // MANAGERS
 //export const manager_directorate_stats = (params) => api.get("manager/api/v1/directorate-stats", { params });
