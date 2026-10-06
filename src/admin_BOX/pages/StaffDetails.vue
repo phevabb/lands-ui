@@ -49,11 +49,18 @@
     <div class="profile-container">
       <div class="profile-card">
         <img
-          :src="getProfilePictureSrc(staff.profilePictureUrl)"
-          :alt="staff.fullName || 'Profile Image'"
-          class="profile-image"
-          @error="handleImageError"
-        /> 
+  :src="
+    getProfilePictureSrc(
+      staff.profilePictureUrl
+    )
+  "
+  :alt="
+    staff.fullName ||
+    'Profile image'
+  "
+  class="profile-image"
+  @error="handleImageError"
+/>
 
         <h2 class="profile-name">{{ staff.titleName }} {{ staff.fullName }}</h2>
         <p class="profile-title">Staff ID: {{ staff.userId }}</p>
@@ -343,6 +350,13 @@
   </div>
 </template>
 
+
+
+
+
+
+
+
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router/composables';
@@ -364,14 +378,55 @@ const handleImageError = (event) => {
 };
 
 // Construct profile picture URL
-const getProfilePictureSrc = (profilePicture) => {
-  if (profilePicture && profilePicture !== '-') {
-    if (profilePicture.startsWith('http')) {
-      return profilePicture;
-    }
-    return `${api.defaults.baseURL}/${profilePicture.replace(/^\/+/, '')}`;
+const getProfilePictureSrc = (
+  profilePicture
+) => {
+  if (
+    !profilePicture ||
+    profilePicture === "-"
+  ) {
+    return DEFAULT_AVATAR;
   }
-  return DEFAULT_AVATAR;
+
+  const pictureUrl =
+    String(
+      profilePicture
+    ).trim();
+
+  if (
+    pictureUrl.startsWith("http://") ||
+    pictureUrl.startsWith("https://") ||
+    pictureUrl.startsWith("data:") ||
+    pictureUrl.startsWith("blob:")
+  ) {
+    return pictureUrl;
+  }
+
+  if (
+    pictureUrl.startsWith("//")
+  ) {
+    return `https:${pictureUrl}`;
+  }
+
+  const baseUrl =
+    String(
+      api.defaults.baseURL || ""
+    ).replace(
+      /\/+$/,
+      ""
+    );
+
+  const relativePath =
+    pictureUrl.replace(
+      /^\/+/,
+      ""
+    );
+
+  if (!baseUrl) {
+    return `/${relativePath}`;
+  }
+
+  return `${baseUrl}/${relativePath}`;
 };
 
 
@@ -423,15 +478,81 @@ const removeUser = async () => {
 
 // Fetch user details from API
 const fetchUserDetails = async () => {
+  const accountId =
+    Number(
+      route.params.id
+    );
+
+  console.log(
+    "Fetching account details:"
+  );
+
+  console.log(
+    "Route account ID:",
+    route.params.id
+  );
+
+  console.log(
+    "Normalized account ID:",
+    accountId
+  );
+
+  if (
+    !Number.isInteger(accountId) ||
+    accountId <= 0
+  ) {
+    console.error(
+      "Invalid account ID:",
+      route.params.id
+    );
+
+    Swal.fire({
+      icon: "error",
+      title: "Invalid Account",
+      text: "A valid account ID was not provided."
+    });
+
+    return;
+  }
+
   try {
-    console.log("Fetching user details for ID:", route.params.id);
-    const id_user = route.params.id;
-    const res = await admin_get_user_details(id_user);
-    console.log("User details fetched: print details", res.data);
-    console.log("User details fetched: print", res.data);
-    user.value = res.data;
+    const response =
+      await admin_get_user_details(
+        accountId
+      );
+
+    console.log(
+      "User details fetched:",
+      response.data
+    );
+
+    user.value =
+      response.data;
   } catch (error) {
-    console.error("Error fetching user details:", error);
+    console.error(
+      "Error fetching user details:",
+      {
+        accountId:
+          accountId,
+
+        status:
+          error.response?.status,
+
+        response:
+          error.response?.data,
+
+        message:
+          error.message
+      }
+    );
+
+    Swal.fire({
+      icon: "error",
+      title: "Unable to Load Account",
+      text:
+        error.response?.data?.detail ||
+        "The selected account could not be found."
+    });
   }
 };
 
@@ -788,6 +909,13 @@ const getStatusClass = (status) => {
   return 'badge-info';
 };
 </script>
+
+
+
+
+
+
+
 
 
 <style scoped>

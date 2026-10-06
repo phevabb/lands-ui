@@ -5,57 +5,244 @@ import { DEFAULT_AVATAR, api } from '@/services/api';
 
 // Props definition
 const props = defineProps({
-  title: { type: String, default: 'Form Title' },
-  sub_title: { type: String, default: 'Form Subtitle' },
-  button_name: { type: String, default: 'Submit' },
-  backformdata: { type: Array, default: () => [] },
-  backendErrors: { type: Object, default: () => ({}) },
-  successMessage: { type: String, default: '' },
-  formValues: { type: Object, default: () => ({}) },
+  title: {
+    type: String,
+    default: "Form Title"
+  },
+
+  sub_title: {
+    type: String,
+    default: "Form Subtitle"
+  },
+
+  button_name: {
+    type: String,
+    default: "Submit"
+  },
+
+  backformdata: {
+    type: Array,
+    default: () => []
+  },
+
+  backendErrors: {
+    type: Object,
+    default: () => ({})
+  },
+
+  successMessage: {
+    type: String,
+    default: ""
+  },
+
+  formValues: {
+    type: Object,
+    default: () => ({})
+  },
+
+  submitting: {
+    type: Boolean,
+    default: false
+  }
 });
 
+
+
+
+
+const handleProfilePictureError =
+  event => {
+    const image =
+      event.target;
+
+    if (
+      image.dataset
+        .fallbackApplied ===
+      "true"
+    ) {
+      return;
+    }
+
+    image.dataset
+      .fallbackApplied =
+      "true";
+
+    image.src =
+      DEFAULT_AVATAR;
+  };
+
+
+
+function getOptionValue(
+  option
+) {
+  if (Array.isArray(option)) {
+    return option[0];
+  }
+
+  return (
+    option?.id ??
+    option?.value ??
+    ""
+  );
+}
+
+function getOptionLabel(
+  option
+) {
+  if (Array.isArray(option)) {
+    return option[1];
+  }
+
+  return (
+    option?.name ??
+    option?.label ??
+    option?.value ??
+    ""
+  );
+}
+
+
+
+function resolveProfilePictureUrl(
+  profilePicture
+) {
+  if (
+    !profilePicture ||
+    profilePicture === "-"
+  ) {
+    return DEFAULT_AVATAR;
+  }
+
+  const pictureUrl =
+    String(
+      profilePicture
+    ).trim();
+
+  if (
+    pictureUrl.startsWith("http://") ||
+    pictureUrl.startsWith("https://") ||
+    pictureUrl.startsWith("data:") ||
+    pictureUrl.startsWith("blob:")
+  ) {
+    return pictureUrl;
+  }
+
+  if (
+    pictureUrl.startsWith("//")
+  ) {
+    return `https:${pictureUrl}`;
+  }
+
+  const baseUrl =
+    String(
+      api.defaults.baseURL ?? ""
+    ).replace(
+      /\/+$/,
+      ""
+    );
+
+  const relativePath =
+    pictureUrl.replace(
+      /^\/+/,
+      ""
+    );
+
+  if (!baseUrl) {
+    return `/${relativePath}`;
+  }
+
+  return `${baseUrl}/${relativePath}`;
+}
+
+
+const removeProfilePicture =
+  ref(false);
+
+
+
 // Emits definition
-const emit = defineEmits(['submitForm']);
+const emit =
+  defineEmits([
+    "submit-form"
+  ]);
 
 // Reactive state and refs
 const formData = reactive({});
-const isLoading = ref(false);
+
 const profilePicturePreview = ref(DEFAULT_AVATAR);
 const fileInput = ref(null);
 const profilePictureFile = ref(null);
 
 // Computed property for personal information fields
-const personalInfoFields = computed(() => {
-  return props.backformdata
-    .filter((field) => {
-      const fieldName = field.field_name ? field.field_name.toLowerCase() : '';
-      return (
-        [
-          'name',
-          'gender',
-          'marital_status',
-          'title',
-          'user_id',
-          'first',
-          'birth',
-          'last',
-          'email',
-          'phone',
-          'address',
-          'contact',
-        ].some((substr) => fieldName.includes(substr)) &&
-        fieldName !== 'profile_picture' &&
-        fieldName !== 'picture' &&
-        fieldName !== 'date_of_last_promotion' &&
-        fieldName !== 'bank_name' &&
-        fieldName !== 'date_of_first_appointment'
-      );
-    })
-    .map((field) => ({
-      ...field,
-      display_name: field.field_name === 'user_id' ? 'STAFF ID' : field.field_name,
-    }));
-});
+const personalInfoFields =
+  computed(() => {
+    return props.backformdata
+      .filter(field => {
+        const fieldName =
+          String(
+            field.field_name ?? ""
+          );
+
+        const normalizedName =
+          fieldName
+            .replace(
+              /([a-z0-9])([A-Z])/g,
+              "$1_$2"
+            )
+            .toLowerCase();
+
+        const personalKeywords = [
+          "name",
+          "gender",
+          "marital_status",
+          "title",
+          "user_id",
+          "first",
+          "birth",
+          "last",
+          "email",
+          "phone",
+          "address",
+          "contact"
+        ];
+
+        const excludedFields = [
+          "profile_picture_url",
+          "profile_picture_public_id",
+          "picture",
+          "date_of_last_promotion",
+          "bank_name",
+          "date_of_first_appointment"
+        ];
+
+        return (
+          personalKeywords.some(
+            keyword => {
+              return normalizedName.includes(
+                keyword
+              );
+            }
+          ) &&
+          !excludedFields.includes(
+            normalizedName
+          )
+        );
+      })
+      .map(field => {
+        return {
+          ...field,
+
+          display_name:
+            formatLabel(
+              field.field_name
+            )
+        };
+      });
+  });
+
+
+
 
 // Computed property for financial fields
 const financialFields = computed(() =>
@@ -90,7 +277,7 @@ const otherFields = computed(() => {
       !personal.includes(field.field_name) &&
       !financial.includes(field.field_name) &&
       !dates.includes(field.field_name) &&
-      field.field_name !== 'profile_picture' &&
+      field.field_name !== 'profilePictureUrl' &&
       field.field_name !== 'user_id' &&
       field.field_name !== 'title' &&
       field.field_name !== 'marital_status'
@@ -99,7 +286,7 @@ const otherFields = computed(() => {
 
 // Computed property for profile picture field
 const profilePictureField = computed(() =>
-  props.backformdata.find((field) => field.field_name === 'profile_picture')
+  props.backformdata.find((field) => field.field_name === 'profilePictureUrl')
 );
 
 // Computed properties for section visibility
@@ -112,129 +299,555 @@ const hasProfilePicture = computed(() => !!profilePictureField.value);
 // Initialize formData based on backformdata
 watch(
   () => props.backformdata,
-  (newFields) => {
-    newFields.forEach((field) => {
-      if (!(field.field_name in formData)) {
-        if (field.field_type === 'ManyToManyField') {
-          formData[field.field_name] = props.formValues[field.field_name] || [];
-        } else if (field.field_name === 'profile_picture') {
-          formData[field.field_name] = null;
-        } else {
-          formData[field.field_name] = props.formValues[field.field_name] || '';
-        }
+  newFields => {
+    if (!Array.isArray(newFields)) {
+      return;
+    }
+
+    newFields.forEach(field => {
+      const fieldName =
+        field.field_name;
+
+      if (!fieldName) {
+        return;
       }
+
+      if (
+        Object.prototype.hasOwnProperty.call(
+          formData,
+          fieldName
+        )
+      ) {
+        return;
+      }
+
+      const currentValue =
+        props.formValues?.[fieldName];
+
+      if (
+        field.field_type ===
+        "ManyToManyField"
+      ) {
+        formData[fieldName] =
+          Array.isArray(currentValue)
+            ? currentValue
+            : [];
+
+        return;
+      }
+
+      if (
+        fieldName ===
+        "profilePictureUrl"
+      ) {
+        formData[fieldName] =
+          currentValue ??
+          null;
+
+        profilePicturePreview.value =
+          resolveProfilePictureUrl(
+            currentValue
+          );
+
+        return;
+      }
+
+      formData[fieldName] =
+        currentValue ??
+        "";
     });
   },
-  { immediate: true, deep: true }
+  {
+    immediate: true,
+    deep: true
+  }
 );
+
+
+
+
+
+
+
+
 
 // Watch formValues to pre-fill form data
 watch(
   () => props.formValues,
-  (newValues) => {
-    if (newValues && Object.keys(newValues).length > 0) {
-      for (const key in formData) {
-        if (newValues[key] !== undefined) {
-          const fieldConfig = props.backformdata.find((f) => f.field_name === key);
-          if (fieldConfig && fieldConfig.field_type === 'ManyToManyField') {
-            formData[key] = Array.isArray(newValues[key]) ? newValues[key] : [];
-          } else if (fieldConfig && (fieldConfig.items || fieldConfig.choices)) {
-            const options = fieldConfig.items || fieldConfig.choices;
-            let match = options.find(
-              (opt) => opt.id === newValues[key] || opt[0] === newValues[key]
-            );
-            if (!match) {
-              match = options.find(
-                (opt) => opt.name === newValues[key] || opt[1] === newValues[key]
-              );
-            }
-            formData[key] = match ? match.id || match[0] : newValues[key] || '';
-          } else if (fieldConfig && fieldConfig.field_name === 'profile_picture') {
-            profilePicturePreview.value = newValues[key]
-              ? `${api.defaults.baseURL}/${newValues[key].replace(/^\/+/, '')}`
-              : DEFAULT_AVATAR;
-          } else {
-            formData[key] = newValues[key] || '';
-          }
-        }
+  newValues => {
+    if (
+      !newValues ||
+      typeof newValues !== "object" ||
+      Object.keys(newValues).length === 0
+    ) {
+      return;
+    }
+
+    for (
+      const field of
+      props.backformdata
+    ) {
+      const fieldName =
+        field.field_name;
+
+      if (
+        !fieldName ||
+        newValues[fieldName] ===
+          undefined
+      ) {
+        continue;
       }
+
+      const newValue =
+        newValues[fieldName];
+
+      if (
+        fieldName ===
+        "profilePictureUrl"
+      ) {
+        /*
+         * Keep the existing URL in formData.
+         * Do not prepend the Ktor API base URL
+         * when it is already a Cloudinary URL.
+         */
+        formData[fieldName] =
+          newValue ??
+          null;
+
+        profilePicturePreview.value =
+          resolveProfilePictureUrl(
+            newValue
+          );
+
+        profilePictureFile.value =
+          null;
+
+        continue;
+      }
+
+      if (
+        field.field_type ===
+        "ManyToManyField"
+      ) {
+        formData[fieldName] =
+          Array.isArray(newValue)
+            ? newValue.map(item => {
+                return (
+                  item?.id ??
+                  item
+                );
+              })
+            : [];
+
+        continue;
+      }
+
+      const options =
+        field.items ||
+        field.choices;
+
+      if (
+        Array.isArray(options)
+      ) {
+        const match =
+          options.find(option => {
+            const optionValue =
+              getOptionValue(
+                option
+              );
+
+            const optionLabel =
+              getOptionLabel(
+                option
+              );
+
+            return (
+              String(optionValue) ===
+                String(newValue) ||
+              String(optionLabel) ===
+                String(newValue)
+            );
+          });
+
+        formData[fieldName] =
+          match
+            ? getOptionValue(match)
+            : newValue ?? "";
+
+        continue;
+      }
+
+      formData[fieldName] =
+        newValue ??
+        "";
     }
   },
-  { immediate: true, deep: true }
+  {
+    immediate: true,
+    deep: true
+  }
 );
 
-// Handle file input for profile picture
-const onFileChange = (file) => {
-  if (file) {
-    if (!file.type.startsWith('image/')) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Invalid File',
-        text: 'Please select an image file.',
-      });
-      formData.profile_picture = null;
-      profilePictureFile.value = null;
-      profilePicturePreview.value = DEFAULT_AVATAR;
-      if (fileInput.value) fileInput.value.value = '';
-      return;
+
+function revokeTemporaryPreview() {
+  if (
+    typeof profilePicturePreview.value ===
+      "string" &&
+    profilePicturePreview.value.startsWith(
+      "blob:"
+    )
+  ) {
+    URL.revokeObjectURL(
+      profilePicturePreview.value
+    );
+  }
+}
+
+const onFileChange = file => {
+  if (!file) {
+    profilePictureFile.value =
+      null;
+
+    formData.profilePictureUrl =
+      props.formValues
+        ?.profilePictureUrl ??
+      null;
+
+    profilePicturePreview.value =
+      resolveProfilePictureUrl(
+        props.formValues
+          ?.profilePictureUrl
+      );
+
+    return;
+  }
+
+  if (
+    !file.type.startsWith(
+      "image/"
+    )
+  ) {
+    Swal.fire({
+      icon:
+        "error",
+
+      title:
+        "Invalid File",
+
+      text:
+        "Please select an image file."
+    });
+
+    profilePictureFile.value =
+      null;
+
+    formData.profilePictureUrl =
+      props.formValues
+        ?.profilePictureUrl ??
+      null;
+
+    profilePicturePreview.value =
+      resolveProfilePictureUrl(
+        props.formValues
+          ?.profilePictureUrl
+      );
+
+    if (fileInput.value) {
+      fileInput.value.value =
+        "";
     }
-    if (file.size > 2 * 1024 * 1024) {
-      Swal.fire({
-        icon: 'error',
-        title: 'File Too Large',
-        text: 'Image must be less than 2MB.',
-      });
-      formData.profile_picture = null;
-      profilePictureFile.value = null;
-      profilePicturePreview.value = DEFAULT_AVATAR;
-      if (fileInput.value) fileInput.value.value = '';
-      return;
+
+    return;
+  }
+
+  const maximumFileSize =
+    2 * 1024 * 1024;
+
+  if (
+    file.size >
+    maximumFileSize
+  ) {
+    Swal.fire({
+      icon:
+        "error",
+
+      title:
+        "File Too Large",
+
+      text:
+        "Image must be less than 2MB."
+    });
+
+    profilePictureFile.value =
+      null;
+
+    formData.profilePictureUrl =
+      props.formValues
+        ?.profilePictureUrl ??
+      null;
+
+    profilePicturePreview.value =
+      resolveProfilePictureUrl(
+        props.formValues
+          ?.profilePictureUrl
+      );
+
+    if (fileInput.value) {
+      fileInput.value.value =
+        "";
     }
-    formData.profile_picture = file;
-    profilePictureFile.value = file;
-    profilePicturePreview.value = URL.createObjectURL(file);
-  } else {
-    formData.profile_picture = null;
-    profilePictureFile.value = null;
-    profilePicturePreview.value = DEFAULT_AVATAR;
-    if (fileInput.value) fileInput.value.value = '';
+
+    return;
+  }
+
+  revokeTemporaryPreview();
+
+removeProfilePicture.value =
+  false;
+
+profilePictureFile.value =
+  file;
+
+formData.profilePictureUrl =
+  file;
+
+profilePicturePreview.value =
+  URL.createObjectURL(
+    file
+  );
+};
+
+
+
+
+
+
+
+
+
+
+const clearFile = () => {
+  revokeTemporaryPreview();
+
+  formData.profilePictureUrl =
+    null;
+
+  profilePictureFile.value =
+    null;
+
+  profilePicturePreview.value =
+    DEFAULT_AVATAR;
+
+  removeProfilePicture.value =
+    true;
+
+  if (fileInput.value) {
+    fileInput.value.value =
+      "";
   }
 };
 
-// Clear profile picture
-const clearFile = () => {
-  formData.profile_picture = null;
-  profilePictureFile.value = null;
-  profilePicturePreview.value = DEFAULT_AVATAR;
-  if (fileInput.value) fileInput.value.value = '';
-};
+
+
+
+
 
 // Handle form submission
 const handleSubmit = () => {
-  const formDataToSend = new FormData();
+  console.log(
+    "Child form submit triggered"
+  );
 
-  if (profilePictureFile.value instanceof File) {
-    formDataToSend.append('profile_picture', profilePictureFile.value, profilePictureFile.value.name);
+  if (props.submitting) {
+    console.log(
+      "Submission already in progress"
+    );
+
+    return;
   }
-  for (const [key, value] of Object.entries(formData)) {
-    if (key !== 'profile_picture' && value !== null && value !== '') {
-      if (Array.isArray(value)) {
-         value.forEach((val) => formDataToSend.append(key, val));
-      } else {
-        formDataToSend.append(key, value);
-      }
+
+  const requestData =
+    new FormData();
+
+  for (
+    const [
+      key,
+      value
+    ] of Object.entries(
+      formData
+    )
+  ) {
+    if (
+      key ===
+      "profilePictureUrl"
+    ) {
+      continue;
+    }
+
+    if (
+      value === null ||
+      value === undefined
+    ) {
+      continue;
+    }
+
+    if (Array.isArray(value)) {
+      requestData.delete(
+        key
+      );
+
+      value.forEach(item => {
+        const normalizedValue =
+          item &&
+          typeof item ===
+            "object"
+            ? item.id ??
+              item.value
+            : item;
+
+        if (
+          normalizedValue !== null &&
+          normalizedValue !== undefined &&
+          String(
+            normalizedValue
+          ).trim() !== ""
+        ) {
+          requestData.append(
+            key,
+            String(
+              normalizedValue
+            )
+          );
+        }
+      });
+
+      continue;
+    }
+
+    requestData.append(
+      key,
+      String(value)
+    );
+  }
+
+  if (
+    profilePictureFile.value instanceof
+    File
+  ) {
+    requestData.append(
+      "profilePictureUrl",
+      profilePictureFile.value,
+      profilePictureFile.value.name
+    );
+  }
+
+  requestData.append(
+    "removeProfilePicture",
+    String(
+      removeProfilePicture.value
+    )
+  );
+
+  console.log(
+    "New profile picture included:",
+    profilePictureFile.value instanceof
+      File
+  );
+
+  console.log(
+    "Remove profile picture:",
+    removeProfilePicture.value
+  );
+
+  console.log(
+    "Multipart form values:"
+  );
+
+  for (
+    const [
+      key,
+      value
+    ] of requestData.entries()
+  ) {
+    if (
+      value instanceof File
+    ) {
+      console.log(
+        key,
+        {
+          name:
+            value.name,
+
+          type:
+            value.type,
+
+          size:
+            value.size
+        }
+      );
+    } else {
+      console.log(
+        key,
+        value
+      );
     }
   }
 
-  emit('submitForm', formDataToSend);
+  console.log(
+    "Emitting submit-form event"
+  );
+
+  emit(
+    "submit-form",
+    requestData
+  );
 };
 
+
+
+
+
+
+
+
+
+
 // Format field labels
-const formatLabel = (fieldName) => {
-  if (!fieldName) return '';
-  if (fieldName === 'user_id') return 'STAFF ID';
-  if (fieldName === 'academic_qualifications') return 'ACADEMIC QUALIFICATIONS';
-  return fieldName.replace(/_/g, ' ').toUpperCase();
+const formatLabel = fieldName => {
+  if (!fieldName) {
+    return "";
+  }
+
+  if (
+    fieldName === "userId" ||
+    fieldName === "user_id"
+  ) {
+    return "STAFF ID";
+  }
+
+  if (
+    fieldName ===
+      "academicQualificationId" ||
+    fieldName ===
+      "academicQualifications" ||
+    fieldName ===
+      "academic_qualifications"
+  ) {
+    return "ACADEMIC QUALIFICATION";
+  }
+
+  return String(
+    fieldName
+  )
+    .replace(
+      /([a-z0-9])([A-Z])/g,
+      "$1 $2"
+    )
+    .replace(
+      /_/g,
+      " "
+    )
+    .toUpperCase();
 };
 
 // Watch for success message
@@ -279,7 +892,10 @@ watch(
     </div>
 
     <!-- Form -->
-    <form @submit.prevent="handleSubmit">
+    <form
+  novalidate
+  @submit.prevent.stop="handleSubmit"
+>
       <div class="form-content">
         <!-- Profile Picture Section -->
         <div class="form-section" v-if="hasProfilePicture">
@@ -288,10 +904,11 @@ watch(
             <div class="form-grid">
               <div class="form-field">
                 <img
-                  :src="profilePicturePreview"
-                  alt="Profile Picture Preview"
-                  class="profile-picture"
-                />
+  :src="profilePicturePreview"
+  alt="Profile Picture Preview"
+  class="profile-picture"
+  @error="handleProfilePictureError"
+/>
                 <label class="form-label">PROFILE PICTURE</label>
                 <input
                   type="file"
@@ -302,10 +919,10 @@ watch(
                 />
                 <button type="button" class="clear-button" @click="clearFile">Clear Image</button>
                 <span
-                  v-if="backendErrors.profile_picture"
+                  v-if="backendErrors.profilePictureUrl"
                   class="error-message block bg-red-100 border border-red-400 text-red-700 text-sm rounded px-3 py-2 mt-2"
                 >
-                  {{ backendErrors.profile_picture[0] }}
+                  {{ backendErrors.profilePictureUrl[0] }}
                 </span>
               </div>
             </div>
@@ -320,23 +937,41 @@ watch(
               <div v-for="field in personalInfoFields" :key="field.field_name" class="form-field">
                 <label class="form-label">{{ formatLabel(field.field_name) }}</label>
                 <!-- ForeignKey or CharField with choices -->
-                <template
-                  v-if="
-                    (field.field_type === 'ForeignKey' && field.items) ||
-                    (field.field_type === 'CharField' && field.choices)
-                  "
-                >
-                  <select class="form-select" v-model="formData[field.field_name]">
-                    <option value="" disabled>Select an option</option>
-                    <option
-                      v-for="item in field.items || field.choices"
-                      :key="item.id || item[0]"
-                      :value="item.id || item[0]"
-                    >
-                      {{ item.name || item[1] }}
-                    </option>
-                  </select>
-                </template>
+               <template
+  v-if="
+    (
+      field.field_type === 'ForeignKey' &&
+      field.items
+    ) ||
+    (
+      (
+        field.field_type === 'ChoiceField' ||
+        field.field_type === 'CharField'
+      ) &&
+      field.choices
+    )
+  "
+>
+  <select
+    v-model="formData[field.field_name]"
+    class="form-select"
+  >
+    <option
+      value=""
+      disabled
+    >
+      Select an option
+    </option>
+
+    <option
+      v-for="item in field.items || field.choices"
+      :key="getOptionValue(item)"
+      :value="getOptionValue(item)"
+    >
+      {{ getOptionLabel(item) }}
+    </option>
+  </select>
+</template>
                 <!-- DateField -->
                 <template v-else-if="field.field_type === 'DateField'">
                   <input
@@ -373,23 +1008,41 @@ watch(
               <div v-for="field in financialFields" :key="field.field_name" class="form-field">
                 <label class="form-label">{{ formatLabel(field.field_name) }}</label>
                 <!-- ForeignKey or CharField with choices -->
-                <template
-                  v-if="
-                    (field.field_type === 'ForeignKey' && field.items) ||
-                    (field.field_type === 'CharField' && field.choices)
-                  "
-                >
-                  <select class="form-select" v-model="formData[field.field_name]">
-                    <option value="" disabled>Select an option</option>
-                    <option
-                      v-for="item in field.items || field.choices"
-                      :key="item.id || item[0]"
-                      :value="item.id || item[0]"
-                    >
-                      {{ item.name || item[1] }}
-                    </option>
-                  </select>
-                </template>
+               <template
+  v-if="
+    (
+      field.field_type === 'ForeignKey' &&
+      field.items
+    ) ||
+    (
+      (
+        field.field_type === 'ChoiceField' ||
+        field.field_type === 'CharField'
+      ) &&
+      field.choices
+    )
+  "
+>
+  <select
+    v-model="formData[field.field_name]"
+    class="form-select"
+  >
+    <option
+      value=""
+      disabled
+    >
+      Select an option
+    </option>
+
+    <option
+      v-for="item in field.items || field.choices"
+      :key="getOptionValue(item)"
+      :value="getOptionValue(item)"
+    >
+      {{ getOptionLabel(item) }}
+    </option>
+  </select>
+</template>
                 <!-- DateField -->
                 <template v-else-if="field.field_type === 'DateField'">
                   <input
@@ -427,22 +1080,40 @@ watch(
                 <label class="form-label">{{ formatLabel(field.field_name) }}</label>
                 <!-- ForeignKey or CharField with choices -->
                 <template
-                  v-if="
-                    (field.field_type === 'ForeignKey' && field.items) ||
-                    (field.field_type === 'CharField' && field.choices)
-                  "
-                >
-                  <select class="form-select" v-model="formData[field.field_name]">
-                    <option value="" disabled>Select an option</option>
-                    <option
-                      v-for="item in field.items || field.choices"
-                      :key="item.id || item[0]"
-                      :value="item.id || item[0]"
-                    >
-                      {{ item.name || item[1] }}
-                    </option>
-                  </select>
-                </template>
+  v-if="
+    (
+      field.field_type === 'ForeignKey' &&
+      field.items
+    ) ||
+    (
+      (
+        field.field_type === 'ChoiceField' ||
+        field.field_type === 'CharField'
+      ) &&
+      field.choices
+    )
+  "
+>
+  <select
+    v-model="formData[field.field_name]"
+    class="form-select"
+  >
+    <option
+      value=""
+      disabled
+    >
+      Select an option
+    </option>
+
+    <option
+      v-for="item in field.items || field.choices"
+      :key="getOptionValue(item)"
+      :value="getOptionValue(item)"
+    >
+      {{ getOptionLabel(item) }}
+    </option>
+  </select>
+</template>
                 <!-- DateField -->
                 <template v-else-if="field.field_type === 'DateField'">
                   <input
@@ -503,23 +1174,41 @@ watch(
                   </select>
                 </template>
                 <!-- ForeignKey or CharField with choices -->
-                <template
-                  v-else-if="
-                    (field.field_type === 'ForeignKey' && field.items) ||
-                    (field.field_type === 'CharField' && field.choices)
-                  "
-                >
-                  <select class="form-select" v-model="formData[field.field_name]">
-                    <option value="" disabled>Select an option</option>
-                    <option
-                      v-for="item in field.items || field.choices"
-                      :key="item.id || item[0]"
-                      :value="item.id || item[0]"
-                    >
-                      {{ item.name || item[1] }}
-                    </option>
-                  </select>
-                </template>
+             <template
+  v-if="
+    (
+      field.field_type === 'ForeignKey' &&
+      field.items
+    ) ||
+    (
+      (
+        field.field_type === 'ChoiceField' ||
+        field.field_type === 'CharField'
+      ) &&
+      field.choices
+    )
+  "
+>
+  <select
+    v-model="formData[field.field_name]"
+    class="form-select"
+  >
+    <option
+      value=""
+      disabled
+    >
+      Select an option
+    </option>
+
+    <option
+      v-for="item in field.items || field.choices"
+      :key="getOptionValue(item)"
+      :value="getOptionValue(item)"
+    >
+      {{ getOptionLabel(item) }}
+    </option>
+  </select>
+</template>
                 <!-- DateField -->
                 <template v-else-if="field.field_type === 'DateField'">
                   <input
@@ -551,14 +1240,32 @@ watch(
 
       <!-- Form Footer -->
       <div class="form-footer">
-        <button type="submit" class="submit-button" :disabled="isLoading">
-          <span v-if="isLoading" class="spinner"></span>
-          <i v-else class="fas fa-paper-plane"></i>
-          {{ isLoading ? 'Submitting...' : button_name }}
-        </button>
+  <button
+    type="submit"
+    class="submit-button"
+    :disabled="submitting"
+  >
+    <span
+      v-if="submitting"
+      class="spinner"
+    ></span>
+
+    <i
+      v-else
+      class="fas fa-paper-plane"
+    ></i>
+
+    {{
+      submitting
+        ? "Submitting..."
+        : button_name
+    }}
+  </button>
       </div>
     </form>
   </div>
+
+
 </template>
 
 <style scoped>

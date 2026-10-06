@@ -71,19 +71,19 @@ export const age_stats = (params) => api.get("superadmin/api/v1/age-stats", { pa
 export const admin_dashboard_summary = (params = {}) => api.get("superadmin/api/v1/admin-dashboard-summary", { params });
 export const all_users = (params) => api.get("superadmin/api/v1/all-users", { params });
 
-// Users (Superadmin)
-export const create_user = (payload) => api.post("superadmin/api/v1/users/create", payload);
-export const remove_user = (payload) => api.post("superadmin/api/v1/remove-user", payload);
-export const user_fields = () => api.get("superadmin/api/v1/user-fields");
-export const get_user_details = (userId) => api.get(`superadmin/api/v1/users/${userId}`);
-export const update_user = (userId) => api.get(`superadmin/api/v1/user-update/${userId}/`);
+// Users (admin)
+export const create_user = (payload) => api.post("admin/api/v1/users/create", payload);
+export const remove_user = (payload) => api.post("admin/api/v1/remove-user", payload);
+export const user_fields = () => api.get("admin/api/v1/user-fields");
+export const get_user_details = (userId) => api.get(`admin/api/v1/users/${userId}`);
+export const update_user = (userId) => api.get(`admin/api/v1/user-update/${userId}/`);
 export const put_user = (userId, payload) => {
   for (let [key, value] of payload.entries()) {}
-  return api.put(`superadmin/api/v1/user-update/${userId}/`, payload);
+  return api.put(`admin/api/v1/user-update/${userId}/`, payload);
 };
 export const patch_user = (userId, payload) => {
   for (let [key, value] of payload.entries()) {}
-  return api.patch(`superadmin/api/v1/user-update/${userId}/`, payload);
+  return api.patch(`admin/api/v1/user-update/${userId}/`, payload);
 };
 export const all_users_to_excel = (params = {}) => api.get("superadmin/api/v1/all-users-to-excel", { params });
 
@@ -92,6 +92,10 @@ export const all_users_to_excel = (params = {}) => api.get("superadmin/api/v1/al
 //     params: { dept, ...params },
 //   });
 // };
+
+
+
+
 
 // export const users_per_department_no_pages = (dept, params = {}) => {
 //   return api.get("superadmin/api/v1/users-per-department-no-pages/", {

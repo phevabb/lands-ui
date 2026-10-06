@@ -990,6 +990,18 @@ export function users_per_department_no_pages(
 
 
 
+export function patch_user(
+  accountId,
+  payload
+) {
+  return api.patch(
+    `admin/user-update/${accountId}`,
+    payload
+  );
+}
+
+
+
 
 
   /////////////////////////
