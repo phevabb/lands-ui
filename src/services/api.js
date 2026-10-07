@@ -914,22 +914,28 @@ export const age_stats =
 
 
 
-export const create_user =
-  payload => {
-    return createAccount(
-      payload
-    );
-  };
-
-
-export function createAccount(
+export const create_user = (
   payload
-) {
+) => {
   return api.post(
     "/accounts",
     payload
   );
-}
+};
+
+
+export const create_user_new = (
+  payload
+) => {
+  return api.post(
+    "/accounts/new",
+    payload
+  );
+};
+
+
+
+
 
 export function user_fields() {
   return api.get(
