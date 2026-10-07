@@ -37,33 +37,60 @@
     <div class="table-wrapper">
       <table class="data-table">
         <thead>
-          <tr>
-            <th>Profile Picture</th>
-            <th>Staff ID</th>
-            <th>Full Name</th>
-            <th>Contact</th>
-          </tr>
-        </thead>
+  <tr>
+    <th class="number-column">
+      #
+    </th>
+
+    <th>Profile Picture</th>
+    <th>Staff ID</th>
+    <th>Full Name</th>
+    <th>Contact</th>
+  </tr>
+</thead>
         <tbody>
+          
+          
+          
           <tr
-            v-for="item in normalizedRows"
-            :key="item.id"
-            @click="selectUser(item)"
-            class="table-row"
-            role="button"
-            :aria-label="`Select ${item.fullName}`"
-          >
-            <td>
-              <img
-                :src="getProfilePictureSrc(item.profilePictureUrl)"
-                :alt="item.fullName || 'Profile Image'"
-                class="profile-image"
-              />
-            </td>
-            <td>{{ item.userId || 'N/A' }}</td>
-            <td>{{ item.fullName || 'N/A' }}</td>
-            <td>{{ item.phoneNumber || 'N/A' }}</td>
-          </tr>
+  v-for="(item, index) in normalizedRows"
+  :key="item.id"
+  @click="selectUser(item)"
+  class="table-row"
+  role="button"
+  :aria-label="`Select ${item.fullName}`"
+>
+  <td class="number-cell">
+    <span class="row-number">
+      {{ rowNumber(index) }}
+    </span>
+  </td>
+
+  <td>
+    <img
+      :src="getProfilePictureSrc(item.profilePictureUrl)"
+      :alt="item.fullName || 'Profile Image'"
+      class="profile-image"
+    />
+  </td>
+
+  <td>
+    {{ item.userId || "N/A" }}
+  </td>
+
+  <td>
+    {{ item.fullName || "N/A" }}
+  </td>
+
+  <td>
+    {{ item.phoneNumber || "N/A" }}
+  </td>
+</tr>
+
+
+
+
+
         </tbody>
       </table>
       <div v-if="rows.length === 0" class="no-results">
@@ -73,12 +100,54 @@
 
     <!-- Pagination -->
     <div class="table-footer">
-      <pagination
-        :current-page="currentPage"
-        :total-pages="totalPages"
-        @page-changed="(page) => emit('page-changed', page)"
-      />
-    </div>
+  <div class="pagination-summary">
+    <template v-if="safeTotalRecords > 0">
+      Showing
+
+      <strong>
+        {{ paginationStart }}
+      </strong>
+
+      to
+
+      <strong>
+        {{ paginationEnd }}
+      </strong>
+
+      of
+
+      <strong>
+        {{ safeTotalRecords }}
+      </strong>
+
+      records
+    </template>
+
+    <template v-else>
+      Showing 0 records
+    </template>
+  </div>
+
+  <div class="pagination-page-summary">
+    Page
+
+    <strong>
+      {{ safeCurrentPage }}
+    </strong>
+
+    of
+
+    <strong>
+      {{ Math.max(1, totalPages) }}
+    </strong>
+  </div>
+
+  <pagination
+    :current-page="safeCurrentPage"
+    :total-pages="Math.max(1, totalPages)"
+    @page-changed="handlePageChanged"
+  />
+</div>
 
     <!-- Search Results Modal -->
     <div v-if="showModal" class="modal-overlay" @click.self="clearSearch">
@@ -92,33 +161,55 @@
         <div class="modal-body">
           <table class="data-table">
             <thead>
-              <tr>
-                <th>Profile Picture</th>
-                <th>Staff ID</th>
-                <th>Full Name</th>
-                <th>Contact</th>
-              </tr>
-            </thead>
+  <tr>
+    <th class="number-column">
+      #
+    </th>
+
+    <th>Profile Picture</th>
+    <th>Staff ID</th>
+    <th>Full Name</th>
+    <th>Contact</th>
+  </tr>
+</thead>
             <tbody>
+          
               <tr
-                v-for="item in filteredRows2"
-                :key="item.id"
-                @click="selectUser(item)"
-                class="table-row"
-                role="button"
-                :aria-label="`Select ${item.fullName}`"
-              >
-                <td>
-                  <img
-                    :src="getProfilePictureSrc(item.profilePictureUrl)"
-                    :alt="item.fullName || 'Profile Image'"
-                    class="profile-image"
-                  />
-                </td>
-                <td>{{ item.userId || 'N/A' }}</td>
-                <td>{{ item.fullName || 'N/A' }}</td>
-                <td>{{ item.phoneNumber || 'N/A' }}</td>
+  v-for="(item, index) in filteredRows2"
+  :key="item.id"
+  @click="selectUser(item)"
+  class="table-row"
+  role="button"
+  :aria-label="`Select ${item.fullName}`"
+>
+  <td class="number-cell">
+    <span class="row-number">
+      {{ searchRowNumber(index) }}
+    </span>
+  </td>
+
+  <td>
+    <img
+      :src="getProfilePictureSrc(item.profilePictureUrl)"
+      :alt="item.fullName || 'Profile Image'"
+      class="profile-image"
+    />
+  </td>
+
+  <td>
+    {{ item.userId || "N/A" }}
+  </td>
+
+  <td>
+    {{ item.fullName || "N/A" }}
+  </td>
+
+  <td>
+    {{ item.phoneNumber || "N/A" }}
+  </td>
               </tr>
+          
+          
             </tbody>
           </table>
           <div v-if="filteredRows2.length === 0" class="no-results">
@@ -179,11 +270,25 @@ const props = defineProps({
     default: 1
   },
 
+  pageSize: {
+    type: Number,
+    default: 10
+  },
+
+  totalRecords: {
+    type: Number,
+    default: 0
+  },
+
   rows: {
     type: Array,
     default: () => []
   }
 });
+
+
+
+
 
 const emit = defineEmits([
   "user-selected",
@@ -202,6 +307,102 @@ const normalizedRows = computed(() => {
     return normalizeAccount(item);
   });
 });
+
+
+const safeCurrentPage =
+  computed(() => {
+    const page =
+      Number(
+        props.currentPage
+      );
+
+    return Number.isInteger(page) &&
+      page > 0
+      ? page
+      : 1;
+  });
+
+const safePageSize =
+  computed(() => {
+    const size =
+      Number(
+        props.pageSize
+      );
+
+    return Number.isInteger(size) &&
+      size > 0
+      ? size
+      : 10;
+  });
+
+const safeTotalRecords =
+  computed(() => {
+    const total =
+      Number(
+        props.totalRecords
+      );
+
+    return Number.isFinite(total) &&
+      total >= 0
+      ? total
+      : 0;
+  });
+
+const paginationStart =
+  computed(() => {
+    if (
+      normalizedRows.value.length ===
+      0
+    ) {
+      return 0;
+    }
+
+    return (
+      (
+        safeCurrentPage.value -
+        1
+      ) *
+      safePageSize.value
+    ) + 1;
+  });
+
+const paginationEnd =
+  computed(() => {
+    if (
+      normalizedRows.value.length ===
+      0
+    ) {
+      return 0;
+    }
+
+    return Math.min(
+      paginationStart.value +
+        normalizedRows.value.length -
+        1,
+
+      safeTotalRecords.value
+    );
+  });
+
+function rowNumber(
+  index
+) {
+  return (
+    (
+      safeCurrentPage.value -
+      1
+    ) *
+    safePageSize.value
+  ) + index + 1;
+}
+
+function searchRowNumber(
+  index
+) {
+  return index + 1;
+}
+
+
 
 const filteredRows2 = computed(() => {
   const query =
@@ -702,6 +903,85 @@ watch(
 
 
 <style scoped>
+
+
+.number-column {
+  width: 70px;
+  text-align: center;
+}
+
+.number-cell {
+  width: 70px;
+  text-align: center;
+}
+
+.row-number {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #4338ca;
+  font-size: 14px;
+  font-weight: 800;
+  border: 1px solid #c7d2fe;
+  border-radius: 9px;
+  background: #eef2ff;
+}
+
+.table-footer {
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 14px 20px;
+  color: #64748b;
+  font-size: 15px;
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.pagination-summary {
+  margin-right: auto;
+  white-space: nowrap;
+}
+
+.pagination-summary strong {
+  color: #1e293b;
+  font-weight: 800;
+}
+
+.pagination-page-summary {
+  padding: 9px 13px;
+  color: #475569;
+  white-space: nowrap;
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+  background: #ffffff;
+}
+
+.pagination-page-summary strong {
+  color: #4338ca;
+}
+
+@media (max-width: 700px) {
+  .table-footer {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .pagination-summary {
+    margin-right: 0;
+  }
+
+  .pagination-page-summary {
+    align-self: center;
+  }
+}
+
+
+
 .table-container {
   display: flex;
   flex-direction: column;

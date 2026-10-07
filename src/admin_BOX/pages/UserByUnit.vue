@@ -22,13 +22,16 @@ import {
   saveAs
 } from "file-saver";
 
-import Pagination from "../../components/Pagination.vue";
 
-import api, {
-  DEFAULT_AVATAR,
+import {
+  SimpleTable
+} from "@/components";
+
+import {
   users_per_department,
   users_per_department_no_pages
 } from "../../services/api";
+
 
 const route =
   useRoute();
@@ -78,8 +81,8 @@ const totalPages =
 const currentPage =
   ref(1);
 
-const PAGE_SIZE =
-  10;
+const itemsPerPage =
+  ref(10);
 
 const filteredUsers =
   computed(() => {
@@ -209,7 +212,7 @@ async function loadPage() {
         {
           page: 1,
           page_size:
-            PAGE_SIZE
+            itemsPerPage.value
         }
       ),
 
@@ -289,16 +292,16 @@ async function fetchUsers(
 
   try {
     const response =
-      await users_per_department(
-        departmentName,
-        {
-          page:
-            requestedPage,
+  await users_per_department(
+    departmentName,
+    {
+      page:
+        requestedPage,
 
-          page_size:
-            PAGE_SIZE
-        }
-      );
+      page_size:
+        itemsPerPage.value
+    }
+  );
 
     applyPaginatedResponse(
       response?.data,
@@ -320,6 +323,40 @@ async function fetchUsers(
     isLoading.value = false;
   }
 }
+
+
+
+
+function goToUserDetail(
+  id
+) {
+  const accountId =
+    normalizeAccountId(
+      id
+    );
+
+  if (!accountId) {
+    console.error(
+      "Cannot open staff details because the account ID is invalid:",
+      id
+    );
+
+    return;
+  }
+
+  router.push({
+    name:
+      "Staff Details",
+
+    params: {
+      id:
+        accountId
+    }
+  });
+}
+
+
+
 
 function applyPaginatedResponse(
   responseData,
@@ -359,7 +396,7 @@ function applyPaginatedResponse(
       results.filter_type ??
       results.filterType ??
       ""
-    );
+    ).trim();
 
   totalCount.value =
     normalizeCount(
@@ -384,21 +421,44 @@ function applyPaginatedResponse(
       1,
       Math.ceil(
         totalCount.value /
-        PAGE_SIZE
+        itemsPerPage.value
       )
     );
 
   currentPage.value =
-    getCurrentPageFromUrl(
-      next.value,
-      previous.value,
-      totalCount.value,
-      PAGE_SIZE,
-      requestedPage
+    Math.min(
+      normalizePage(
+        requestedPage
+      ),
+      totalPages.value
     );
 
-  selectedRow.value = null;
+  console.log(
+    "Filtered staff pagination:",
+    {
+      department:
+        dept.value,
+
+      currentPage:
+        currentPage.value,
+
+      pageSize:
+        itemsPerPage.value,
+
+      totalPages:
+        totalPages.value,
+
+      totalRecords:
+        totalCount.value,
+
+      recordsOnCurrentPage:
+        users.value.length
+    }
+  );
 }
+
+
+
 
 function applyNonPaginatedResponse(
   responseData
@@ -1105,7 +1165,6 @@ function resetPage() {
 }
 </script>
 
-
 <template>
   <div class="premium-container">
     <div class="premium-header">
@@ -1123,36 +1182,14 @@ function resetPage() {
             Filter type:
             {{ filterType }}
           </p>
+
+          <p v-else>
+            View and manage staff records for the selected category.
+          </p>
         </div>
       </div>
 
       <div class="header-actions">
-        <div class="search-container">
-          <md-icon>
-            search
-          </md-icon>
-
-          <input
-            v-model="searchQuery"
-            type="text"
-            class="search-input"
-            placeholder="Search by Staff ID, name or contact..."
-            aria-label="Search staff"
-          />
-
-          <button
-            v-if="searchQuery"
-            type="button"
-            class="clear-search-button"
-            aria-label="Clear search"
-            @click="clearSearch"
-          >
-            <md-icon>
-              close
-            </md-icon>
-          </button>
-        </div>
-
         <md-button
           class="
             md-dense
@@ -1187,152 +1224,82 @@ function resetPage() {
         v-if="isLoading"
         class="loading-message"
       >
-        Loading users...
+        <md-icon>
+          hourglass_empty
+        </md-icon>
+
+        <h3>
+          Loading Staff Records
+        </h3>
+
+        <p>
+          Please wait while the staff records are retrieved.
+        </p>
       </div>
 
       <div
         v-else-if="errorMessage"
         class="error-message"
       >
-        {{ errorMessage }}
+        <md-icon>
+          error_outline
+        </md-icon>
+
+        <div class="error-content">
+          <strong>
+            Unable to Load Staff Records
+          </strong>
+
+          <span>
+            {{ errorMessage }}
+          </span>
+        </div>
+
+        <button
+          type="button"
+          class="retry-button"
+          @click="
+            fetchUsers(
+              currentPage
+            )
+          "
+        >
+          Try Again
+        </button>
       </div>
 
-      <template v-else>
-        <div class="table-wrapper">
-          <table class="premium-table">
-            <thead>
-              <tr>
-                <th>
-                  Picture
-                </th>
+      <div
+        v-else-if="users.length === 0"
+        class="no-results"
+      >
+        <md-icon>
+          person_search
+        </md-icon>
 
-                <th>
-                  Staff ID
-                </th>
+        <h3>
+          No Staff Records Found
+        </h3>
 
-                <th>
-                  Full Name
-                </th>
+        <p>
+          No staff records were found for
+          {{ dept || "the selected category" }}.
+        </p>
+      </div>
 
-                <th>
-                  Contact
-                </th>
-
-                <th>
-                  Supervisor's Name
-                </th>
-              </tr>
-            </thead>
-
-            <tbody>
-              <tr
-                v-for="staff in filteredUsers"
-                :key="
-                  staff.id ||
-                  staff.userId
-                "
-                :class="{
-                  'row-selected':
-                    selectedRow?.id ===
-                    staff.id
-                }"
-                role="button"
-                tabindex="0"
-                :aria-label="
-                  `Open ${staff.fullName || staff.userId || 'staff'}`
-                "
-                @click="selectRow(staff)"
-                @keydown.enter="
-                  selectRow(staff)
-                "
-                @keydown.space.prevent="
-                  selectRow(staff)
-                "
-              >
-                <td>
-                  <img
-                    :src="
-                      getProfilePictureSrc(
-                        staff.profilePictureUrl
-                      )
-                    "
-                    :alt="
-                      staff.fullName ||
-                      'Profile image'
-                    "
-                    class="profile-image"
-                  />
-                </td>
-
-                <td>
-                  {{
-                    staff.userId ||
-                    "N/A"
-                  }}
-                </td>
-
-                <td>
-                  {{
-                    staff.fullName ||
-                    "N/A"
-                  }}
-                </td>
-
-                <td>
-                  {{
-                    staff.phoneNumber ||
-                    "N/A"
-                  }}
-                </td>
-
-                <td>
-                  {{
-                    staff.supervisorName ||
-                    "N/A"
-                  }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div
-          v-if="
-            filteredUsers.length ===
-            0
-          "
-          class="no-results"
-        >
-          <md-icon>
-            person_search
-          </md-icon>
-
-          <p v-if="searchQuery">
-            No staff records match
-            "{{ searchQuery }}".
-          </p>
-
-          <p v-else>
-            No staff records were found for
-            {{ dept }}.
-          </p>
-        </div>
-
-        <div
-          v-if="totalCount > 0"
-          class="table-footer"
-        >
-          <Pagination
-            :current-page="currentPage"
-            :total-pages="totalPages"
-            @page-changed="fetchUsers"
-          />
-
-          <div class="showing-range">
-            {{ showingRange }}
-          </div>
-        </div>
-      </template>
+      <SimpleTable
+        v-else
+        table-header-color="green"
+        :rows="users"
+        :next="next"
+        :previous="previous"
+        :current-page="currentPage"
+        :total-pages="totalPages"
+        :page-size="itemsPerPage"
+        :total-records="totalCount"
+        @page-changed="fetchUsers"
+        @user-selected="goToUserDetail"
+        @export-error="handleExportError"
+      />
     </div>
   </div>
 </template>

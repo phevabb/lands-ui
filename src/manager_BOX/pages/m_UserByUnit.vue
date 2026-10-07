@@ -76,6 +76,32 @@ const currentPage =
 const PAGE_SIZE =
   10;
 
+
+const numberedUsers =
+  computed(() => {
+    return users.value.map(
+      (
+        staff,
+        index
+      ) => {
+        return {
+          ...staff,
+
+          tableRowNumber:
+            (
+              (
+                currentPage.value -
+                1
+              ) *
+              PAGE_SIZE
+            ) +
+            index +
+            1
+        };
+      }
+    );
+  });
+
 const filteredUsers =
   computed(() => {
     const query =
@@ -84,10 +110,10 @@ const filteredUsers =
         .toLowerCase();
 
     if (!query) {
-      return users.value;
+      return numberedUsers.value;
     }
 
-    return users.value.filter(
+    return numberedUsers.value.filter(
       staff => {
         const searchableValues = [
           staff.userId,
@@ -103,7 +129,8 @@ const filteredUsers =
         return searchableValues.some(
           value => {
             return String(
-              value ?? ""
+              value ??
+              ""
             )
               .toLowerCase()
               .includes(
@@ -115,36 +142,84 @@ const filteredUsers =
     );
   });
 
+
+
+
+const paginationStart =
+  computed(() => {
+    if (
+      users.value.length ===
+      0
+    ) {
+      return 0;
+    }
+
+    return (
+      (
+        currentPage.value -
+        1
+      ) *
+      PAGE_SIZE
+    ) + 1;
+  });
+
+const paginationEnd =
+  computed(() => {
+    if (
+      users.value.length ===
+      0
+    ) {
+      return 0;
+    }
+
+    return Math.min(
+      paginationStart.value +
+        users.value.length -
+        1,
+
+      totalCount.value
+    );
+  });
+
 const showingRange =
   computed(() => {
     if (
-      totalCount.value === 0
+      totalCount.value ===
+      0
     ) {
-      return "Showing 0 of 0";
+      return "Showing 0 records";
     }
 
-    const start =
-      (
-        (
-          currentPage.value -
-          1
-        ) *
-        PAGE_SIZE
-      ) + 1;
-
-    const end =
-      Math.min(
-        currentPage.value *
-          PAGE_SIZE,
-
-        totalCount.value
-      );
-
     return (
-      `Showing ${start}-${end} ` +
-      `of ${totalCount.value}`
+      `Showing ${paginationStart.value} ` +
+      `to ${paginationEnd.value} ` +
+      `of ${totalCount.value} records`
     );
   });
+
+const pageSummary =
+  computed(() => {
+    return (
+      `Page ${currentPage.value} ` +
+      `of ${totalPages.value}`
+    );
+  });
+
+function rowNumber(
+  index
+) {
+  return (
+    (
+      currentPage.value -
+      1
+    ) *
+    PAGE_SIZE
+  ) + index + 1;
+}
+
+
+
+
 
 const canExport =
   computed(() => {
@@ -187,79 +262,125 @@ async function loadPageData() {
     errorMessage.value =
       "A department or staff category is required.";
 
-    isLoading.value = false;
+    isLoading.value =
+      false;
 
     return;
   }
 
-  isLoading.value = true;
-  errorMessage.value = "";
-  dept.value = departmentName;
+  isLoading.value =
+    true;
+
+  errorMessage.value =
+    "";
+
+  dept.value =
+    departmentName;
+
+  currentPage.value =
+    1;
 
   try {
-    const [
-      paginatedResponse,
-      nonPaginatedResponse
-    ] = await Promise.all([
-      manager_users_per_department(
+    const paginatedResponse =
+      await manager_users_per_department(
         departmentName,
         {
-          page: 1,
-          page_size: PAGE_SIZE
-        }
-      ),
+          page:
+            1,
 
-      manager_users_per_department_no_pages(
-        departmentName
-      )
-    ]);
+          page_size:
+            PAGE_SIZE
+        }
+      );
 
     applyPaginatedResponse(
       paginatedResponse?.data,
       1
     );
 
-    applyNonPaginatedResponse(
-      nonPaginatedResponse?.data
-    );
-
     console.log(
-      "Manager filtered staff loaded:",
+      "Manager filtered staff page loaded:",
       {
-        dept:
+        department:
           dept.value,
 
         filterType:
           filterType.value,
 
+        currentPage:
+          currentPage.value,
+
+        totalPages:
+          totalPages.value,
+
         totalCount:
           totalCount.value,
 
         pageUsers:
-          users.value.length,
-
-        exportUsers:
-          usersNoPages.value.length
+          users.value.length
       }
     );
   } catch (error) {
     resetPageData();
 
     console.error(
-      "Unable to load filtered staff:",
-      error.response?.data ||
-      error.message ||
-      error
+      "Unable to load filtered staff page:",
+      {
+        status:
+          error.response?.status,
+
+        response:
+          error.response?.data,
+
+        message:
+          error.message
+      }
     );
 
     errorMessage.value =
       getErrorMessage(
         error
       );
+
+    return;
   } finally {
-    isLoading.value = false;
+    isLoading.value =
+      false;
+  }
+
+  /*
+   * Load export records separately.
+   * Failure here must not empty the table.
+   */
+  try {
+    const nonPaginatedResponse =
+      await manager_users_per_department_no_pages(
+        departmentName
+      );
+
+    applyNonPaginatedResponse(
+      nonPaginatedResponse?.data
+    );
+  } catch (error) {
+    usersNoPages.value = [];
+
+    console.error(
+      "Unable to preload export records:",
+      {
+        status:
+          error.response?.status,
+
+        response:
+          error.response?.data,
+
+        message:
+          error.message
+      }
+    );
   }
 }
+
+
 
 async function fetchUsers(
   page = 1
@@ -318,6 +439,8 @@ async function fetchUsers(
     isLoading.value = false;
   }
 }
+
+
 
 function applyPaginatedResponse(
   responseData,
@@ -387,16 +510,54 @@ function applyPaginatedResponse(
     );
 
   currentPage.value =
-    getCurrentPageFromUrl(
-      next.value,
-      previous.value,
-      totalCount.value,
-      PAGE_SIZE,
-      requestedPage
+    Math.min(
+      normalizePage(
+        requestedPage
+      ),
+      totalPages.value
     );
 
-  selectedRow.value = null;
+  selectedRow.value =
+    null;
+
+  console.log(
+    "Filtered staff page applied"
+  );
+
+  console.log(
+    "Department:",
+    dept.value
+  );
+
+  console.log(
+    "Current page:",
+    currentPage.value
+  );
+
+  console.log(
+    "Page size:",
+    PAGE_SIZE
+  );
+
+  console.log(
+    "Total pages:",
+    totalPages.value
+  );
+
+  console.log(
+    "Total records:",
+    totalCount.value
+  );
+
+  console.log(
+    "Records on current page:",
+    users.value.length
+  );
 }
+
+
+
+
 
 function applyNonPaginatedResponse(
   responseData
@@ -408,15 +569,42 @@ function applyNonPaginatedResponse(
       ? responseData
       : {};
 
-  usersNoPages.value =
-    Array.isArray(
-      data.users
-    )
-      ? data.users.map(
-          normalizeAccount
+  const results =
+    data.results &&
+    typeof data.results ===
+      "object"
+      ? data.results
+      : {};
+
+  const records =
+    Array.isArray(data.users)
+      ? data.users
+      : Array.isArray(
+          results.users
         )
-      : [];
+        ? results.users
+        : Array.isArray(data)
+          ? data
+          : [];
+
+  usersNoPages.value =
+    records.map(
+      normalizeAccount
+    );
+
+  console.log(
+    "Non-paginated filtered staff applied:",
+    {
+      department:
+        dept.value,
+
+      records:
+        usersNoPages.value.length
+    }
+  );
 }
+
+
 
 function normalizeAccount(
   account
@@ -436,28 +624,28 @@ function normalizeAccount(
         account.userId ??
         account.user_id ??
         ""
-      ),
+      ).trim(),
 
     firstName:
       String(
         account.firstName ??
         account.first_name ??
         ""
-      ),
+      ).trim(),
 
     middleName:
       String(
         account.middleName ??
         account.middle_name ??
         ""
-      ),
+      ).trim(),
 
     lastName:
       String(
         account.lastName ??
         account.last_name ??
         ""
-      ),
+      ).trim(),
 
     fullName:
       String(
@@ -467,31 +655,31 @@ function normalizeAccount(
           account
         ) ??
         ""
-      ),
+      ).trim(),
 
     phoneNumber:
       String(
         account.phoneNumber ??
         account.phone_number ??
         ""
-      ),
+      ).trim(),
 
     supervisorName:
       String(
         account.supervisorName ??
         account.supervisor_name ??
         ""
-      ),
+      ).trim(),
 
     email:
       String(
         account.email ??
         ""
-      ),
+      ).trim(),
 
     profilePictureUrl:
       account.profilePictureUrl ??
-      account.profilePictureUrl ??
+      account.profile_picture_url ??
       account.profilePicture ??
       account.profile_picture ??
       null,
@@ -502,7 +690,7 @@ function normalizeAccount(
         account.directorate_name ??
         account.directorate ??
         ""
-      ),
+      ).trim(),
 
     categoryName:
       String(
@@ -510,7 +698,7 @@ function normalizeAccount(
         account.category_name ??
         account.category ??
         ""
-      ),
+      ).trim(),
 
     districtName:
       String(
@@ -518,7 +706,7 @@ function normalizeAccount(
         account.district_name ??
         account.district ??
         ""
-      ),
+      ).trim(),
 
     regionName:
       String(
@@ -526,7 +714,7 @@ function normalizeAccount(
         account.region_name ??
         account.region ??
         ""
-      ),
+      ).trim(),
 
     currentGradeName:
       String(
@@ -534,7 +722,7 @@ function normalizeAccount(
         account.current_grade_name ??
         account.current_grade ??
         ""
-      ),
+      ).trim(),
 
     managementUnitCostCentreName:
       String(
@@ -542,7 +730,7 @@ function normalizeAccount(
         account.management_unit_cost_centre_name ??
         account.management_unit_cost_centre ??
         ""
-      )
+      ).trim()
   };
 }
 
@@ -617,6 +805,8 @@ function selectRow(
   });
 }
 
+
+
 function getProfilePictureSrc(
   profilePicture
 ) {
@@ -633,6 +823,10 @@ function getProfilePictureSrc(
       profilePicture
     ).trim();
 
+  if (!picture) {
+    return DEFAULT_AVATAR;
+  }
+
   if (
     picture.startsWith(
       "http://"
@@ -648,6 +842,14 @@ function getProfilePictureSrc(
     )
   ) {
     return picture;
+  }
+
+  if (
+    picture.startsWith(
+      "//"
+    )
+  ) {
+    return `https:${picture}`;
   }
 
   const baseUrl =
@@ -671,6 +873,8 @@ function getProfilePictureSrc(
 
   return `${baseUrl}/${picturePath}`;
 }
+
+
 
 async function exportExcel() {
   if (exportLoading.value) {
@@ -847,95 +1051,8 @@ function getDepartmentFromRoute() {
   }
 }
 
-function getCurrentPageFromUrl(
-  nextUrl,
-  previousUrl,
-  count,
-  pageSize = PAGE_SIZE,
-  fallbackPage = 1
-) {
-  const safeFallbackPage =
-    normalizePage(
-      fallbackPage
-    );
 
-  try {
-    const nextPage =
-      extractPageFromUrl(
-        nextUrl
-      );
 
-    const previousPage =
-      extractPageFromUrl(
-        previousUrl
-      );
-
-    if (
-      previousPage !== null
-    ) {
-      return previousPage + 1;
-    }
-
-    if (
-      nextPage !== null
-    ) {
-      return Math.max(
-        1,
-        nextPage - 1
-      );
-    }
-
-    const calculatedPages =
-      Math.max(
-        1,
-        Math.ceil(
-          normalizeCount(
-            count
-          ) /
-          pageSize
-        )
-      );
-
-    return Math.min(
-      safeFallbackPage,
-      calculatedPages
-    );
-  } catch (error) {
-    return safeFallbackPage;
-  }
-}
-
-function extractPageFromUrl(
-  url
-) {
-  if (
-    typeof url !==
-      "string" ||
-    !url.trim()
-  ) {
-    return null;
-  }
-
-  const parsedUrl =
-    new URL(
-      url,
-      window.location.origin
-    );
-
-  const page =
-    Number(
-      parsedUrl.searchParams.get(
-        "page"
-      )
-    );
-
-  return (
-    Number.isInteger(page) &&
-    page > 0
-  )
-    ? page
-    : null;
-}
 
 function normalizePage(
   page
@@ -1182,100 +1299,114 @@ function resetPageData() {
       <template v-else>
         <div class="table-wrapper">
           <table class="premium-table">
-            <thead>
-              <tr>
-                <th>
-                  Picture
-                </th>
 
-                <th>
-                  Staff ID
-                </th>
 
-                <th>
-                  Full Name
-                </th>
+           <thead>
+  <tr>
+    <th class="number-column">
+      #
+    </th>
 
-                <th>
-                  Contact
-                </th>
+    <th>
+      Picture
+    </th>
 
-                <th>
-                  Supervisor's Name
-                </th>
-              </tr>
-            </thead>
+    <th>
+      Staff ID
+    </th>
 
-            <tbody>
-              <tr
-                v-for="staff in filteredUsers"
-                :key="
-                  staff.id ||
-                  staff.userId
-                "
-                :class="{
-                  'row-selected':
-                    selectedRow?.id ===
-                    staff.id
-                }"
-                class="staff-row"
-                role="button"
-                tabindex="0"
-                :aria-label="
-                  `Open ${staff.fullName || staff.userId || 'staff'}`
-                "
-                @click="selectRow(staff)"
-                @keydown.enter="
-                  selectRow(staff)
-                "
-                @keydown.space.prevent="
-                  selectRow(staff)
-                "
-              >
-                <td>
-                  <img
-                    :src="
-                      getProfilePictureSrc(
-                        staff.profilePictureUrl
-                      )
-                    "
-                    :alt="
-                      staff.fullName ||
-                      'Profile image'
-                    "
-                    class="profile-image"
-                  />
-                </td>
+    <th>
+      Full Name
+    </th>
 
-                <td>
-                  {{
-                    staff.userId ||
-                    "N/A"
-                  }}
-                </td>
+    <th>
+      Contact
+    </th>
 
-                <td>
-                  {{
-                    staff.fullName ||
-                    "N/A"
-                  }}
-                </td>
+    <th>
+      Supervisor's Name
+    </th>
+  </tr>
+</thead>
+<tbody>
+  <tr
+    v-for="(staff, index) in filteredUsers"
+    :key="
+      staff.id ||
+      staff.userId
+    "
+    :class="{
+      'row-selected':
+        selectedRow?.id ===
+        staff.id
+    }"
+    class="staff-row"
+    role="button"
+    tabindex="0"
+    :aria-label="
+      `Open ${staff.fullName || staff.userId || 'staff'}`
+    "
+    @click="selectRow(staff)"
+    @keydown.enter="
+      selectRow(staff)
+    "
+    @keydown.space.prevent="
+      selectRow(staff)
+    "
+  >
+    <td class="number-cell">
+      <span class="row-number">
+        {{ rowNumber(index) }}
+      </span>
+    </td>
 
-                <td>
-                  {{
-                    staff.phoneNumber ||
-                    "N/A"
-                  }}
-                </td>
+    <td>
+      <img
+        :src="
+          getProfilePictureSrc(
+            staff.profilePictureUrl
+          )
+        "
+        :alt="
+          staff.fullName ||
+          'Profile image'
+        "
+        class="profile-image"
+      />
+    </td>
 
-                <td>
-                  {{
-                    staff.supervisorName ||
-                    "N/A"
-                  }}
-                </td>
-              </tr>
-            </tbody>
+    <td>
+      {{
+        staff.userId ||
+        "N/A"
+      }}
+    </td>
+
+    <td>
+      {{
+        staff.fullName ||
+        "N/A"
+      }}
+    </td>
+
+    <td>
+      {{
+        staff.phoneNumber ||
+        "N/A"
+      }}
+    </td>
+
+    <td>
+      {{
+        staff.supervisorName ||
+        "N/A"
+      }}
+    </td>
+  </tr>
+  
+</tbody>
+
+
           </table>
         </div>
 
@@ -1301,23 +1432,30 @@ function resetPageData() {
           </p>
         </div>
 
-        <div
-          v-if="
-            totalCount > 0 &&
-            filteredUsers.length > 0
-          "
-          class="table-footer"
-        >
-          <Pagination
-            :current-page="currentPage"
-            :total-pages="totalPages"
-            @page-changed="fetchUsers"
-          />
+     <div
+  v-if="
+    totalCount > 0 &&
+    filteredUsers.length > 0
+  "
+  class="table-footer"
+>
+  <div class="pagination-information">
+    <span class="showing-range">
+      {{ showingRange }}
+    </span>
 
-          <div class="showing-range">
-            {{ showingRange }}
-          </div>
-        </div>
+    <span class="page-summary">
+      {{ pageSummary }}
+    </span>
+  </div>
+
+  <Pagination
+    :current-page="currentPage"
+    :total-pages="totalPages"
+    @page-changed="fetchUsers"
+  />
+</div>
+        
       </template>
     </div>
   </div>
@@ -1331,6 +1469,89 @@ function resetPageData() {
 
 
 <style scoped>
+
+
+.number-column {
+  width: 72px;
+  text-align: center;
+}
+
+.number-cell {
+  width: 72px;
+  text-align: center;
+}
+
+.row-number {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #4338ca;
+  font-size: 14px;
+  font-weight: 800;
+  border: 1px solid #c7d2fe;
+  border-radius: 9px;
+  background: #eef2ff;
+}
+
+.table-footer {
+  min-height: 76px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 14px 20px;
+  color: #64748b;
+  font-size: 15px;
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.pagination-information {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-right: auto;
+}
+
+.showing-range {
+  color: #475569;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.page-summary {
+  padding: 8px 12px;
+  color: #4338ca;
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
+  border: 1px solid #c7d2fe;
+  border-radius: 9px;
+  background: #eef2ff;
+}
+
+@media (max-width: 700px) {
+  .table-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pagination-information {
+    justify-content: center;
+    margin-right: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .pagination-information {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+
+
 .premium-container {
   width: 100%;
   padding: 20px;

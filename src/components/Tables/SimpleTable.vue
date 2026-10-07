@@ -5,224 +5,227 @@
       <div class="search-container">
         <span class="material-icons search-icon">search</span>
         <input
-  v-model.trim="searchQuery"
-  type="search"
-  placeholder="Search by Staff ID or Name..."
-  class="search-input"
-  aria-label="Search staff by ID or name"
-  :disabled="searchLoading"
-/>
+          v-model="searchQuery"
+          type="text"
+          placeholder="Search by Staff ID or Name..."
+          class="search-input"
+          aria-label="Search staff by ID or name"
+        />
         <button
-  v-if="searchQuery"
-  type="button"
-  class="clear-btn"
-  aria-label="Clear search"
-  @click="clearSearch"
->
-  <span class="material-icons">
-    close
-  </span>
-</button>
+          v-if="searchQuery"
+          class="clear-btn"
+          @click="clearSearch"
+          aria-label="Clear search"
+        >
+          <span class="material-icons">close</span>
+        </button>
       </div>
-  <button
-  type="button"
-  class="export-btn"
-  :disabled="loading"
-  aria-label="Export to Excel"
-  @click="exportExcel"
->
-  <span
-    class="material-icons"
-    style="
-      font-size: 16px;
-      margin-right: 6px;
-    "
-  >
-    {{
-      loading
-        ? "hourglass_top"
-        : "download"
-    }}
-  </span>
-
-  {{
-    loading
-      ? "Exporting..."
-      : "Export"
-  }}
-</button>
+      <button
+        class="export-btn"
+        @click="exportExcel"
+        :disabled="loading"
+        aria-label="Export to Excel"
+      >
+        <span class="material-icons" style="font-size: 16px; margin-right: 6px;">
+          {{ loading ? 'hourglass_top' : 'download' }}
+        </span>
+        {{ loading ? 'Exporting...' : 'Export' }}
+      </button>
     </div>
 
     <!-- Table -->
     <div class="table-wrapper">
       <table class="data-table">
         <thead>
-          <tr>
-            <th>Profile Picture</th>
-            <th>Staff ID</th>
-            <th>Full Name</th>
-            <th>Contact</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-v-for="item in normalizedRows"
+  <tr>
+    <th class="number-column">
+      #
+    </th>
 
-  :key="item.id || item.userId"
+    <th>Profile Picture</th>
+    <th>Staff ID</th>
+    <th>Full Name</th>
+    <th>Contact</th>
+  </tr>
+</thead>
+        <tbody>
+          
+          
+          
+          <tr
+  v-for="(item, index) in normalizedRows"
+  :key="item.id"
+  @click="selectUser(item)"
   class="table-row"
   role="button"
-  tabindex="0"
-  :aria-label="`Select ${item.fullName || item.userId || 'account'}`"
-  @click="selectUser(item)"
-  @keydown.enter="selectUser(item)"
+  :aria-label="`Select ${item.fullName}`"
 >
-            <td>
-              <img
-                :src="getProfilePictureSrc(item.profilePictureUrl)"
-                :alt="item.fullName || 'Profile Image'"
-                class="profile-image"
-              />
-            </td>
-            <td>{{ item.userId || 'N/A' }}</td>
-            <td>{{ item.fullName || 'N/A' }}</td>
-            <td>{{ item.phoneNumber || 'N/A' }}</td>
-          </tr>
+  <td class="number-cell">
+    <span class="row-number">
+      {{ rowNumber(index) }}
+    </span>
+  </td>
+
+  <td>
+    <img
+      :src="getProfilePictureSrc(item.profilePictureUrl)"
+      :alt="item.fullName || 'Profile Image'"
+      class="profile-image"
+    />
+  </td>
+
+  <td>
+    {{ item.userId || "N/A" }}
+  </td>
+
+  <td>
+    {{ item.fullName || "N/A" }}
+  </td>
+
+  <td>
+    {{ item.phoneNumber || "N/A" }}
+  </td>
+</tr>
+
+
+
+
+
         </tbody>
       </table>
-      <div
-  v-if="normalizedRows.length === 0"
-  class="no-results"
->
-  No results found
-</div>
+      <div v-if="rows.length === 0" class="no-results">
+        No results found
+      </div>
     </div>
 
     <!-- Pagination -->
-    <Pagination
-  :current-page="currentPage"
-  :total-pages="totalPages"
-  @page-changed="
-    page => emit(
-      'page-changed',
-      page
-    )
-  "
-/>
+    <div class="table-footer">
+  <div class="pagination-summary">
+    <template v-if="safeTotalRecords > 0">
+      Showing
+
+      <strong>
+        {{ paginationStart }}
+      </strong>
+
+      to
+
+      <strong>
+        {{ paginationEnd }}
+      </strong>
+
+      of
+
+      <strong>
+        {{ safeTotalRecords }}
+      </strong>
+
+      records
+    </template>
+
+    <template v-else>
+      Showing 0 records
+    </template>
+  </div>
+
+  <div class="pagination-page-summary">
+    Page
+
+    <strong>
+      {{ safeCurrentPage }}
+    </strong>
+
+    of
+
+    <strong>
+      {{ Math.max(1, totalPages) }}
+    </strong>
+  </div>
+
+  <pagination
+    :current-page="safeCurrentPage"
+    :total-pages="Math.max(1, totalPages)"
+    @page-changed="handlePageChanged"
+  />
+</div>
 
     <!-- Search Results Modal -->
     <div v-if="showModal" class="modal-overlay" @click.self="clearSearch">
       <div class="modal-content">
         <div class="modal-header">
           <h2>Search Results</h2>
-
-
-          <button
-  type="button"
-  class="modal-close-btn"
-  aria-label="Close modal"
-  @click="clearSearch"
->
-  <span class="material-icons">
-    close
-  </span>
-</button>
+          <button class="modal-close-btn" @click="clearSearch" aria-label="Close modal">
+            <span class="material-icons">close</span>
+          </button>
         </div>
+        <div class="modal-body">
+          <table class="data-table">
+            <thead>
+  <tr>
+    <th class="number-column">
+      #
+    </th>
 
+    <th>Profile Picture</th>
+    <th>Staff ID</th>
+    <th>Full Name</th>
+    <th>Contact</th>
+  </tr>
+</thead>
+            <tbody>
+          
+              <tr
+  v-for="(item, index) in filteredRows2"
+  :key="item.id"
+  @click="selectUser(item)"
+  class="table-row"
+  role="button"
+  :aria-label="`Select ${item.fullName}`"
+>
+  <td class="number-cell">
+    <span class="row-number">
+      {{ searchRowNumber(index) }}
+    </span>
+  </td>
 
+  <td>
+    <img
+      :src="getProfilePictureSrc(item.profilePictureUrl)"
+      :alt="item.fullName || 'Profile Image'"
+      class="profile-image"
+    />
+  </td>
 
-       <div class="modal-body">
-  <div
-    v-if="searchLoading"
-    class="no-results"
-  >
-    Loading account records...
-  </div>
+  <td>
+    {{ item.userId || "N/A" }}
+  </td>
 
-  <template v-else>
-    <table
-      v-if="filteredRows2.length > 0"
-      class="data-table"
-    >
-      <thead>
-        <tr>
-          <th>Profile Picture</th>
-          <th>Staff ID</th>
-          <th>Full Name</th>
-          <th>Contact</th>
-        </tr>
-      </thead>
+  <td>
+    {{ item.fullName || "N/A" }}
+  </td>
 
-      <tbody>
-        <tr
-          v-for="item in filteredRows2"
-          :key="
-            item.id ||
-            item.userId
-          "
-          class="table-row"
-          role="button"
-          tabindex="0"
-          :aria-label="
-            `Select ${
-              item.fullName ||
-              item.userId ||
-              'account'
-            }`
-          "
-          @click="selectUser(item)"
-          @keydown.enter="selectUser(item)"
-          @keydown.space.prevent="
-            selectUser(item)
-          "
-        >
-          <td>
-            <img
-              :src="
-                getProfilePictureSrc(
-                  item.profilePictureUrl
-                )
-              "
-              :alt="
-                item.fullName ||
-                'Profile image'
-              "
-              class="profile-image"
-            />
-          </td>
-
-          <td>
-            {{ item.userId || "N/A" }}
-          </td>
-
-          <td>
-            {{ item.fullName || "N/A" }}
-          </td>
-
-          <td>
-            {{ item.phoneNumber || "N/A" }}
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <div
-      v-else
-      class="no-results"
-    >
-      No results found for
-      "{{ searchQuery }}"
-    </div>
-  </template>
-</div>
-
-
-
-
-
+  <td>
+    {{ item.phoneNumber || "N/A" }}
+  </td>
+              </tr>
+          
+          
+            </tbody>
+          </table>
+          <div v-if="filteredRows2.length === 0" class="no-results">
+            No results found for "{{ searchQuery }}"
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
+
+
+
+
+
+
 
 <script setup>
 import {
@@ -234,18 +237,12 @@ import {
 
 import * as XLSX from "xlsx";
 
-import Pagination from "../Pagination.vue";
+import Pagination from "../../components/Pagination.vue";
 
 import api, {
-  all_users_to_excel,
-  DEFAULT_AVATAR
+  DEFAULT_AVATAR,
+  manager_all_users_to_excel
 } from "../../services/api";
-
-const loading = ref(false);
-const searchLoading = ref(false);
-const searchQuery = ref("");
-const rows2 = ref([]);
-const showModal = ref(false);
 
 const props = defineProps({
   tableHeaderColor: {
@@ -273,11 +270,25 @@ const props = defineProps({
     default: 1
   },
 
+  pageSize: {
+    type: Number,
+    default: 10
+  },
+
+  totalRecords: {
+    type: Number,
+    default: 0
+  },
+
   rows: {
     type: Array,
     default: () => []
   }
 });
+
+
+
+
 
 const emit = defineEmits([
   "user-selected",
@@ -285,14 +296,151 @@ const emit = defineEmits([
   "export-error"
 ]);
 
+const loading = ref(false);
+const searchLoading = ref(false);
+const searchQuery = ref("");
+const rows2 = ref([]);
+const showModal = ref(false);
+
+const normalizedRows = computed(() => {
+  return props.rows.map(item => {
+    return normalizeAccount(item);
+  });
+});
 
 
-const normalizedRows =
+const safeCurrentPage =
   computed(() => {
-    return props.rows.map(account => {
-      return normalizeAccount(account);
+    const page =
+      Number(
+        props.currentPage
+      );
+
+    return Number.isInteger(page) &&
+      page > 0
+      ? page
+      : 1;
+  });
+
+const safePageSize =
+  computed(() => {
+    const size =
+      Number(
+        props.pageSize
+      );
+
+    return Number.isInteger(size) &&
+      size > 0
+      ? size
+      : 10;
+  });
+
+const safeTotalRecords =
+  computed(() => {
+    const total =
+      Number(
+        props.totalRecords
+      );
+
+    return Number.isFinite(total) &&
+      total >= 0
+      ? total
+      : 0;
+  });
+
+const paginationStart =
+  computed(() => {
+    if (
+      normalizedRows.value.length ===
+      0
+    ) {
+      return 0;
+    }
+
+    return (
+      (
+        safeCurrentPage.value -
+        1
+      ) *
+      safePageSize.value
+    ) + 1;
+  });
+
+const paginationEnd =
+  computed(() => {
+    if (
+      normalizedRows.value.length ===
+      0
+    ) {
+      return 0;
+    }
+
+    return Math.min(
+      paginationStart.value +
+        normalizedRows.value.length -
+        1,
+
+      safeTotalRecords.value
+    );
+  });
+
+function rowNumber(
+  index
+) {
+  return (
+    (
+      safeCurrentPage.value -
+      1
+    ) *
+    safePageSize.value
+  ) + index + 1;
+}
+
+function searchRowNumber(
+  index
+) {
+  return index + 1;
+}
+
+
+
+const filteredRows2 = computed(() => {
+  const query =
+    searchQuery.value
+      .trim()
+      .toLowerCase();
+
+  if (!query) {
+    return [];
+  }
+
+  return rows2.value.filter(item => {
+    const searchableValues = [
+      item.userId,
+      item.fullName,
+      item.displayName,
+      item.firstName,
+      item.middleName,
+      item.lastName,
+      item.phoneNumber,
+      item.email,
+      item.role,
+      item.gender,
+      item.regionName,
+      item.districtName,
+      item.directorateName,
+      item.categoryName,
+      item.currentGradeName,
+      item.managementUnitCostCentreName
+    ];
+
+    return searchableValues.some(value => {
+      return String(value ?? "")
+        .toLowerCase()
+        .includes(query);
     });
   });
+});
 
 onMounted(async () => {
   await loadSearchRecords();
@@ -303,86 +451,69 @@ async function loadSearchRecords() {
 
   try {
     const response =
-      await all_users_to_excel();
-
-    const responseData =
-      response.data;
+      await manager_all_users_to_excel();
 
     console.log(
-      "All accounts search response:",
-      responseData
+      "Manager region users response:",
+      response.data
     );
 
     const accounts =
       extractAccounts(
-        responseData
+        response.data
       );
 
     rows2.value =
-      accounts.map(account => {
-        return normalizeAccount(
-          account
-        );
+      accounts.map(item => {
+        return normalizeAccount(item);
       });
 
     console.log(
-      "Normalized search accounts:",
-      rows2.value
+      "Manager users available for search:",
+      rows2.value.length
     );
   } catch (error) {
+    rows2.value = [];
+
     console.error(
-      "Unable to retrieve accounts for searching:",
+      "Unable to load Manager region users:",
       error.response?.data ||
       error.message ||
       error
     );
 
-    rows2.value = [];
-
     emit(
       "export-error",
       error.response?.data?.detail ||
-      "Failed to fetch account data for searching."
+      "Failed to load regional staff records."
     );
   } finally {
     searchLoading.value = false;
   }
 }
 
-function extractAccounts(
-  responseData
-) {
-  if (
-    Array.isArray(
-      responseData
-    )
-  ) {
+function extractAccounts(responseData) {
+  if (Array.isArray(responseData)) {
     return responseData;
   }
 
   if (
     responseData &&
-    Array.isArray(
-      responseData.results
-    )
+    Array.isArray(responseData.results)
   ) {
     return responseData.results;
   }
 
   if (
     responseData &&
-    Array.isArray(
-      responseData.accounts
-    )
+    Array.isArray(responseData.accounts)
   ) {
     return responseData.accounts;
   }
 
   if (
     responseData &&
-    Array.isArray(
-      responseData.data
-    )
+    Array.isArray(responseData.data)
   ) {
     return responseData.data;
   }
@@ -390,88 +521,152 @@ function extractAccounts(
   return [];
 }
 
-function normalizeAccount(account) {
+function normalizeAccount(item) {
   return {
-    ...account,
+    ...item,
 
     id:
-      account.id ??
-      null,
+      Number(
+        item.id ??
+        item.accountId ??
+        item.account_id
+      ) || null,
 
     userId:
-      account.userId ??
-      account.user_id ??
-      "",
+      String(
+        item.userId ??
+        item.staffId ??
+        item.staff_id ??
+        ""
+      ).trim(),
 
     firstName:
-      account.firstName ??
-      account.first_name ??
+      item.firstName ??
+      item.first_name ??
       "",
 
     middleName:
-      account.middleName ??
-      account.middle_name ??
+      item.middleName ??
+      item.middle_name ??
       "",
 
     lastName:
-      account.lastName ??
-      account.last_name ??
+      item.lastName ??
+      item.last_name ??
       "",
 
     fullName:
-      account.fullName ??
-      account.full_name ??
-      createFullName(account),
-
-    displayName:
-      account.displayName ??
-      account.display_name ??
-      account.fullName ??
-      account.full_name ??
-      account.userId ??
-      account.user_id ??
-      "",
+      item.fullName ??
+      item.full_name ??
+      createFullName(item),
 
     phoneNumber:
-      account.phoneNumber ??
-      account.phone_number ??
+      item.phoneNumber ??
+      item.phone_number ??
       "",
 
     email:
-      account.email ??
+      item.email ??
       "",
 
     role:
-      account.role ??
+      item.role ??
+      "",
+
+    gender:
+      item.gender ??
       "",
 
     regionName:
-      account.regionName ??
-      account.region_name ??
-      account.region ??
+      item.regionName ??
+      item.region_name ??
+      item.region ??
+      "",
+
+    districtName:
+      item.districtName ??
+      item.district_name ??
+      item.district ??
+      "",
+
+    directorateName:
+      item.directorateName ??
+      item.directorate_name ??
+      item.directorate ??
+      "",
+
+    categoryName:
+      item.categoryName ??
+      item.category_name ??
+      item.category ??
+      "",
+
+    currentGradeName:
+      item.currentGradeName ??
+      item.current_grade_name ??
+      item.current_grade ??
+      "",
+
+    managementUnitCostCentreName:
+      item.managementUnitCostCentreName ??
+      item.management_unit_cost_centre_name ??
+      item.management_unit_cost_centre ??
       "",
 
     profilePictureUrl:
-      account.profilePictureUrl ??
-      account.profile_picture_url ??
-      account.profilePicture ??
-      account.profile_picture ??
+      item.profilePictureUrl ??
+      item.profile_picture_url ??
+      item.profilePicture ??
+      item.profile_picture ??
       null
   };
 }
 
-function createFullName(
-  account
-) {
+
+
+function handleUserSelected(accountId) {
+  const normalizedAccountId =
+    Number(accountId);
+
+  if (
+    !Number.isInteger(
+      normalizedAccountId
+    ) ||
+    normalizedAccountId <= 0
+  ) {
+    console.error(
+      "Cannot open staff details because the account ID is invalid:",
+      accountId
+    );
+
+    return;
+  }
+
+  console.log(
+    "Opening Manager staff details:",
+    normalizedAccountId
+  );
+
+  router.push(
+    `/manager/staff-details/${normalizedAccountId}`
+  );
+}
+
+
+
+
+
+
+function createFullName(item) {
   return [
-    account.firstName ??
-      account.first_name,
+    item.firstName ??
+      item.first_name,
 
-    account.middleName ??
-      account.middle_name,
+    item.middleName ??
+      item.middle_name,
 
-    account.lastName ??
-      account.last_name
+    item.lastName ??
+      item.last_name
   ]
     .filter(value => {
       return (
@@ -486,55 +681,65 @@ function createFullName(
     .join(" ");
 }
 
-const filteredRows2 =
-  computed(() => {
-    const query =
-      searchQuery.value
-        .trim()
-        .toLowerCase();
+function handlePageChanged(page) {
+  emit(
+    "page-changed",
+    page
+  );
+}
 
-    if (!query) {
-      return [];
-    }
 
-    return rows2.value.filter(
-      account => {
-        const searchableValues = [
-          account.userId,
-          account.fullName,
-          account.displayName,
-          account.firstName,
-          account.middleName,
-          account.lastName,
-          account.phoneNumber,
-          account.email,
-          account.role,
-          account.regionName
-        ];
 
-        return searchableValues.some(
-          value => {
-            return String(
-              value ?? ""
-            )
-              .toLowerCase()
-              .includes(query);
-          }
-        );
-      }
+
+function selectUser(item) {
+  const accountId =
+    Number(
+      item.id ??
+      item.user_id
     );
-  });
 
-function getProfilePictureSrc(profilePicture) {
   if (
-    !profilePicture ||
-    profilePicture === "-"
+    !Number.isInteger(accountId) ||
+    accountId <= 0
+  ) {
+    console.error(
+      "Selected account has no valid database ID:",
+      item
+    );
+
+    return;
+  }
+
+  console.log(
+    "Selected Manager-region account ID:",
+    accountId
+  );
+
+  emit(
+    "user-selected",
+    accountId
+  );
+
+  clearSearch();
+}
+
+
+
+
+function getProfilePictureSrc(
+  profilePictureUrl
+) {
+  if (
+    !profilePictureUrl ||
+    profilePictureUrl === "-"
   ) {
     return DEFAULT_AVATAR;
   }
 
   const picture =
-    String(profilePicture).trim();
+    String(
+      profilePictureUrl
+    ).trim();
 
   if (
     picture.startsWith("http://") ||
@@ -562,29 +767,6 @@ function getProfilePictureSrc(profilePicture) {
   return `${baseUrl}/${picturePath}`;
 }
 
-function selectUser(
-  item
-) {
-  if (
-    item.id === null ||
-    item.id === undefined
-  ) {
-    console.error(
-      "Selected account has no database ID:",
-      item
-    );
-
-    return;
-  }
-
-  emit(
-    "user-selected",
-    item.id
-  );
-
-  clearSearch();
-}
-
 async function exportExcel() {
   if (loading.value) {
     return;
@@ -600,15 +782,13 @@ async function exportExcel() {
       exportAccounts.length === 0
     ) {
       const response =
-        await all_users_to_excel();
+        await manager_all_users_to_excel();
 
       exportAccounts =
         extractAccounts(
           response.data
-        ).map(account => {
-          return normalizeAccount(
-            account
-          );
+        ).map(item => {
+          return normalizeAccount(item);
         });
     }
 
@@ -617,42 +797,52 @@ async function exportExcel() {
     ) {
       emit(
         "export-error",
-        "No account data is available to export."
+        "No regional staff data is available to export."
       );
 
       return;
     }
 
     const exportData =
-      exportAccounts.map(
-        account => {
-          return {
-            "Staff ID":
-              account.userId ||
-              "",
+      exportAccounts.map(item => {
+        return {
+          "Staff ID":
+            item.userId || "",
 
-            "Full Name":
-              account.fullName ||
-              "",
+          "Full Name":
+            item.fullName || "",
 
-            "Phone Number":
-              account.phoneNumber ||
-              "",
+          "Phone Number":
+            item.phoneNumber || "",
 
-            "Email":
-              account.email ||
-              "",
+          "Email":
+            item.email || "",
 
-            "Role":
-              account.role ||
-              "",
+          "Role":
+            item.role || "",
 
-            "Region":
-              account.regionName ||
-              ""
-          };
-        }
-      );
+          "Gender":
+            item.gender || "",
+
+          "Region":
+            item.regionName || "",
+
+          "District":
+            item.districtName || "",
+
+          "Directorate":
+            item.directorateName || "",
+
+          "Class":
+            item.categoryName || "",
+
+          "Current Grade":
+            item.currentGradeName || "",
+
+          "Management Unit":
+            item.managementUnitCostCentreName || ""
+        };
+      });
 
     const worksheet =
       XLSX.utils.json_to_sheet(
@@ -665,16 +855,16 @@ async function exportExcel() {
     XLSX.utils.book_append_sheet(
       workbook,
       worksheet,
-      "StaffData"
+      "RegionalStaff"
     );
 
     XLSX.writeFile(
       workbook,
-      "staff_data.xlsx"
+      "regional_staff_data.xlsx"
     );
   } catch (error) {
     console.error(
-      "Unable to export account data:",
+      "Unable to export Manager region users:",
       error.response?.data ||
       error.message ||
       error
@@ -683,7 +873,7 @@ async function exportExcel() {
     emit(
       "export-error",
       error.response?.data?.detail ||
-      "Failed to export account data to Excel."
+      "Failed to export regional staff data."
     );
   } finally {
     loading.value = false;
@@ -699,14 +889,99 @@ watch(
   searchQuery,
   newQuery => {
     showModal.value =
-      newQuery.trim()
-        .length > 0;
+      newQuery.trim().length > 0;
   }
 );
 </script>
 
 
+
+
+
+
+
+
+
 <style scoped>
+
+
+.number-column {
+  width: 70px;
+  text-align: center;
+}
+
+.number-cell {
+  width: 70px;
+  text-align: center;
+}
+
+.row-number {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #4338ca;
+  font-size: 14px;
+  font-weight: 800;
+  border: 1px solid #c7d2fe;
+  border-radius: 9px;
+  background: #eef2ff;
+}
+
+.table-footer {
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 14px 20px;
+  color: #64748b;
+  font-size: 15px;
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.pagination-summary {
+  margin-right: auto;
+  white-space: nowrap;
+}
+
+.pagination-summary strong {
+  color: #1e293b;
+  font-weight: 800;
+}
+
+.pagination-page-summary {
+  padding: 9px 13px;
+  color: #475569;
+  white-space: nowrap;
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+  background: #ffffff;
+}
+
+.pagination-page-summary strong {
+  color: #4338ca;
+}
+
+@media (max-width: 700px) {
+  .table-footer {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .pagination-summary {
+    margin-right: 0;
+  }
+
+  .pagination-page-summary {
+    align-self: center;
+  }
+}
+
+
+
 .table-container {
   display: flex;
   flex-direction: column;
