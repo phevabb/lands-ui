@@ -1,204 +1,27 @@
-
-
-
-<template>
-  <div
-  class="wrapper"
-  :class="{
-    'nav-open':
-      proxy?.$sidebar?.showSidebar
-  }"
->
-    <Notifications />
-
-    <SideBar title="GH Lands"
-      :sidebar-item-color="sidebarBackground"
-      :sidebar-background-image="sidebarBackgroundImage"
-    >
-      <MobileMenu />
-      <template #content>
-
-
-        <SidebarLink
-          :link="{
-          name: 'Dashboard',
-          path: '/manager/dashboard',
-          }"
-          class="sidebar-link"
-        >
-          <span class="sidebar-item">
-            <md-icon>dashboard</md-icon>
-            <span style="font-size: small;" class="sidebar-text">staff distribution Analysis</span>
-          </span>
-        </SidebarLink>
-
-      
-
-      
-
-      
-
-        <SidebarLink
-          :link="{
-          name: 'All Users',
-          path: '/manager/allusers',
-          }"
-          class="sidebar-link">
-          <span class="sidebar-item">
-            <md-icon>group</md-icon>  
-            <span class="sidebar-text">All Users</span>
-          </span>
-        </SidebarLink>
-
-
-
-
-        <SidebarLink
-          :link="{
-          name: 'New Entry',
-          path: '/manager/new-entry',
-          }"
-          class="sidebar-link">
-          <span class="sidebar-item">
-            <md-icon>group</md-icon>  
-            <span class="sidebar-text">New Entry</span>
-          </span>
-        </SidebarLink>
-
-        
-
-
-
-
-
-       <!-- Account Dropdown -->
-<div
-  class="sidebar-link"
-  :class="{
-    active:
-      activeAccountItem === 'account' ||
-      showAccountDropdown
-  }"
-  style="cursor: pointer;"
-  @mouseenter="setActive('account')"
-  @mouseleave="
-    !showAccountDropdown &&
-    setActive(null)
-  "
-  @click="toggleAccountDropdown"
->
-  <span class="sidebar-item">
-    <md-icon>
-      account_circle
-    </md-icon>
-
-    <span class="sidebar-text">
-      Account
-    </span>
-
-    <md-icon
-      style="margin-left: auto;"
-    >
-      {{
-        showAccountDropdown
-          ? "arrow_drop_up"
-          : "arrow_drop_down"
-      }}
-    </md-icon>
-  </span>
-</div>
-
-<div
-  v-if="showAccountDropdown"
-  class="sidebar-dropdown"
->
-  <div
-    class="sidebar-link"
-    :class="{
-      active:
-        activeAccountItem === 'logout'
-    }"
-    style="cursor: pointer;"
-    @mouseenter="setActive('logout')"
-    @mouseleave="setActive(null)"
-    @click="handleLogout"
-  >
-    <span class="sidebar-item">
-      <md-icon>
-        logout
-      </md-icon>
-
-      <span class="sidebar-text">
-        Logout
-      </span>
-    </span>
-  </div>
-
-  <div
-    class="sidebar-link"
-    :class="{
-      active:
-        activeAccountItem === 'change'
-    }"
-    style="cursor: pointer;"
-    @mouseenter="setActive('change')"
-    @mouseleave="setActive(null)"
-    @click="goToChangePassword"
-  >
-    <span class="sidebar-item">
-      <md-icon>
-        lock
-      </md-icon>
-
-      <span class="sidebar-text">
-        Change Password
-      </span>
-    </span>
-  </div>
-</div>
-        
-
-      </template>
-
-
-
-
-      
-    </SideBar>
-
-    <div class="main-panel">
-      <TopNavbar />
-
-
-
-      <DashboardContent />
-
-      <ContentFooter
-  v-if="
-    !proxy?.$route?.meta?.hideFooter
-  "
-/>
-    </div>
-  </div>
-</template>
-
-
-
 <script setup>
 import {
-  getCurrentInstance,
+  computed,
   ref
 } from "vue";
 
 import {
+  useRoute,
   useRouter
 } from "vue-router/composables";
 
 import {
-  logout
-} from "../../../services/api";
+  logout,
+  removeAuthentication
+} from "@/services/api";
 
-// Components
+
+
+
+
+
+
+
+
 import TopNavbar from "./TopNavbar.vue";
 import ContentFooter from "./ContentFooter.vue";
 import DashboardContent from "./Content.vue";
@@ -210,17 +33,16 @@ import Notifications from "@/components/NotificationPlugin/Notifications.vue";
 const router =
   useRouter();
 
-const currentInstance =
-  getCurrentInstance();
+const route =
+  useRoute();
 
-const proxy =
-  currentInstance?.proxy;
-
-const showAccountDropdown =
-  ref(false);
-
-const activeAccountItem =
-  ref(null);
+const sidebarVisible =
+  ref(
+    localStorage.getItem(
+      "sidebarVisible"
+    ) !==
+      "false"
+  );
 
 const sidebarBackground =
   ref("green");
@@ -232,11 +54,48 @@ const sidebarBackgroundImage =
     )
   );
 
+const showAccountDropdown =
+  ref(false);
+
+const activeAccountItem =
+  ref(null);
+
+const logoutLoading =
+  ref(false);
+
+const hideFooter =
+  computed(() => {
+    return Boolean(
+      route.meta?.hideFooter
+    );
+  });
+
+function handleSidebarVisibility(
+  visible
+) {
+  sidebarVisible.value =
+    Boolean(visible);
+
+  console.log(
+    "Manager sidebar visible:",
+    sidebarVisible.value
+  );
+}
+
 function setActive(
   itemName
 ) {
   activeAccountItem.value =
     itemName;
+}
+
+function clearActiveItem() {
+  if (
+    !showAccountDropdown.value
+  ) {
+    activeAccountItem.value =
+      null;
+  }
 }
 
 function toggleAccountDropdown() {
@@ -249,122 +108,543 @@ function toggleAccountDropdown() {
       : null;
 }
 
-function goToChangePassword() {
-  activeAccountItem.value =
-    "change";
+function closeAccountDropdown() {
+  showAccountDropdown.value =
+    false;
 
-  router.push(
-    "/manager/change-password"
-  );
+  activeAccountItem.value =
+    null;
+}
+
+async function goToChangePassword() {
+  closeAccountDropdown();
+
+  try {
+    await router.push({
+      path:
+        "/manager/change-password"
+    });
+  } catch (error) {
+    if (
+      !error ||
+      error.name !==
+        "NavigationDuplicated"
+    ) {
+      console.error(
+        "Unable to open the Manager change-password page:",
+        error
+      );
+    }
+  }
 }
 
 async function handleLogout() {
-  activeAccountItem.value =
-    "logout";
+  if (logoutLoading.value) {
+    return;
+  }
+
+  logoutLoading.value =
+    true;
+
+  closeAccountDropdown();
 
   try {
     await logout();
 
-    clearAuthenticationStorage();
-
-    router.push(
-      "/login"
+    console.log(
+      "Manager backend logout completed successfully"
     );
   } catch (error) {
     console.error(
-      "Unable to log out:",
+      "Manager backend logout request failed:",
       error.response?.data ||
       error.message ||
       error
     );
+  } finally {
+    clearAuthentication();
 
-    /*
-     * Clear local authentication data even when
-     * the server logout request fails.
-     */
-    clearAuthenticationStorage();
+    logoutLoading.value =
+      false;
 
-    router.push(
-      "/login"
-    );
+    try {
+      await router.replace({
+        path:
+          "/login"
+      });
+    } catch (error) {
+      if (
+        !error ||
+        error.name !==
+          "NavigationDuplicated"
+      ) {
+        console.error(
+          "Unable to redirect to login:",
+          error
+        );
+      }
+    }
   }
 }
 
-function clearAuthenticationStorage() {
-  localStorage.removeItem(
-    "token"
-  );
+function clearAuthentication() {
+  if (
+    typeof removeAuthentication ===
+    "function"
+  ) {
+    removeAuthentication();
+  }
 
-  localStorage.removeItem(
-    "accessToken"
-  );
-
-  localStorage.removeItem(
-    "refreshToken"
-  );
-
-  localStorage.removeItem(
-    "user"
-  );
-
-  localStorage.removeItem(
-    "user_id"
-  );
-
-  localStorage.removeItem(
-    "region"
-  );
-
-  localStorage.removeItem(
+  const authenticationKeys = [
+    "token",
+    "accessToken",
+    "access_token",
+    "refreshToken",
+    "refresh_token",
+    "authenticatedUser",
+    "user",
+    "userId",
+    "user_id",
+    "role",
+    "region",
+    "regionName",
     "region_id"
+  ];
+
+  authenticationKeys.forEach(
+    key => {
+      localStorage.removeItem(
+        key
+      );
+    }
   );
 }
 </script>
 
+<template>
+  <div
+    class="wrapper"
+    :class="{
+      'sidebar-visible':
+        sidebarVisible,
 
+      'sidebar-hidden':
+        !sidebarVisible
+    }"
+  >
+    <Notifications />
 
+    <SideBar
+      title="GH Lands"
+      :sidebar-item-color="
+        sidebarBackground
+      "
+      :sidebar-background-image="
+        sidebarBackgroundImage
+      "
+      @visibility-change="
+        handleSidebarVisibility
+      "
+    >
+      <template #content>
+        <div class="sidebar-navigation">
+     
+
+          <SidebarLink
+            :link="{
+              name:
+                'Dashboard',
+
+              path:
+                '/manager/dashboard'
+            }"
+            class="sidebar-link"
+          >
+            <span class="sidebar-item">
+              <md-icon>
+                dashboard
+              </md-icon>
+
+              <span class="sidebar-text">
+                Staff Distribution Analysis
+              </span>
+            </span>
+          </SidebarLink>
+
+          <SidebarLink
+            :link="{
+              name:
+                'All Users',
+
+              path:
+                '/manager/allusers'
+            }"
+            class="sidebar-link"
+          >
+            <span class="sidebar-item">
+              <md-icon>
+                group
+              </md-icon>
+
+              <span class="sidebar-text">
+                All Users
+              </span>
+            </span>
+          </SidebarLink>
+
+          <SidebarLink
+            :link="{
+              name:
+                'New Entry',
+
+              path:
+                '/manager/new-entry'
+            }"
+            class="sidebar-link"
+          >
+            <span class="sidebar-item">
+              <md-icon>
+                person_add
+              </md-icon>
+
+              <span class="sidebar-text">
+                New Entry
+              </span>
+            </span>
+          </SidebarLink>
+
+          <button
+            type="button"
+            class="account-menu-button"
+            :class="{
+              active:
+                activeAccountItem ===
+                  'account' ||
+                showAccountDropdown
+            }"
+            :aria-expanded="
+              showAccountDropdown
+            "
+            aria-controls="manager-account-menu"
+            @mouseenter="
+              setActive(
+                'account'
+              )
+            "
+            @mouseleave="
+              clearActiveItem
+            "
+            @click="
+              toggleAccountDropdown
+            "
+          >
+            <span class="sidebar-item">
+              <md-icon>
+                account_circle
+              </md-icon>
+
+              <span class="sidebar-text">
+                Account
+              </span>
+
+              <md-icon
+                class="dropdown-arrow"
+                :class="{
+                  open:
+                    showAccountDropdown
+                }"
+              >
+                arrow_drop_down
+              </md-icon>
+            </span>
+          </button>
+
+          <transition name="account-dropdown">
+            <div
+              v-if="showAccountDropdown"
+              id="manager-account-menu"
+              class="sidebar-dropdown"
+            >
+              <button
+                type="button"
+                class="dropdown-menu-button"
+                :class="{
+                  active:
+                    activeAccountItem ===
+                    'change'
+                }"
+                @mouseenter="
+                  setActive(
+                    'change'
+                  )
+                "
+                @mouseleave="
+                  setActive(
+                    'account'
+                  )
+                "
+                @click="
+                  goToChangePassword
+                "
+              >
+                <span class="sidebar-item">
+                  <md-icon>
+                    lock
+                  </md-icon>
+
+                  <span class="sidebar-text">
+                    Change Password
+                  </span>
+                </span>
+              </button>
+
+              <button
+                type="button"
+                class="
+                  dropdown-menu-button
+                  logout-button
+                "
+                :class="{
+                  active:
+                    activeAccountItem ===
+                    'logout'
+                }"
+                :disabled="
+                  logoutLoading
+                "
+                @mouseenter="
+                  setActive(
+                    'logout'
+                  )
+                "
+                @mouseleave="
+                  setActive(
+                    'account'
+                  )
+                "
+                @click="
+                  handleLogout
+                "
+              >
+                <span class="sidebar-item">
+                  <md-icon>
+                    {{
+                      logoutLoading
+                        ? "hourglass_top"
+                        : "logout"
+                    }}
+                  </md-icon>
+
+                  <span class="sidebar-text">
+                    {{
+                      logoutLoading
+                        ? "Logging out..."
+                        : "Logout"
+                    }}
+                  </span>
+                </span>
+              </button>
+            </div>
+          </transition>
+        </div>
+      </template>
+    </SideBar>
+
+    <div class="main-panel">
+      <TopNavbar />
+
+      <DashboardContent />
+
+      <ContentFooter
+        v-if="!hideFooter"
+      />
+    </div>
+  </div>
+</template>
 
 <style scoped>
-/* Style for all sidebar text */
-.sidebar-link {
-  display: block;
-  padding: 10px 15px;
-  color: white;
-  text-decoration: none;
-  transition: background 0.2s;
+.wrapper {
+  position: relative;
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
-.sidebar-item {
+.main-panel {
+  position: relative;
+  min-height: 100vh;
+  transition:
+    width 0.25s ease,
+    margin-left 0.25s ease;
+}
+
+.wrapper.sidebar-visible
+.main-panel {
+  width: calc(100% - 260px);
+  margin-left: 260px;
+}
+
+.wrapper.sidebar-hidden
+.main-panel {
+  width: 100%;
+  margin-left: 0;
+}
+
+.sidebar-navigation {
+  padding: 10px 8px 24px;
+}
+
+.sidebar-link,
+.account-menu-button,
+.dropdown-menu-button {
+  width: 100%;
+  min-height: 50px;
   display: flex;
   align-items: center;
-  gap: 10px; /* spacing between icon and text */
-}
-
-.sidebar-text {
-  color: white;
-  font-size: 1rem;
-  font-weight: bold;
-  margin: 0;
-  padding: 0;
+  padding: 8px 13px;
+  color: #ffffff;
   text-align: left;
-}
-.sidebar-dropdown {
-  background: rgba(0,0,0,0.2);
-  margin-left: 10px;
-  border-radius: 5px;
+  text-decoration: none;
+  border: 0;
+  border-radius: 8px;
+  outline: none;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
 }
 
 .sidebar-link:hover,
-.sidebar-link.active {
-  background: hwb(78 3% 7% / 0.15);
-  color: #fff;
+.account-menu-button:hover,
+.account-menu-button.active,
+.dropdown-menu-button:hover,
+.dropdown-menu-button.active {
+  color: #ffffff;
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      0.14
+    );
 }
 
-/* Ensure SidebarLink aligns content left */
+.sidebar-item {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.sidebar-item .md-icon {
+  width: 26px;
+  min-width: 26px;
+  height: auto;
+  margin: 0;
+  color: #ffffff !important;
+  font-size: 23px !important;
+  line-height: 1;
+}
+
+.sidebar-text {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: left;
+  text-overflow: ellipsis;
+}
+
+.dropdown-arrow {
+  margin-left: auto !important;
+  transition:
+    transform 0.2s ease;
+}
+
+.dropdown-arrow.open {
+  transform: rotate(180deg);
+}
+
+.sidebar-dropdown {
+  margin: 4px 0 8px 17px;
+  padding: 5px;
+  border-left:
+    2px solid
+    rgba(
+      255,
+      255,
+      255,
+      0.25
+    );
+  border-radius: 7px;
+  background:
+    rgba(
+      0,
+      0,
+      0,
+      0.18
+    );
+}
+
+.dropdown-menu-button {
+  min-height: 45px;
+  margin-bottom: 3px;
+}
+
+.dropdown-menu-button:last-child {
+  margin-bottom: 0;
+}
+
+.logout-button:hover,
+.logout-button.active {
+  background:
+    rgba(
+      220,
+      38,
+      38,
+      0.78
+    );
+}
+
+.dropdown-menu-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.account-dropdown-enter-active,
+.account-dropdown-leave-active {
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.account-dropdown-enter,
+.account-dropdown-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
 :deep(.sidebar-link) {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: flex-start;
-  gap: 10px; /* spacing between icon and text */
+}
+
+:deep(.sidebar-link .sidebar-item) {
+  width: 100%;
+}
+
+@media (max-width: 991px) {
+  .wrapper.sidebar-visible
+  .main-panel,
+  .wrapper.sidebar-hidden
+  .main-panel {
+    width: 100%;
+    margin-left: 0;
+  }
 }
 </style>

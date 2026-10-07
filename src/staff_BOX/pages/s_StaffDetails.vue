@@ -384,6 +384,9 @@ const staff = computed(() => {
   const account =
     user.value || {};
 
+
+    console.log("Staff details computed property: print", account); // Log the account object for debugging
+
   return {
     id:
       account.id ?? null,

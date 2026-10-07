@@ -12,7 +12,7 @@
       :sidebar-item-color="sidebarBackground"
       :sidebar-background-image="sidebarBackgroundImage"
     >
-      <MobileMenu />
+   
 
       <template #content>
         <!-- Superadmin badge -->

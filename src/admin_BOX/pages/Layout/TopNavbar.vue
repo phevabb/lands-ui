@@ -1,57 +1,10 @@
 <template>
   <md-toolbar md-elevation="0" class="md-transparent">
     <div class="md-toolbar-row">
-      <div class="md-toolbar-section-start">
+      <div >
         <h3 class="md-title">{{ $route.name }}</h3>
       </div>
-      <div class="md-toolbar-section-end">
-        <md-button
-          class="md-just-icon md-simple md-toolbar-toggle"
-          :class="{ toggled: $sidebar.showSidebar }"
-          @click="toggleSidebar"
-        >
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </md-button>
-
-        <div class="md-collapse">
-          
-
-
-          <md-list>
-            
-
-            
-           
-
-            <!-- Profile Dropdown -->
-<div>
-  <md-menu>
-    <!-- Trigger list-item styled like your Dashboard link -->
-    <md-list-item md-menu-trigger class="profile-trigger" >
-      <i class="material-icons">person</i>
-      <p class="hidden-lg hidden-md">Profile</p>
-    </md-list-item>
-
-    <!-- Dropdown content -->
-    <md-menu-content>
-      <md-menu-item @click="$router.push('/change-password')">
-        <i class="material-icons">lock</i>
-        Change Password
-      </md-menu-item>
-
-      <md-menu-item @click="logout">
-        <i class="material-icons">exit_to_app</i>
-        Logout
-      </md-menu-item>
-    </md-menu-content>
-  </md-menu>
-</div>
-
-          </md-list>
-        </div>
-      </div>
+     
     </div>
   </md-toolbar>
 </template>
