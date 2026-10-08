@@ -431,7 +431,7 @@ const handleLogout = async () => {
     );
   } finally {
     clearAuthenticationStorage();
-    router.push("/login");
+    router.push("/superadmin/login");
   }
 };
 

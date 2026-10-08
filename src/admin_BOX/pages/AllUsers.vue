@@ -264,6 +264,8 @@ async function fetchUsers(
     errorMessage.value =
       "The accounts response has an unexpected format.";
   } catch (error) {
+
+    console.log("error is print", error);
     console.error(
       "Unable to fetch accounts:",
       {

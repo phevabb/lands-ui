@@ -1009,6 +1009,14 @@ export function patch_user(
 
 
 
+export const remove_user = (
+  payload
+) => {
+  return api.post(
+    "v1/removal-logs/remove-user",
+    payload
+  );
+};
 
   /////////////////////////
   //manager
@@ -1356,6 +1364,8 @@ export function manager_users_per_department_no_pages(
     }
   );
 }
+
+
 
 
 

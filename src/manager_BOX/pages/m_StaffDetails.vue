@@ -406,11 +406,13 @@ const removeUser = async () => {
 
   // wait 2 seconds (same as Swal timer) before redirect
   setTimeout(() => {
-    router.push("/allusers");
+    router.push("/manager/allusers");
   }, 2000);
 }
 
   } catch (error) {
+
+    console.log("err is print", error)
 
     Swal.fire({
       icon: "error",

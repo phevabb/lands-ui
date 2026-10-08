@@ -466,6 +466,7 @@ const removeUser = async () => {
 }
 
   } catch (error) {
+    console.log("Error removing user: print", error);
 
     Swal.fire({
       icon: "error",

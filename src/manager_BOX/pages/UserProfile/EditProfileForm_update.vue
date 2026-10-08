@@ -1,3 +1,6 @@
+
+
+
 <script setup>
 import { reactive, watch, computed, ref } from 'vue';
 import Swal from 'sweetalert2';
@@ -44,7 +47,7 @@ const personalInfoFields = computed(() => {
           'address',
           'contact',
         ].some((substr) => fieldName.includes(substr)) &&
-        fieldName !== 'profile_picture' &&
+        fieldName !== 'profilePictureUrl' &&
         fieldName !== 'picture' &&
         fieldName !== 'date_of_last_promotion' &&
         fieldName !== 'bank_name' &&
@@ -90,16 +93,16 @@ const otherFields = computed(() => {
       !personal.includes(field.field_name) &&
       !financial.includes(field.field_name) &&
       !dates.includes(field.field_name) &&
-      field.field_name !== 'profile_picture' &&
+      field.field_name !== 'profilePictureUrl' &&
       field.field_name !== 'user_id' &&
       field.field_name !== 'title' &&
-      field.field_name !== 'marital_status'
+      field.field_name !== 'maritalStatus'
   );
 });
 
 // Computed property for profile picture field
 const profilePictureField = computed(() =>
-  props.backformdata.find((field) => field.field_name === 'profile_picture')
+  props.backformdata.find((field) => field.field_name === 'profilePictureUrl')
 );
 
 // Computed properties for section visibility
@@ -117,7 +120,7 @@ watch(
       if (!(field.field_name in formData)) {
         if (field.field_type === 'ManyToManyField') {
           formData[field.field_name] = props.formValues[field.field_name] || [];
-        } else if (field.field_name === 'profile_picture') {
+        } else if (field.field_name === 'profilePictureUrl') {
           formData[field.field_name] = null;
         } else {
           formData[field.field_name] = props.formValues[field.field_name] || '';
@@ -150,7 +153,7 @@ watch(
               );
             }
             formData[key] = match ? match.id || match[0] : newValues[key] || '';
-          } else if (fieldConfig && fieldConfig.field_name === 'profile_picture') {
+          } else if (fieldConfig && fieldConfig.field_name === 'profilePictureUrl') {
             profilePicturePreview.value = newValues[key]
               ? `${api.defaults.baseURL}/${newValues[key].replace(/^\/+/, '')}`
               : DEFAULT_AVATAR;
@@ -173,7 +176,7 @@ const onFileChange = (file) => {
         title: 'Invalid File',
         text: 'Please select an image file.',
       });
-      formData.profile_picture = null;
+      formData.profilePictureUrl   = null;
       profilePictureFile.value = null;
       profilePicturePreview.value = DEFAULT_AVATAR;
       if (fileInput.value) fileInput.value.value = '';
@@ -185,17 +188,17 @@ const onFileChange = (file) => {
         title: 'File Too Large',
         text: 'Image must be less than 2MB.',
       });
-      formData.profile_picture = null;
+      formData.profilePictureUrl   = null;
       profilePictureFile.value = null;
       profilePicturePreview.value = DEFAULT_AVATAR;
       if (fileInput.value) fileInput.value.value = '';
       return;
     }
-    formData.profile_picture = file;
+    formData.profilePictureUrl   = file;
     profilePictureFile.value = file;
     profilePicturePreview.value = URL.createObjectURL(file);
   } else {
-    formData.profile_picture = null;
+    formData.profilePictureUrl   = null;
     profilePictureFile.value = null;
     profilePicturePreview.value = DEFAULT_AVATAR;
     if (fileInput.value) fileInput.value.value = '';
@@ -204,7 +207,7 @@ const onFileChange = (file) => {
 
 // Clear profile picture
 const clearFile = () => {
-  formData.profile_picture = null;
+  formData.profilePictureUrl = null;
   profilePictureFile.value = null;
   profilePicturePreview.value = DEFAULT_AVATAR;
   if (fileInput.value) fileInput.value.value = '';
@@ -215,10 +218,10 @@ const handleSubmit = () => {
   const formDataToSend = new FormData();
 
   if (profilePictureFile.value instanceof File) {
-    formDataToSend.append('profile_picture', profilePictureFile.value, profilePictureFile.value.name);
+    formDataToSend.append('profilePictureUrl', profilePictureFile.value, profilePictureFile.value.name);
   }
   for (const [key, value] of Object.entries(formData)) {
-    if (key !== 'profile_picture' && value !== null && value !== '') {
+    if (key !== 'profilePictureUrl' && value !== null && value !== '') {
       if (Array.isArray(value)) {
          value.forEach((val) => formDataToSend.append(key, val));
       } else {
@@ -271,6 +274,9 @@ watch(
 );
 </script>
 
+
+
+
 <template>
   <div class="premium-form-container">
     <!-- Form Header -->
@@ -303,10 +309,10 @@ watch(
                 />
                 <button type="button" class="clear-button" @click="clearFile">Clear Image</button>
                 <span
-                  v-if="backendErrors.profile_picture"
+                  v-if="backendErrors.profilePictureUrl"
                   class="error-message block bg-red-100 border border-red-400 text-red-700 text-sm rounded px-3 py-2 mt-2"
                 >
-                  {{ backendErrors.profile_picture[0] }}
+                  {{ backendErrors.profilePictureUrl[0] }}
                 </span>
               </div>
             </div>
@@ -546,6 +552,15 @@ watch(
     </form>
   </div>
 </template>
+
+
+
+
+
+
+
+
+
 
 <style scoped>
 .premium-form-container {
