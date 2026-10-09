@@ -22,17 +22,7 @@
       </div>
 
       
-      <button
-        class="export-btn"
-        @click="exportExcel"
-        :disabled="loading"
-        aria-label="Export to Excel"
-      >
-        <span class="material-icons" style="font-size: 16px; margin-right: 6px;">
-          {{ loading ? 'hourglass_top' : 'download' }}
-        </span>
-        {{ loading ? 'Exporting...' : 'Export' }}
-      </button>
+    
 
 
 

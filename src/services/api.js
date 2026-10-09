@@ -661,17 +661,18 @@ export function getStoredUser() {
 }
 
 
-export const all_users_to_excel =
-  () => {
-    return api.get(
-      "/accounts",
-      {
-        params: {
-          page_size: 10000
-        }
-      }
-    );
-  };
+
+// for admins only
+export const all_users_to_excel = (
+  params = {}
+) => {
+  return api.get(
+    "/admin/all-users-to-excel",
+    {
+      params
+    }
+  );
+};
 
 
 
@@ -1364,7 +1365,6 @@ export function manager_users_per_department_no_pages(
     }
   );
 }
-
 
 
 

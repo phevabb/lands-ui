@@ -246,7 +246,7 @@ import Pagination from "../../components/Pagination.vue";
 
 import api, {
   DEFAULT_AVATAR,
-  manager_all_users_to_excel
+  all_users_to_excel
 } from "../../services/api";
 
 const props = defineProps({
@@ -456,7 +456,7 @@ async function loadSearchRecords() {
 
   try {
     const response =
-      await manager_all_users_to_excel();
+      await all_users_to_excel();
 
     console.log(
       "Manager region users response:",
@@ -865,7 +865,7 @@ async function exportExcel() {
 
     XLSX.writeFile(
       workbook,
-      "regional_staff_data.xlsx"
+      "All_Staff_data.xlsx"
     );
   } catch (error) {
     console.error(

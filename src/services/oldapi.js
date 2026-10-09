@@ -85,7 +85,7 @@ export const patch_user = (userId, payload) => {
   for (let [key, value] of payload.entries()) {}
   return api.patch(`admin/api/v1/user-update/${userId}/`, payload);
 };
-export const all_users_to_excel = (params = {}) => api.get("superadmin/api/v1/all-users-to-excel", { params });
+//export const all_users_to_excel = (params = {}) => api.get("superadmin/api/v1/all-users-to-excel", { params });
 
 // export const users_per_department = (dept, params = {}) => {
 //   return api.get("superadmin/api/v1/users-per-department/", {

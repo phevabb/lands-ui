@@ -12,8 +12,8 @@ import {
   getAccounts
 } from "../../services/api";
 
-import { SimpleTable
-} from "@/components";
+import SimpleTable from "@/admin_BOX/pages/SimpleTable.vue";
+
 
 const router =
   useRouter();

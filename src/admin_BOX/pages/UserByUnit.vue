@@ -18,14 +18,13 @@ import {
 
 import * as XLSX from "xlsx";
 
+
 import {
   saveAs
 } from "file-saver";
 
+import SimpleTableUnit from "@/admin_BOX/pages/SimpleTableUnit.vue";
 
-import {
-  SimpleTable
-} from "@/components";
 
 import {
   users_per_department,
@@ -1217,6 +1216,8 @@ function resetPage() {
           }}
         </md-button>
       </div>
+
+      
     </div>
 
     <div class="table-container">
@@ -1286,7 +1287,7 @@ function resetPage() {
         </p>
       </div>
 
-      <SimpleTable
+      <SimpleTableUnit
         v-else
         table-header-color="green"
         :rows="users"
