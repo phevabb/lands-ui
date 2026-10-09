@@ -16,48 +16,8 @@
 
       <template #content>
         <!-- Superadmin badge -->
-        <div class="superadmin-badge">
-          <div class="superadmin-badge-icon">
-            <md-icon>admin_panel_settings</md-icon>
-          </div>
-
-          <div class="superadmin-badge-content">
-            <span class="superadmin-badge-title">
-              Super Administrator
-            </span>
-
-            <span class="superadmin-badge-subtitle">
-              System Management
-            </span>
-          </div>
-        </div>
-
-        <!-- Overview heading -->
-        <!-- <div class="sidebar-section-heading">
-          Overview
-        </div> -->
-
-        <!-- Dashboard -->
-        <!-- <SidebarLink
-          :link="{
-            name: 'Superadmin Dashboard',
-            path: '/superadmin/allusers'
-          }"
-          class="sidebar-link"
-        >
-          <span class="sidebar-item">
-            <md-icon>dashboard</md-icon>
-
-            <span class="sidebar-text">
-              Dashboard
-            </span>
-          </span>
-        </SidebarLink> -->
-
-        <!-- Staff management heading -->
-        <div class="sidebar-section-heading">
-          Staff Management
-        </div>
+   
+       
 
         <!-- All users -->
         <SidebarLink
@@ -276,7 +236,7 @@
                   Leave Types
                 </span>
               </span>
-            </SidebarLink>
+            </SidebarLink>  
 
             <SidebarLink
               :link="{
@@ -293,139 +253,33 @@
                 </span>
               </span>
             </SidebarLink>
-          </div>
-        </transition>
 
-        <!-- Administration heading -->
-        <div class="sidebar-section-heading">
-          Administration
-        </div>
 
-        <!-- Reports -->
-        <SidebarLink
-          :link="{
-            name: 'Superadmin Reports',
-            path: '/superadmin/reports'
-          }"
-          class="sidebar-link"
-        >
-          <span class="sidebar-item">
-            <md-icon>analytics</md-icon>
-
-            <span class="sidebar-text">
-              Reports
-            </span>
-          </span>
-        </SidebarLink>
-
-        <!-- Audit activities -->
-        <SidebarLink
-          :link="{
-            name: 'Superadmin Audit Activities',
-            path: '/superadmin/audit-activities'
-          }"
-          class="sidebar-link"
-        >
-          <span class="sidebar-item">
-            <md-icon>history</md-icon>
-
-            <span class="sidebar-text">
-              Audit Activities
-            </span>
-          </span>
-        </SidebarLink>
-
-        <!-- Account heading -->
-        <div class="sidebar-section-heading">
-          My Account
-        </div>
-
-        <!-- User profile -->
-        <SidebarLink
-          :link="{
-            name: 'Superadmin User Profile',
-            path: '/superadmin/user'
-          }"
-          class="sidebar-link"
-        >
-          <span class="sidebar-item">
-            <md-icon>account_circle</md-icon>
-
-            <span class="sidebar-text">
-              My Profile
-            </span>
-          </span>
-        </SidebarLink>
-
-        <!-- Account dropdown -->
-        <div
-          class="sidebar-link sidebar-dropdown-trigger"
-          :class="{
-            active: activeAccountItem === 'account'
-          }"
-          @mouseenter="setActive('account')"
-          @mouseleave="setActive(null)"
-          @click="toggleAccountDropdown"
-        >
-          <span class="sidebar-item">
-            <md-icon>manage_accounts</md-icon>
-
-            <span class="sidebar-text">
-              Account Settings
-            </span>
-
-            <md-icon class="dropdown-arrow">
-              {{
-                showAccountDropdown
-                  ? "expand_less"
-                  : "expand_more"
-              }}
-            </md-icon>
-          </span>
-        </div>
-
-        <transition name="dropdown">
-          <div
-            v-if="showAccountDropdown"
-            class="sidebar-dropdown"
-          >
-            <div
+            <SidebarLink
+              :link="{
+                name: 'Removal Logs',
+                path: '/superadmin/removal-logs'
+              }"
               class="sidebar-link dropdown-link"
-              :class="{
-                active: activeAccountItem === 'change'
-              }"
-              @mouseenter="setActive('change')"
-              @mouseleave="setActive(null)"
-              @click="goToChangePassword"
             >
               <span class="sidebar-item">
-                <md-icon>lock</md-icon>
+                <md-icon>analytics</md-icon>
 
                 <span class="sidebar-text dropdown-text">
-                  Change Password
+                  Removal Logs
                 </span>
               </span>
-            </div>
+            </SidebarLink>
 
-            <div
-              class="sidebar-link dropdown-link logout-link"
-              :class="{
-                active: activeAccountItem === 'logout'
-              }"
-              @mouseenter="setActive('logout')"
-              @mouseleave="setActive(null)"
-              @click="handleLogout"
-            >
-              <span class="sidebar-item">
-                <md-icon>logout</md-icon>
 
-                <span class="sidebar-text dropdown-text">
-                  Sign Out
-                </span>
-              </span>
-            </div>
+
           </div>
         </transition>
+
+      
+
+     
+
       </template>
     </SideBar>
 
@@ -490,7 +344,8 @@ const configurationPaths = [
   "/superadmin/management-units",
   "/superadmin/titles",
   "/superadmin/on-leave-types",
-  "/superadmin/positions"
+  "/superadmin/positions",
+  "/superadmin/removal-logs"
 ];
 
 const isConfigurationActive = computed(() => {

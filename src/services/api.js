@@ -1369,6 +1369,26 @@ export function manager_users_per_department_no_pages(
 
 
 
+
+
+export const get_removal_logs = (
+  page = 1,
+  pageSize = 10
+) => {
+  return api.get(
+    "/removal-logs",
+    {
+      params: {
+        page,
+        page_size:
+          pageSize
+      }
+    }
+  );
+};
+
+
+
 export {
   api,
   API_BASE_URL

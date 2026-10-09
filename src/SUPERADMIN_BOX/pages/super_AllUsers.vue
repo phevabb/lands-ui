@@ -41,7 +41,7 @@
 
         <div class="statistic-content">
           <span class="statistic-value">
-            {{ accounts.length }}
+           {{ totalRecords }}
           </span>
 
           <span class="statistic-label">
@@ -340,9 +340,7 @@
 
             
 
-              <th>
-                Last Login
-              </th>
+              
 
               <th class="actions-column">
                 Actions
@@ -426,12 +424,7 @@
               </td>
 
           
-              <td>
-                <span class="date-value">
-                  {{ formatDateTime(account.lastLogin) }}
-                </span>
-              </td>
-
+              
               <td>
                 <div class="record-actions">
                   <button
@@ -536,7 +529,9 @@
           to
           <strong>{{ paginationEnd }}</strong>
           of
-          <strong>{{ filteredAccounts.length }}</strong>
+          <strong>
+  {{ totalRecords }}
+</strong>
           users
         </div>
 
@@ -2385,8 +2380,12 @@ removeExistingProfilePicture: false,
       lookupOptions: createEmptyLookups(),
 
       currentPage: 1,
-      pageSize: 10,
-      lastUpdated: null,
+pageSize: 10,
+totalRecords: 0,
+serverTotalPages: 1,
+nextPageUrl: null,
+previousPageUrl: null,
+lastUpdated: null,
 
       filters: {
         role: "",
@@ -2596,45 +2595,74 @@ removeExistingProfilePicture: false,
       );
     },
 
-    totalPages() {
-      return Math.max(
-        1,
-        Math.ceil(
-          this.sortedAccounts.length /
-          this.pageSize
-        )
-      );
-    },
+   totalPages() {
+  return this.serverTotalPages;
+},
+
 
     paginatedAccounts() {
-      const start =
-        (this.currentPage - 1) *
-        this.pageSize;
+  return this.sortedAccounts;
+},
 
-      return this.sortedAccounts.slice(
-        start,
-        start + this.pageSize
-      );
-    },
 
-    paginationStart() {
-      if (!this.sortedAccounts.length) {
-        return 0;
-      }
 
-      return (
-        (this.currentPage - 1) *
-        this.pageSize +
-        1
-      );
-    },
 
-    paginationEnd() {
-      return Math.min(
-        this.currentPage * this.pageSize,
-        this.sortedAccounts.length
-      );
-    },
+
+
+paginationStart() {
+  if (
+    this.totalRecords === 0 ||
+    this.accounts.length === 0
+  ) {
+    return 0;
+  }
+
+  return (
+    (
+      this.currentPage -
+      1
+    ) *
+    this.pageSize
+  ) + 1;
+},
+
+paginationEnd() {
+  if (
+    this.totalRecords === 0 ||
+    this.accounts.length === 0
+  ) {
+    return 0;
+  }
+
+  return Math.min(
+    this.paginationStart +
+      this.accounts.length -
+      1,
+
+    this.totalRecords
+  );
+},
+
+
+
+paginationEnd() {
+  if (
+    this.totalRecords === 0 ||
+    this.accounts.length === 0
+  ) {
+    return 0;
+  }
+
+  return Math.min(
+    this.paginationStart +
+      this.accounts.length -
+      1,
+
+    this.totalRecords
+  );
+},
+
+
 
     formModalTitle() {
       return this.editingId !== null
@@ -2720,23 +2748,22 @@ removeExistingProfilePicture: false,
   },
 
   watch: {
-    search() {
-      this.currentPage = 1;
-    },
+   search() {
+  /*
+   * Search currently filters only the loaded server page.
+   * Do not change currentPage here.
+   */
+},
 
-    filters: {
-      deep: true,
+   filters: {
+  deep: true,
 
-      handler() {
-        this.currentPage = 1;
-      }
-    },
-
-    totalPages(value) {
-      if (this.currentPage > value) {
-        this.currentPage = value;
-      }
-    },
+  handler() {
+    /*
+     * Filters currently apply only to the loaded page.
+     */
+  }
+},
 
     showDetailsModal() {
       this.updateBodyScroll();
@@ -2747,9 +2774,9 @@ removeExistingProfilePicture: false,
     }
   },
 
-  created() {
-    this.loadAccounts();
-  },
+ created() {
+  this.loadAccounts(1);
+},
 
 beforeDestroy() {
   document.body.style.overflow =
@@ -2987,10 +3014,24 @@ async uploadProfilePicture() {
           : "";
     },
 
-
 getResponseRecords(responseData) {
   if (Array.isArray(responseData)) {
     return responseData;
+  }
+
+  if (
+    responseData &&
+    Array.isArray(responseData.results)
+  ) {
+    return responseData.results;
+  }
+
+  if (
+    responseData &&
+    responseData.data &&
+    Array.isArray(responseData.data.results)
+  ) {
+    return responseData.data.results;
   }
 
   if (
@@ -3018,19 +3059,36 @@ getResponseRecords(responseData) {
     "onLeaveTypes"
   ];
 
-  for (const collectionName of collectionNames) {
+  for (
+    const collectionName of
+    collectionNames
+  ) {
     if (
       responseData &&
       Array.isArray(
         responseData[collectionName]
       )
     ) {
-      return responseData[collectionName];
+      return responseData[
+        collectionName
+      ];
     }
   }
 
+  console.log(
+    "No record collection found in response:",
+    responseData
+  );
+
   return [];
 },
+
+
+
+
+
+
+
 
 
     normalizeBoolean(value, fallback = false) {
@@ -3097,56 +3155,184 @@ getResponseRecords(responseData) {
       };
     },
 
-    async loadAccounts() {
-      this.loading = true;
-      this.errorMessage = "";
 
-      try {
-        const response = await axios.get(
-          `${API_BASE_URL}/accounts`,
-          this.getRequestConfig()
-        );
 
-        const records =
-          this.getResponseRecords(
-            response.data
-          );
+async loadAccounts(
+  requestedPage = 1
+) {
+  if (this.loading) {
+    return;
+  }
 
-        this.accounts = records.map(
-          account => this.normalizeAccount(account)
-        );
+  const page =
+    Math.max(
+      1,
+      Number(requestedPage) || 1
+    );
 
-        this.lastUpdated = new Date();
+  this.loading = true;
+  this.errorMessage = "";
 
-        if (
-          this.currentPage >
-          this.totalPages
-        ) {
-          this.currentPage =
-            this.totalPages;
+  try {
+    console.log(
+      "Requesting accounts:",
+      {
+        page,
+        pageSize:
+          this.pageSize
+      }
+    );
+
+    const response =
+      await axios.get(
+        `${API_BASE_URL}/accounts`,
+        {
+          ...this.getRequestConfig(),
+
+          params: {
+            page,
+            page_size:
+              this.pageSize
+          }
         }
-      } catch (error) {
-        this.accounts = [];
+      );
 
-        this.errorMessage =
-          this.getErrorMessage(
-            error,
-            "Unable to load user accounts."
-          );
-      } finally {
-        this.loading = false;
+    console.log(
+      "Accounts response:",
+      response.data
+    );
+
+    const records =
+      this.getResponseRecords(
+        response.data
+      );
+
+    console.log(
+      "Records for requested page:",
+      {
+        requestedPage:
+          page,
+
+        recordCount:
+          records.length,
+
+        recordIds:
+          records.map(
+            account => account.id
+          )
       }
-    },
+    );
 
-    async refreshAccounts() {
-      this.refreshing = true;
+    this.accounts =
+      records.map(account => {
+        return this.normalizeAccount(
+          account
+        );
+      });
 
-      try {
-        await this.loadAccounts();
-      } finally {
-        this.refreshing = false;
+    const responseCount =
+      Number(
+        response.data?.count
+      );
+
+    this.totalRecords =
+      Number.isFinite(
+        responseCount
+      ) &&
+      responseCount >= 0
+        ? responseCount
+        : this.accounts.length;
+
+    this.serverTotalPages =
+      Math.max(
+        1,
+        Math.ceil(
+          this.totalRecords /
+          this.pageSize
+        )
+      );
+
+    this.currentPage =
+      Math.min(
+        page,
+        this.serverTotalPages
+      );
+
+    this.nextPageUrl =
+      response.data?.next ??
+      null;
+
+    this.previousPageUrl =
+      response.data?.previous ??
+      null;
+
+    this.lastUpdated =
+      new Date();
+
+    console.log(
+      "Accounts page applied:",
+      {
+        currentPage:
+          this.currentPage,
+
+        totalPages:
+          this.serverTotalPages,
+
+        totalRecords:
+          this.totalRecords,
+
+        displayedIds:
+          this.accounts.map(
+            account => account.id
+          )
       }
-    },
+    );
+  } catch (error) {
+    console.error(
+      "Error loading accounts:",
+      {
+        status:
+          error.response?.status,
+
+        response:
+          error.response?.data,
+
+        message:
+          error.message,
+
+        code:
+          error.code
+      }
+    );
+
+    this.errorMessage =
+      this.getErrorMessage(
+        error,
+        "Unable to load user accounts."
+      );
+  } finally {
+    this.loading = false;
+  }
+},
+
+async refreshAccounts() {
+  if (
+    this.refreshing ||
+    this.loading
+  ) {
+    return;
+  }
+
+  this.refreshing = true;
+
+  try {
+    await this.loadAccounts(
+      this.currentPage
+    );
+  } finally {
+    this.refreshing = false;
+  }
+},
 
     async loadLookupOptions() {
       this.lookupsLoading = true;
@@ -4339,24 +4525,44 @@ validateForm() {
       this.clearFilters();
     },
 
-    handlePageSizeChange() {
-      this.currentPage = 1;
-    },
+async handlePageSizeChange() {
+  this.currentPage =
+    1;
 
-    previousPage() {
-      if (this.currentPage > 1) {
-        this.currentPage -= 1;
-      }
-    },
+  await this.loadAccounts(
+    1
+  );
+},
 
-    nextPage() {
-      if (
-        this.currentPage <
-        this.totalPages
-      ) {
-        this.currentPage += 1;
-      }
-    },
+async previousPage() {
+  if (
+    this.loading ||
+    this.currentPage <= 1
+  ) {
+    return;
+  }
+
+  await this.loadAccounts(
+    this.currentPage - 1
+  );
+},
+
+async nextPage() {
+  if (
+    this.loading ||
+    this.currentPage >=
+      this.totalPages
+  ) {
+    return;
+  }
+
+  await this.loadAccounts(
+    this.currentPage + 1
+  );
+},
+
+
+    
 
     rowNumber(index) {
       return (
@@ -4369,6 +4575,11 @@ validateForm() {
   }
 };
 </script>
+
+
+
+
+
 
 
 <style scoped>

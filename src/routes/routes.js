@@ -60,6 +60,8 @@ import super_Positions from "../SUPERADMIN_BOX/pages/super_Positions.vue";
 import super_AllUsers from "../SUPERADMIN_BOX/pages/super_AllUsers.vue";
 import Super_ManagerProfiles from "../SUPERADMIN_BOX/pages/super_ManagerProfiles.vue";
 import SuperAdminLogin from "../SUPERADMIN_BOX/pages/SuperAdminLogin.vue";
+import super_RemovalLogs from "../SUPERADMIN_BOX/pages/super_RemovalLogs.vue";
+
 
 const routes = [
 
@@ -245,6 +247,18 @@ const routes = [
       component: super_Positions,
       meta: {
         title: "Positions",
+        requiresAuth: false,
+        allowedRoles: [],
+        requiresSuperuser: false
+      }
+    },
+
+    {
+      path: "removal-logs",
+      name: "Removal Logs",
+      component: super_RemovalLogs,
+      meta: {
+        title: "Removal Logs",
         requiresAuth: false,
         allowedRoles: [],
         requiresSuperuser: false

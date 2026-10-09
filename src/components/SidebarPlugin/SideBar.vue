@@ -29,18 +29,18 @@
       <div class="sidebar-top">
         <div class="logo welcome-text">
           <span>
-            Welcome,
+        
 
             <strong>
               {{ displayName }}
             </strong>
 
-            <small
+            <!-- <small
               v-if="userSubtitle"
               class="user-subtitle"
             >
               {{ userSubtitle }}
-            </small>
+            </small> -->
           </span>
         </div>
 
