@@ -384,52 +384,60 @@
                 </span>
               </td>
 
-              <td>
-                <div class="account-reference">
-                  <div class="account-reference-icon removed">
-                    <md-icon>
-                      person_off
-                    </md-icon>
-                  </div>
 
-                  <div>
-                    <span class="account-reference-label">
-                      Account ID
-                    </span>
 
-                    <strong>
-                      #{{ log.accountId }}
-                    </strong>
-                  </div>
-                </div>
-              </td>
+             <td>
+  <div class="account-reference">
+    <div class="account-reference-icon removed">
+      <md-icon>
+        person_off
+      </md-icon>
+    </div>
 
-              <td>
-                <div class="account-reference">
-                  <div class="account-reference-icon actor">
-                    <md-icon>
-                      admin_panel_settings
-                    </md-icon>
-                  </div>
+    <div>
+      <strong>
+        {{
+          log.removedAccountFullName ||
+          `Account #${log.accountId}`
+        }}
+      </strong>
 
-                  <div>
-                    <span class="account-reference-label">
-                      Account ID
-                    </span>
+      <span class="account-reference-label">
+        {{
+          log.removedAccountUserId ||
+          `Account ID: ${log.accountId}`
+        }}
+      </span>
+    </div>
+  </div>
+            </td>
 
-                    <strong>
-                      {{
-                        log.removedByAccountId !==
-                          null &&
-                        log.removedByAccountId !==
-                          undefined
-                          ? `#${log.removedByAccountId}`
-                          : "Historical"
-                      }}
-                    </strong>
-                  </div>
-                </div>
-              </td>
+
+          <td>
+  <div class="account-reference">
+    <div class="account-reference-icon actor">
+      <md-icon>
+        admin_panel_settings
+      </md-icon>
+    </div>
+
+    <div>
+      <strong>
+        {{
+          log.removedByFullName ||
+          `Account #${log.removedByAccountId}`
+        }}
+      </strong>
+
+      <span class="account-reference-label">
+        {{
+          log.removedByUserId ||
+          `Account ID: ${log.removedByAccountId}`
+        }}
+      </span>
+    </div>
+  </div>
+</td>
 
               <td>
                 <span
@@ -1139,6 +1147,8 @@ export default {
             this.pageSize
           );
 
+          console.log("removed logs print", response)
+
         const responseData =
           response.data &&
           typeof response.data ===
@@ -1263,43 +1273,60 @@ export default {
       }
     },
 
-    normalizeLog(
-      record
-    ) {
-      return {
-        id:
-          this.normalizeIdentifier(
-            record.id
-          ),
+ normalizeLog(record) {
+  return {
+    id:
+      Number(
+        record.id
+      ),
 
-        accountId:
-          this.normalizeIdentifier(
-            record.accountId ??
-            record.account_id
-          ),
+    accountId:
+      Number(
+        record.accountId ??
+        record.account_id
+      ),
 
-        removedByAccountId:
-          this.normalizeOptionalIdentifier(
-            record.removedByAccountId ??
-            record.removed_by_account_id
-          ),
+    removedAccountFullName:
+      record.removedAccountFullName ??
+      record.removed_account_full_name ??
+      "",
 
-        removedByRole:
-          record.removedByRole ??
-          record.removed_by_role ??
-          "",
+    removedAccountUserId:
+      record.removedAccountUserId ??
+      record.removed_account_user_id ??
+      "",
 
-        reason:
-          record.reason ??
-          "",
+    removedByAccountId:
+      Number(
+        record.removedByAccountId ??
+        record.removed_by_account_id
+      ),
 
-        removedAt:
-          record.removedAt ??
-          record.removed_at ??
-          null
-      };
-    },
+    removedByFullName:
+      record.removedByFullName ??
+      record.removed_by_full_name ??
+      "",
 
+    removedByUserId:
+      record.removedByUserId ??
+      record.removed_by_user_id ??
+      "",
+
+    removedByRole:
+      record.removedByRole ??
+      record.removed_by_role ??
+      "",
+
+    reason:
+      record.reason ??
+      "",
+
+    removedAt:
+      record.removedAt ??
+      record.removed_at ??
+      null
+  };
+},
     normalizeIdentifier(
       value
     ) {
