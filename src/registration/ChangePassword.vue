@@ -38,41 +38,92 @@ function togglePasswordVisibility(field) {
   showPassword.value[field] = !showPassword.value[field];
 }
 
+
+
 const handleChangePassword = async () => {
+  // Prevent duplicate submissions.
+  if (loading.value) {
+    return;
+  }
+
+  message.value = {
+    text: "",
+    type: ""
+  };
+
+  errors.value = {};
   loading.value = true;
+
   try {
     await changepassword({
       currentPassword: oldPassword.value,
       newPassword: newPassword.value,
-      confirmPassword: confirmPassword.value,
+      confirmPassword: confirmPassword.value
     });
 
-  
     oldPassword.value = "";
     newPassword.value = "";
     confirmPassword.value = "";
 
-    router.push("/change-password-complete");
+    await router.push(
+      "/change-password-complete"
+    );
   } catch (error) {
-    if (error.response && error.response.data) {
-      errors.value = error.response.data;
+    console.error(
+      "Error changing password:",
+      error
+    );
+
+    console.error(
+      "Backend response:",
+      error.response?.data
+    );
+
+    if (error.response?.data) {
+      const responseData = error.response.data;
+
+      errors.value =
+        typeof responseData === "object"
+          ? responseData
+          : {};
+
+      const backendError =
+        responseData.error ||
+        responseData.message ||
+        responseData.detail ||
+        responseData.non_field_errors?.[0] ||
+        responseData.currentPassword?.[0] ||
+        responseData.newPassword?.[0] ||
+        responseData.confirmPassword?.[0] ||
+        responseData.current_password?.[0] ||
+        responseData.new_password?.[0] ||
+        responseData.confirm_password?.[0] ||
+        "Failed to change password. Please check the form for errors.";
+
       message.value = {
-        text: error.response.data.non_field_errors
-          ? error.response.data.non_field_errors[0]
-          : "Failed to change password. Please check the form for errors.",
-        type: "error",
+        text: backendError,
+        type: "error"
+      };
+    } else if (error.request) {
+      message.value = {
+        text:
+          "The server did not respond. Please check your connection and try again.",
+        type: "error"
       };
     } else {
       message.value = {
-        text: "Network error. Please try again later.",
-        type: "error",
+        text:
+          error.message ||
+          "Unable to change your password.",
+        type: "error"
       };
     }
-    
   } finally {
     loading.value = false;
   }
 };
+
+
 
 </script>
 
@@ -105,6 +156,12 @@ const handleChangePassword = async () => {
 
       <!-- Password Form -->
       <form @submit.prevent="handleChangePassword">
+  <fieldset
+    class="password-fieldset"
+    :disabled="loading"
+  >
+  
+
         <!-- Old Password -->
         <div class="form-group">
           <label for="oldPassword"><i class="fas fa-key"></i> Old Password</label>
@@ -179,15 +236,51 @@ const handleChangePassword = async () => {
         </div>
 
         <!-- Submit Button -->
-        <button type="submit" class="btn btn-primary" :disabled="loading">
-          <i class="fas fa-sync-alt" v-if="loading"></i>
-          <i class="fas fa-key" v-else></i>
-          {{ loading ? 'Changing Password...' : 'Change Password' }}
-        </button>
-      </form>
+       <button
+  type="submit"
+  class="btn btn-primary change-password-button"
+  :class="{ 'is-loading': loading }"
+  :disabled="loading"
+  :aria-disabled="loading ? 'true' : 'false'"
+  :aria-busy="loading ? 'true' : 'false'"
+>
+  <span
+    v-if="loading"
+    class="button-loading-content"
+  >
+    <span
+      class="button-spinner"
+      aria-hidden="true"
+    ></span>
+
+    <span>
+      Changing Password...
+    </span>
+  </span>
+
+  <span
+    v-else
+    class="button-default-content"
+  >
+    <i
+      class="fas fa-key"
+      aria-hidden="true"
+    ></i>
+
+    <span>
+      Change Password
+    </span>
+  </span>
+</button>
+    </fieldset>
+</form>
     </div>
   </div>
 </template>
+
+
+
+
 
 <style scoped>
 /* GENERAL STYLES */
@@ -199,6 +292,82 @@ body {
   background-color: #f0f2f5;
   margin: 0;
   color: #333;
+}
+
+.password-fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.password-fieldset:disabled .form-control,
+.password-fieldset:disabled .password-toggle {
+  cursor: not-allowed;
+}
+
+
+
+.change-password-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 46px;
+  min-width: 210px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    opacity 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.change-password-button:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+.change-password-button:not(:disabled):active {
+  transform: translateY(0);
+}
+
+.change-password-button:disabled,
+.change-password-button.is-loading {
+  cursor: not-allowed;
+  opacity: 0.75;
+  pointer-events: none;
+}
+
+.button-loading-content,
+.button-default-content {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.button-spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: change-password-spin 0.75s linear infinite;
+}
+
+@keyframes change-password-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .password-container {
