@@ -65,7 +65,7 @@ import super_RemovalLogs from "../SUPERADMIN_BOX/pages/super_RemovalLogs.vue";
 
 const routes = [
 
-  {
+{
   path: "/superadmin/login",
   name: "SuperAdminLogin",
   component: SuperAdminLogin,
@@ -73,44 +73,71 @@ const routes = [
     public: true,
     guestOnly: true
   }
-}
-,
-  {
-  path: "/",
-  redirect: "/login",
-},
-{
-  path: "/password-reset-confirm/:uid/:token",
-  name: "password-reset-confirm",
-  component: ResetPasswordConfirm,
 },
 
-  {
-    path: "/login",
-    name: "Login",
-    component: Login,
-  },
-  {
-    path: "/reset-password",
-    name: "reset-password",
-    component: ResetPassword,
-  },
-  
-  {
-    path: "/password-reset-success",
-    name: "password-reset-success",
-    component: ResetPasswordSuccess,
-  },
-  {
-    path: "/change-password-complete",
-    name: "change-password-complete",
-    component: ChangePasswordComplete,
-  },
-  {
-    path: "/password-reset-done",
-    name: "password-reset-done",
-    component: ResetPasswordDone,
-  },
+{
+  path: "/",
+  redirect: "/login"
+},
+
+{
+  path: "/login",
+  name: "Login",
+  component: Login,
+  meta: {
+    public: true,
+    guestOnly: true
+  }
+},
+
+// User enters their email address here.
+{
+  path: "/forgot-password",
+  name: "ForgotPassword",
+  component: ResetPassword,
+  meta: {
+    public: true,
+    guestOnly: true
+  }
+},
+
+// User arrives here from the email reset link.
+{
+  path: "/reset-password",
+  name: "reset-password",
+  component: ResetPasswordConfirm,
+  meta: {
+    public: true
+  }
+}
+,
+
+{
+  path: "/password-reset-success",
+  name: "PasswordResetSuccess",
+  component: ResetPasswordSuccess,
+  meta: {
+    public: true
+  }
+},
+
+{
+  path: "/change-password-complete",
+  name: "ChangePasswordComplete",
+  component: ChangePasswordComplete,
+  meta: {
+    public: true
+  }
+},
+
+{
+  path: "/password-reset-done",
+  name: "PasswordResetDone",
+  component: ResetPasswordDone,
+  meta: {
+    public: true
+  }
+},
 
 
   {

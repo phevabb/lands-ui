@@ -99,14 +99,26 @@
   </div>
 </template>
 
+
+
+
 <script setup>
-import { ref, onMounted } from "vue";
-import { useRouter } from "vue-router/composables";
-import { resetpasswordconfirm } from "../services/api";
+import {
+  ref,
+  onMounted
+} from "vue";
 
+import {
+  useRouter
+} from "vue-router/composables";
 
+import {
+  resetpasswordconfirm
+} from "../services/api";
 
-const validLink = ref(true);
+const router = useRouter();
+
+const validLink = ref(false);
 const password1 = ref("");
 const password2 = ref("");
 const error = ref("");
@@ -116,87 +128,196 @@ const passwordStrength = ref(0);
 const showPassword1 = ref(false);
 const showPassword2 = ref(false);
 
-const router = useRouter();
-const pathParts = window.location.pathname.split("/");
-// Example result:
-// ["", "password-reset-confirm", "MTU", "cvafe9-3b934a70853c743416438254ec529c09", ""]
-
-const uidb64 = pathParts[2]; // "MTU"
-const token = pathParts[3];  // "cvafe9-3b934a70853c743416438254ec529c09"
-
-
-
+const token = ref("");
 
 onMounted(() => {
+  const queryParameters = new URLSearchParams(
+    window.location.search
+  );
 
+  token.value = String(
+    queryParameters.get("token") || ""
+  ).trim();
+
+  validLink.value = Boolean(token.value);
+
+  console.log(
+    "Password reset token present:",
+    Boolean(token.value)
+  );
+
+  console.log(
+    "Password reset token length:",
+    token.value.length
+  );
+
+  if (!token.value) {
+    error.value =
+      "The password reset link is invalid or incomplete.";
+  }
 });
 
-const calculatePasswordStrength = (password) => {
-  if (!password) return 0;
+const calculatePasswordStrength = password => {
+  if (!password) {
+    return 0;
+  }
 
   let strength = 0;
-  if (password.length >= 8) strength += 25;
-  if (/[A-Z]/.test(password)) strength += 25;
-  if (/[0-9]/.test(password)) strength += 25;
-  if (/[^A-Za-z0-9]/.test(password)) strength += 25;
+
+  if (password.length >= 8) {
+    strength += 25;
+  }
+
+  if (/[A-Z]/.test(password)) {
+    strength += 25;
+  }
+
+  if (/[0-9]/.test(password)) {
+    strength += 25;
+  }
+
+  if (/[^A-Za-z0-9]/.test(password)) {
+    strength += 25;
+  }
 
   return strength;
 };
 
+const updatePasswordStrength = () => {
+  passwordStrength.value =
+    calculatePasswordStrength(password1.value);
+};
+
 async function handleSubmit() {
-  if (password1.value !== password2.value) {
-    error.value = "⚠️ Passwords do not match";
-    return;
-  }
-  if (password1.value.length < 8) {
-    error.value = "⚠️ Password must be at least 8 characters";
+  error.value = "";
+  success.value = false;
+
+  const resetToken = String(
+    token.value || ""
+  ).trim();
+
+  if (!resetToken) {
+    validLink.value = false;
+
+    error.value =
+      "The password reset token is missing. Please request a new reset link.";
+
     return;
   }
 
-  error.value = "";
+  if (!password1.value) {
+    error.value =
+      "Please enter your new password.";
+
+    return;
+  }
+
+  if (password1.value.length < 8) {
+    error.value =
+      "Password must be at least 8 characters.";
+
+    return;
+  }
+
+  if (password1.value !== password2.value) {
+    error.value =
+      "Passwords do not match.";
+
+    return;
+  }
+
   loading.value = true;
 
   try {
     const payload = {
-  uidb64,                 // not uid
-  token,
-  new_password1: password1.value,
-  new_password2: password2.value,
-};
+      token: resetToken,
+      newPassword: password1.value,
+      confirmPassword: password2.value
+    };
 
+    console.log(
+      "Submitting password reset:",
+      {
+        tokenPresent: Boolean(payload.token),
+        tokenLength: payload.token.length,
+        newPasswordPresent: Boolean(payload.newPassword),
+        confirmPasswordPresent:
+          Boolean(payload.confirmPassword)
+      }
+    );
 
-    const response = await resetpasswordconfirm(payload);
+    await resetpasswordconfirm(payload);
 
     success.value = true;
-   
 
-    // Clear fields after success
     password1.value = "";
     password2.value = "";
+    passwordStrength.value = 0;
 
-    router.push("/password-reset-success");
+    await router.replace(
+      "/password-reset-success"
+    );
   } catch (err) {
-    if (err.response?.data) {
-  const tokenErrors = err.response.data.token; // should be an array
-  if (tokenErrors && tokenErrors[0] === "Invalid or expired token.") {
-    error.value = "The password reset link is invalid or has expired. Please request a new password reset.";
-  } else {
-    error.value = tokenErrors ? tokenErrors[0] : "An unexpected error occurred.";
-  }
+    console.error(
+      "Password reset failed:",
+      err.response
+        ? err.response.data
+        : err
+    );
 
-} else {
-  error.value = "❌ Something went wrong. Please try again.";
-}
+    const responseData =
+      err.response &&
+      err.response.data
+        ? err.response.data
+        : null;
 
+    const responseMessage =
+      responseData &&
+      typeof responseData.message === "string"
+        ? responseData.message
+        : "";
+
+    const tokenErrors =
+      responseData && responseData.token
+        ? responseData.token
+        : null;
+
+    const tokenErrorMessage =
+      Array.isArray(tokenErrors)
+        ? tokenErrors[0]
+        : tokenErrors;
+
+    const finalMessage =
+      responseMessage ||
+      tokenErrorMessage ||
+      "Something went wrong. Please try again.";
+
+    if (
+      finalMessage
+        .toLowerCase()
+        .includes("expired") ||
+      finalMessage
+        .toLowerCase()
+        .includes("invalid") ||
+      finalMessage
+        .toLowerCase()
+        .includes("used")
+    ) {
+      validLink.value = false;
+
+      error.value =
+        "The password reset link is invalid, expired, or has already been used. Please request a new reset link.";
+    } else {
+      error.value = finalMessage;
+    }
   } finally {
     loading.value = false;
   }
 }
-
-const updatePasswordStrength = () => {
-  passwordStrength.value = calculatePasswordStrength(password1.value);
-};
 </script>
+
+
+
 
 
 <style scoped>

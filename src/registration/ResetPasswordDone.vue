@@ -5,69 +5,106 @@
       <div class="success-icon">
         <i class="fas fa-check"></i>
       </div>
-      
+
       <!-- Title -->
-      <h1 class="title">Reset your password</h1>
-       
-      <!-- Message -->
+      <h1 class="title">
+        Reset your password
+      </h1>
+
+      <!-- Primary Message -->
       <p class="message">
-        We've emailed you instructions for setting your password.
+        We've emailed you instructions for resetting your password.
       </p>
+
       <!-- Secondary Message -->
       <p class="message">
-        If you don't receive an email, please make sure you've entered the
-        address you registered with, and check your spam folder.
+        If you don't receive an email, make sure you entered the
+        address you registered with and check your spam folder.
       </p>
-      
+
       <!-- Countdown -->
-      
-      
-      <!-- Button -->
-      <router-link to="/login" class="btn bbb">
-        <i class="fas fa-sign-in-alt"></i> Go to Login
+      <p class="countdown">
+        Redirecting to login in
+        <strong>{{ seconds }}</strong>
+        {{ seconds === 1 ? "second" : "seconds" }}...
+      </p>
+
+      <!-- Login Button -->
+      <router-link
+        to="/login"
+        class="btn bbb"
+      >
+        <i class="fas fa-sign-in-alt"></i>
+        Go to Login
       </router-link>
-      
-      <!-- Confetti elements -->
-      <div class="confetti" style="top: 30%; left: 20%;"></div>
-      <div class="confetti" style="top: 25%; left: 80%;"></div>
-      <div class="confetti" style="top: 40%; left: 40%;"></div>
-      <div class="confetti" style="top: 35%; left: 60%;"></div>
+
+      <!-- Confetti Elements -->
+      <div
+        class="confetti"
+        style="top: 30%; left: 20%;"
+      ></div>
+
+      <div
+        class="confetti"
+        style="top: 25%; left: 80%;"
+      ></div>
+
+      <div
+        class="confetti"
+        style="top: 40%; left: 40%;"
+      ></div>
+
+      <div
+        class="confetti"
+        style="top: 35%; left: 60%;"
+      ></div>
     </div>
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
-import { useRouter } from 'vue-router';
+<script>
+export default {
+  name: "ResetPasswordDone",
 
-// The reactive variable to store the countdown timer
-const seconds = ref(5);
-let countdownInterval = null;
+  data() {
+    return {
+      seconds: 5,
+      countdownInterval: null
+    };
+  },
 
-onMounted(() => {
-  const router = useRouter();
+  mounted() {
+    this.countdownInterval = window.setInterval(() => {
+      this.seconds -= 1;
 
-  // Start the countdown timer
-  countdownInterval = setInterval(() => {
-    seconds.value--;
-    
-    if (seconds.value <= 0) {
-      // Clear the interval to prevent memory leaks
-      clearInterval(countdownInterval);
-      
-      // Navigate to the login page after the countdown
-      router.push('/login');
+      if (this.seconds <= 0) {
+        this.clearCountdown();
+
+        this.$router.push("/login").catch((error) => {
+          if (error && error.name !== "NavigationDuplicated") {
+            throw error;
+          }
+        });
+      }
+    }, 1000);
+  },
+
+  beforeDestroy() {
+    this.clearCountdown();
+  },
+
+  methods: {
+    clearCountdown() {
+      if (this.countdownInterval !== null) {
+        window.clearInterval(this.countdownInterval);
+        this.countdownInterval = null;
+      }
     }
-  }, 1000);
-});
-
-// Clean up the interval when the component is unmounted
-onUnmounted(() => {
-  if (countdownInterval) {
-    clearInterval(countdownInterval);
   }
-});
+};
 </script>
+
+
 
 <style scoped>
 /* GENERAL STYLES */

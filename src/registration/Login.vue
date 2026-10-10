@@ -203,8 +203,10 @@
 </button>
 
           <div class="forgot-password">
-            <router-link to="/reset-password">Forgot password?</router-link>
-          </div>
+  <router-link to="/forgot-password">
+    Forgot password?
+  </router-link>
+</div>
         </form>
 
 

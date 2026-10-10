@@ -3,6 +3,8 @@ import { ref, computed } from "vue";
 import { changepassword } from "../services/api";
 import { useRouter } from "vue-router/composables";
 
+
+
 const oldPassword = ref("");
 const newPassword = ref("");
 const confirmPassword = ref("");
@@ -40,9 +42,9 @@ const handleChangePassword = async () => {
   loading.value = true;
   try {
     await changepassword({
-      old_password: oldPassword.value,
-      new_password: newPassword.value,
-      confirm_password: confirmPassword.value,
+      currentPassword: oldPassword.value,
+      newPassword: newPassword.value,
+      confirmPassword: confirmPassword.value,
     });
 
   
@@ -113,15 +115,15 @@ const handleChangePassword = async () => {
               id="oldPassword"
               v-model="oldPassword"
               class="form-control"
-              :class="{ error: errors.old_password }"
+              :class="{ error: errors.currentPassword }"
               required
             />
             <span class="password-toggle" @click="togglePasswordVisibility('oldPassword')">
               <i :class="showPassword.oldPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
             </span>
           </div>
-          <p v-if="errors.old_password" class="error-message">
-            <i class="fas fa-exclamation-circle"></i> {{ errors.old_password }}
+          <p v-if="errors.currentPassword" class="error-message">
+            <i class="fas fa-exclamation-circle"></i> {{ errors.currentPassword }}
           </p>
         </div>
 
@@ -135,7 +137,7 @@ const handleChangePassword = async () => {
               id="newPassword"
               v-model="newPassword"
               class="form-control"
-              :class="{ error: errors.new_password }"
+              :class="{ error: errors.newPassword }"
               required
             />
             <span class="password-toggle" @click="togglePasswordVisibility('newPassword')">
@@ -149,8 +151,8 @@ const handleChangePassword = async () => {
               :style="{ width: passwordStrength + '%', backgroundColor: strengthColor }"
             ></div>
           </div>
-          <p v-if="errors.new_password" class="error-message">
-            <i class="fas fa-exclamation-circle"></i> {{ errors.new_password }}
+          <p v-if="errors.newPassword" class="error-message">
+            <i class="fas fa-exclamation-circle"></i> {{ errors.newPassword }}
           </p>
         </div>
 
@@ -164,15 +166,15 @@ const handleChangePassword = async () => {
               id="confirmPassword"
               v-model="confirmPassword"
               class="form-control"
-              :class="{ error: errors.confirm_password }"
+              :class="{ error: errors.confirmPassword }"
               required
             />
             <span class="password-toggle" @click="togglePasswordVisibility('confirmPassword')">
               <i :class="showPassword.confirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
             </span>
           </div>
-          <p v-if="errors.confirm_password" class="error-message">
-            <i class="fas fa-exclamation-circle"></i> {{ errors.confirm_password }}
+          <p v-if="errors.confirmPassword" class="error-message">
+            <i class="fas fa-exclamation-circle"></i> {{ errors.confirmPassword }}
           </p>
         </div>
 

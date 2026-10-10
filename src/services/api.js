@@ -289,11 +289,16 @@ export function getAuthenticatedUser() {
   );
 }
 
-export function changePassword(
-  payload
-) {
+
+
+
+
+
+
+
+export function changePassword(payload) {
   return api.post(
-    "/auth/change-password",
+    "password/change",
     {
       currentPassword:
         payload.currentPassword ||
@@ -313,25 +318,20 @@ export function changePassword(
   );
 }
 
-export function requestPasswordReset(
-  payload
-) {
+export function requestPasswordReset(payload) {
   return api.post(
-    "/auth/password-reset",
+    "/password/forgot",
     {
-      userId:
-        payload.userId ||
-        payload.user_ID ||
+      email:
+        payload.email ||
         ""
     }
   );
 }
 
-export function confirmPasswordReset(
-  payload
-) {
+export function confirmPasswordReset(payload) {
   return api.post(
-    "/auth/password-reset-confirm",
+    "/password/reset",
     {
       token:
         payload.token ||
@@ -362,26 +362,23 @@ export function confirmPasswordReset(
  * resetpasswordconfirm()
  */
 
-export const changepassword =
-  payload => {
-    return changePassword(
-      payload
-    );
-  };
+export const changepassword = payload => {
+  return changePassword(payload);
+};
 
-export const resetpassword =
-  payload => {
-    return requestPasswordReset(
-      payload
-    );
-  };
+export const resetpassword = payload => {
+  return requestPasswordReset(payload);
+};
 
-export const resetpasswordconfirm =
-  payload => {
-    return confirmPasswordReset(
-      payload
-    );
-  };
+export const resetpasswordconfirm = payload => {
+  return confirmPasswordReset(payload);
+};
+
+
+
+
+
+
 
 /*
  * Media
@@ -1387,7 +1384,37 @@ export const get_removal_logs = (
   );
 };
 
+//password
 
+
+export const forgot_password = (
+  email
+) => {
+  return api.post(
+    "/password/forgot",
+    {
+      email
+    }
+  );
+};
+
+export const reset_password = (
+  payload
+) => {
+  return api.post(
+    "/password/reset",
+    payload
+  );s
+};
+
+export const change_password = (
+  payload
+) => {
+  return api.post(
+    "/password/change",
+    payload
+  );
+};
 
 export {
   api,
