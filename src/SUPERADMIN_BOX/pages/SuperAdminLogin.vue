@@ -250,8 +250,7 @@ import axios from "axios";
 //   "https://api.example.com/api";
 
 // Local/testing API
-const API_BASE_URL =
-  "http://127.0.0.1:8888/api";
+import API_BASE_URL from "@/config/api";
 
 function createEmptyForm() {
   return {

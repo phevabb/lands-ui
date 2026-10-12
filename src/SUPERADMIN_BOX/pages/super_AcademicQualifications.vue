@@ -550,11 +550,12 @@
 <script>
 import axios from "axios";
 import Swal from "sweetalert2";
+import API_BASE_URL from "@/config/api";
 
 // Production API
 
 // Local/testing API
- const API_BASE_URL = "http://127.0.0.1:8888/api";
+
 
 export default {
   name: "SuperAcademicQualifications",

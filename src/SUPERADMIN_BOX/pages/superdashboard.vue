@@ -228,11 +228,9 @@ import axios from "axios";
 import Swal from "sweetalert2";
 
 // Production API
-const API_BASE_URL =
-  process.env.VUE_APP_API_BASE_URL || "https://api.stoollands.com/api";
-
+import API_BASE_URL from "@/config/api";
 // Local/testing API
-// const API_BASE_URL = "http://127.0.0.1:8888/api";
+// import API_BASE_URL from "@/config/api";
 
 export default {
   name: "LookupTables",
