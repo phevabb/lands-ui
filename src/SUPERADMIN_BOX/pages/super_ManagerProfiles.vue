@@ -672,54 +672,20 @@
             </div>
           </div>
 
-          <div class="form-group">
-            <label for="manager-account-search">
-              Search Manager
-            </label>
-
-            <div class="manager-search-control">
-              <md-icon>search</md-icon>
-
-              <input
-                id="manager-account-search"
-                ref="managerSearchInput"
-                v-model.trim="managerSearch"
-                type="text"
-                autocomplete="off"
-                placeholder="Search by name or user ID..."
-                :disabled="saving || optionsLoading"
-                @keydown.esc="managerSearch = ''"
-              />
-
-              <button
-                v-if="managerSearch"
-                type="button"
-                class="clear-manager-search-button"
-                title="Clear manager search"
-                :disabled="saving || optionsLoading"
-                @click="clearManagerSearch"
-              >
-                <md-icon>close</md-icon>
-              </button>
-            </div>
-          </div>
-
-    <div class="manager-search-summary">
+     
+          <div class="manager-search-summary">
   <span v-if="optionsLoading">
     Loading manager accounts...
   </span>
 
-  <template v-else>
-    <span>
-      {{ filteredSelectableAccounts.length }}
-      manager account(s) available
-    </span>
-
-    <span v-if="managerSearch">
-      for "{{ managerSearch }}"
-    </span>
-  </template>
+  <span v-else>
+    {{ selectableAccounts.length }}
+    manager account(s) available
+  </span>
 </div>
+
+
+
           <div class="form-group">
             <label for="manager-account-id">
               Manager Account
@@ -737,6 +703,7 @@
   "
   @change="handleManagerSelection"
 >
+
               <option :value="null">
                 {{
                   optionsLoading
@@ -746,12 +713,12 @@
               </option>
 
               <option
-                v-for="account in filteredSelectableAccounts"
-                :key="account.id"
-                :value="account.id"
-              >
-                {{ getAccountOptionLabel(account) }}
-              </option>
+  v-for="account in selectableAccounts"
+  :key="account.id"
+  :value="account.id"
+>
+  {{ getAccountOptionLabel(account) }}
+</option>
             </select>
 
             <span
@@ -764,29 +731,18 @@
               {{ accountError }}
             </span>
 
-            <span
-              v-if="
-                !optionsLoading &&
-                managerSearch &&
-                !filteredSelectableAccounts.length
-              "
-              class="field-information"
-            >
-              No available manager account matches
-              "{{ managerSearch }}".
-            </span>
+           
 
-            <span
-              v-else-if="
-                !optionsLoading &&
-                !managerSearch &&
-                !selectableAccounts.length
-              "
-              class="field-information"
-            >
-              No available accounts with the Manager role were found.
-              Accounts that already have manager profiles are excluded.
-            </span>
+          <span
+  v-if="
+    !optionsLoading &&
+    !selectableAccounts.length
+  "
+  class="field-information"
+>
+  No available accounts with the Manager role were found.
+  Accounts that already have manager profiles are excluded.
+</span>
           </div>
 
           <div class="selected-account-card">
@@ -1016,7 +972,7 @@ export default {
 
   data() {
     return {
-        managerSearch: "",
+
 
 
       loading: false,
@@ -1075,15 +1031,19 @@ export default {
 managerAccounts() {
   return this.accounts.filter(account => {
     const role =
-      account.role
-        ? String(account.role)
+      account.role === null ||
+      account.role === undefined
+        ? ""
+        : String(account.role)
             .trim()
-            .toLowerCase()
-        : "";
+            .toLowerCase();
 
     return role === "manager";
   });
 },
+
+
+
 
 availableAccounts() {
   return this.managerAccounts.filter(account => {
@@ -1111,52 +1071,7 @@ selectableAccounts() {
 },
 
 filteredSelectableAccounts() {
-  const searchValue =
-    this.managerSearch
-      ? this.managerSearch
-          .trim()
-          .toLowerCase()
-      : "";
-
-  if (!searchValue) {
-    return this.selectableAccounts;
-  }
-
-  return this.selectableAccounts.filter(account => {
-    const isSelectedAccount =
-      Number(account.id) ===
-      Number(this.form.accountId);
-
-    if (isSelectedAccount) {
-      return true;
-    }
-
-    const searchableValues = [
-      account.firstName,
-      account.middleName,
-      account.lastName,
-      account.fullName,
-      account.displayName,
-      account.userId,
-      account.phoneNumber
-    ]
-      .filter(value => {
-        return (
-          value !== null &&
-          value !== undefined &&
-          String(value).trim()
-        );
-      })
-      .map(value => {
-        return String(value)
-          .trim()
-          .toLowerCase();
-      });
-
-    return searchableValues.some(value => {
-      return value.includes(searchValue);
-    });
-  });
+  return this.selectableAccounts;
 },
 
 
@@ -1173,34 +1088,14 @@ filteredSelectableAccounts() {
       }) || null;
     },
 
+
+
+
     filteredManagerProfiles() {
-      const searchValue =
-        this.search.trim().toLowerCase();
+  return this.managerProfiles;
+},
 
-      if (!searchValue) {
-        return this.managerProfiles;
-      }
 
-      return this.managerProfiles.filter(
-        profile => {
-          const values = [
-            profile.userId,
-            profile.fullName,
-            profile.displayName,
-            profile.role,
-            profile.regionName
-          ]
-            .filter(Boolean)
-            .map(value => {
-              return String(value).toLowerCase();
-            });
-
-          return values.some(value => {
-            return value.includes(searchValue);
-          });
-        }
-      );
-    },
 
     sortedManagerProfiles() {
       return [
@@ -1281,75 +1176,6 @@ filteredSelectableAccounts() {
     : "Assign Manager";
 },
 
-canSubmitManagerProfile() {
-  return Boolean(
-    this.form.accountId !== null &&
-    this.form.accountId !== undefined &&
-    this.form.accountId !== "" &&
-    this.form.regionId !== null &&
-    this.form.regionId !== undefined &&
-    this.form.regionId !== "" &&
-    !this.accountError &&
-    !this.regionError
-  );
-},
-
-accountError() {
-  if (
-    this.form.accountId === null ||
-    this.form.accountId === undefined ||
-    this.form.accountId === ""
-  ) {
-    return "Manager account is required.";
-  }
-
-  const selectedManager =
-    this.accounts.find(account => {
-      return (
-        Number(account.id) ===
-        Number(this.form.accountId)
-      );
-    });
-
-  if (!selectedManager) {
-    return "The selected account could not be found.";
-  }
-
-  const selectedRole =
-    selectedManager.role
-      ? String(selectedManager.role)
-          .trim()
-          .toLowerCase()
-      : "";
-
-  if (selectedRole !== "manager") {
-    return "Only accounts with the Manager role can have manager profiles.";
-  }
-
-  const duplicate =
-    this.managerProfiles.some(profile => {
-      const sameAccount =
-        Number(profile.accountId) ===
-        Number(this.form.accountId);
-
-      const isDifferentProfile =
-        this.editingId === null ||
-        Number(profile.id) !==
-          Number(this.editingId);
-
-      return (
-        sameAccount &&
-        isDifferentProfile
-      );
-    });
-
-  if (duplicate) {
-    return "This manager account already has a manager profile.";
-  }
-
-  return "";
-},
-
 regionError() {
   if (
     this.form.regionId === null ||
@@ -1359,25 +1185,26 @@ regionError() {
     return "Region is required.";
   }
 
-  const selectedRegionExists =
-    this.regions.some(regionItem => {
+  const regionExists =
+    this.regions.some(region => {
       return (
-        Number(regionItem.id) ===
+        Number(region.id) ===
         Number(this.form.regionId)
       );
     });
 
-  if (!selectedRegionExists) {
-    return "The selected region could not be found.";
+  if (!regionExists) {
+    return (
+      "The selected region could not " +
+      "be found."
+    );
   }
 
   return "";
 },
 
 
-
     
-
 
 
 canSubmitManagerProfile() {
@@ -1392,8 +1219,6 @@ canSubmitManagerProfile() {
     !this.regionError
   );
 },
-
-
 
 accountError() {
   if (
@@ -1413,18 +1238,25 @@ accountError() {
     });
 
   if (!selectedManager) {
-    return "The selected account could not be found.";
+    return (
+      "The selected account could not " +
+      "be found."
+    );
   }
 
   const selectedRole =
-    selectedManager.role
-      ? String(selectedManager.role)
+    selectedManager.role === null ||
+    selectedManager.role === undefined
+      ? ""
+      : String(selectedManager.role)
           .trim()
-          .toLowerCase()
-      : "";
+          .toLowerCase();
 
   if (selectedRole !== "manager") {
-    return "Only accounts with the Manager role can have manager profiles.";
+    return (
+      "Only accounts with the Manager " +
+      "role can have manager profiles."
+    );
   }
 
   const duplicate =
@@ -1434,8 +1266,9 @@ accountError() {
         Number(this.form.accountId);
 
       const differentProfile =
+        this.editingId === null ||
         Number(profile.id) !==
-        Number(this.editingId);
+          Number(this.editingId);
 
       return (
         sameAccount &&
@@ -1444,7 +1277,10 @@ accountError() {
     });
 
   if (duplicate) {
-    return "This manager account already has a manager profile.";
+    return (
+      "This manager account already has " +
+      "a manager profile."
+    );
   }
 
   return "";
@@ -1454,33 +1290,6 @@ accountError() {
 
 
 
-
-
-
-
-    regionError() {
-      if (
-        this.form.regionId === null ||
-        this.form.regionId === undefined ||
-        this.form.regionId === ""
-      ) {
-        return "Region is required.";
-      }
-
-      const regionExists =
-        this.regions.some(region => {
-          return (
-            Number(region.id) ===
-            Number(this.form.regionId)
-          );
-        });
-
-      if (!regionExists) {
-        return "The selected region could not be found.";
-      }
-
-      return "";
-    }
   },
 
   watch: {
@@ -1507,13 +1316,13 @@ accountError() {
     }
   },
 
-  created() {
-    this.loadPageData();
-  },
+  async mounted() {
+  await this.loadPageData();
+},
 
-  beforeDestroy() {
-    document.body.style.overflow = "";
-  },
+beforeUnmount() {
+  document.body.style.overflow = "";
+},
 
   methods: {
     getRequestConfig() {
@@ -1550,39 +1359,197 @@ accountError() {
         modalOpen ? "hidden" : "";
     },
 
-    getResponseRecords(
-      responseData,
-      collectionNames = []
+getResponseRecords(
+  responseData,
+  collectionNames = []
+) {
+  if (Array.isArray(responseData)) {
+    return responseData;
+  }
+
+  if (
+    responseData &&
+    Array.isArray(responseData.results)
+  ) {
+    return responseData.results;
+  }
+
+  if (
+    responseData &&
+    responseData.data &&
+    Array.isArray(
+      responseData.data.results
+    )
+  ) {
+    return responseData.data.results;
+  }
+
+  if (
+    responseData &&
+    Array.isArray(responseData.data)
+  ) {
+    return responseData.data;
+  }
+
+  for (
+    const collectionName of
+    collectionNames
+  ) {
+    if (
+      responseData &&
+      Array.isArray(
+        responseData[collectionName]
+      )
     ) {
-      if (Array.isArray(responseData)) {
-        return responseData;
-      }
+      return responseData[
+        collectionName
+      ];
+    }
 
-      if (
-        responseData &&
-        Array.isArray(responseData.data)
-      ) {
-        return responseData.data;
-      }
+    if (
+      responseData &&
+      responseData.data &&
+      Array.isArray(
+        responseData.data[
+          collectionName
+        ]
+      )
+    ) {
+      return responseData.data[
+        collectionName
+      ];
+    }
+  }
 
-      for (
-        const collectionName of
-        collectionNames
-      ) {
-        if (
-          responseData &&
-          Array.isArray(
-            responseData[collectionName]
-          )
-        ) {
-          return responseData[
-            collectionName
-          ];
+  return [];
+},    
+
+
+
+async loadAllAccounts() {
+  const pageSize = 100;
+  const allAccounts = [];
+
+  const firstResponse =
+    await axios.get(
+      `${API_BASE_URL}/accounts`,
+      {
+        ...this.getRequestConfig(),
+
+        params: {
+          page: 1,
+          page_size: pageSize
+        },
+
+        timeout: 60000
+      }
+    );
+
+  const firstResponseData =
+    firstResponse.data || {};
+
+  const firstPageRecords =
+    this.getResponseRecords(
+      firstResponseData,
+      [
+        "accounts",
+        "users"
+      ]
+    );
+
+  allAccounts.push(
+    ...firstPageRecords
+  );
+
+  const responseCount =
+    Number(
+      firstResponseData.count ??
+      firstResponseData.totalRecords ??
+      firstResponseData.total ??
+      firstResponseData.data?.count ??
+      firstResponseData.data?.totalRecords ??
+      firstPageRecords.length
+    );
+
+  const totalRecords =
+    Number.isFinite(responseCount) &&
+    responseCount >= 0
+      ? responseCount
+      : firstPageRecords.length;
+
+  const totalPages =
+    Math.max(
+      1,
+      Math.ceil(
+        totalRecords /
+          pageSize
+      )
+    );
+
+  for (
+    let page = 2;
+    page <= totalPages;
+    page += 1
+  ) {
+    const response =
+      await axios.get(
+        `${API_BASE_URL}/accounts`,
+        {
+          ...this.getRequestConfig(),
+
+          params: {
+            page,
+            page_size: pageSize
+          },
+
+          timeout: 60000
         }
-      }
+      );
 
-      return [];
-    },
+    const responseData =
+      response.data || {};
+
+    const pageRecords =
+      this.getResponseRecords(
+        responseData,
+        [
+          "accounts",
+          "users"
+        ]
+      );
+
+    allAccounts.push(
+      ...pageRecords
+    );
+  }
+
+  const normalizedAccounts =
+    allAccounts
+      .map(account => {
+        return this.normalizeAccount(
+          account
+        );
+      })
+      .filter(account => {
+        return Number.isFinite(
+          Number(account.id)
+        );
+      });
+
+  const uniqueAccounts =
+    Array.from(
+      new Map(
+        normalizedAccounts.map(account => {
+          return [
+            Number(account.id),
+            account
+          ];
+        })
+      ).values()
+    );
+
+  return uniqueAccounts;
+},
 
     normalizeBoolean(
       value,
@@ -1715,113 +1682,99 @@ accountError() {
           `Region #${region.id}`
       };
     },
+async loadPageData() {
+  this.loading = true;
+  this.errorMessage = "";
 
-    async loadPageData() {
-      this.loading = true;
-      this.errorMessage = "";
+  try {
+    const responses =
+      await Promise.all([
+        axios.get(
+          `${API_BASE_URL}/manager-profiles`,
+          this.getRequestConfig()
+        ),
 
-      try {
-        const responses =
-          await Promise.all([
-            axios.get(
-              `${API_BASE_URL}/manager-profiles`,
-              this.getRequestConfig()
-            ),
+        axios.get(
+          `${API_BASE_URL}/regions`,
+          this.getRequestConfig()
+        ),
 
-            axios.get(
-              `${API_BASE_URL}/accounts`,
-              this.getRequestConfig()
-            ),
+        this.loadAllAccounts()
+      ]);
 
-            axios.get(
-              `${API_BASE_URL}/regions`,
-              this.getRequestConfig()
-            )
-          ]);
+    const managerProfileRecords =
+      this.getResponseRecords(
+        responses[0].data,
+        [
+          "managerProfiles",
+          "profiles"
+        ]
+      );
 
-        const managerProfileRecords =
-          this.getResponseRecords(
-            responses[0].data,
-            [
-              "managerProfiles",
-              "profiles"
-            ]
-          );
+    const regionRecords =
+      this.getResponseRecords(
+        responses[1].data,
+        [
+          "regions"
+        ]
+      );
 
-        const accountRecords =
-          this.getResponseRecords(
-            responses[1].data,
-            [
-              "accounts",
-              "users"
-            ]
-          );
-
-        const regionRecords =
-          this.getResponseRecords(
-            responses[2].data,
-            [
-              "regions"
-            ]
-          );
-
-        this.managerProfiles =
-          managerProfileRecords.map(
-            profile => {
-              return this
-                .normalizeManagerProfile(
-                  profile
-                );
-            }
-          );
-
-        this.accounts =
-          accountRecords.map(account => {
-            return this.normalizeAccount(
-              account
+    this.managerProfiles =
+      managerProfileRecords.map(
+        profile => {
+          return this
+            .normalizeManagerProfile(
+              profile
             );
-          });
-
-        this.regions =
-          regionRecords
-            .map(region => {
-              return this.normalizeRegion(
-                region
-              );
-            })
-            .filter(region => {
-              return Number.isFinite(
-                region.id
-              );
-            })
-            .sort((first, second) => {
-              return first.region.localeCompare(
-                second.region
-              );
-            });
-
-        if (
-          this.currentPage >
-          this.totalPages
-        ) {
-          this.currentPage =
-            this.totalPages;
         }
-      } catch (error) {
-        this.errorMessage =
-          this.getErrorMessage(
-            error,
-            "Unable to load manager-profile records."
-          );
+      );
 
-        console.error(
-          "Unable to load manager profiles:",
-          error
-        );
-      } finally {
-        this.loading = false;
-      }
-    },
+    this.regions =
+      regionRecords
+        .map(region => {
+          return this.normalizeRegion(
+            region
+          );
+        })
+        .filter(region => {
+          return Number.isFinite(
+            region.id
+          );
+        })
+        .sort((first, second) => {
+          return first.region.localeCompare(
+            second.region
+          );
+        });
+
+    this.accounts =
+      responses[2];
+
+    if (
+      this.currentPage >
+      this.totalPages
+    ) {
+      this.currentPage =
+        this.totalPages;
+    }
+  } catch (error) {
+    this.errorMessage =
+      this.getErrorMessage(
+        error,
+        "Unable to load manager-profile records."
+      );
+
+    console.error(
+      "Unable to load manager profiles:",
+      error
+    );
+  } finally {
+    this.loading = false;
+  }
+},
+
+
+
 
     async refreshManagerProfiles() {
       this.refreshing = true;
@@ -1833,80 +1786,64 @@ accountError() {
       }
     },
 
-    async loadFormOptions() {
-      this.optionsLoading = true;
-      this.formError = "";
+async loadFormOptions() {
+  this.optionsLoading = true;
+  this.formError = "";
 
-      try {
-        const responses =
-          await Promise.all([
-            axios.get(
-              `${API_BASE_URL}/accounts`,
-              this.getRequestConfig()
-            ),
+  try {
+    const responses =
+      await Promise.all([
+        this.loadAllAccounts(),
 
-            axios.get(
-              `${API_BASE_URL}/regions`,
-              this.getRequestConfig()
-            )
-          ]);
+        axios.get(
+          `${API_BASE_URL}/regions`,
+          this.getRequestConfig()
+        )
+      ]);
 
-        const accountRecords =
-          this.getResponseRecords(
-            responses[0].data,
-            [
-              "accounts",
-              "users"
-            ]
+    const regionRecords =
+      this.getResponseRecords(
+        responses[1].data,
+        [
+          "regions"
+        ]
+      );
+
+    this.accounts =
+      responses[0];
+
+    this.regions =
+      regionRecords
+        .map(region => {
+          return this.normalizeRegion(
+            region
           );
-
-        const regionRecords =
-          this.getResponseRecords(
-            responses[1].data,
-            [
-              "regions"
-            ]
+        })
+        .filter(region => {
+          return Number.isFinite(
+            region.id
           );
-
-        this.accounts =
-          accountRecords.map(account => {
-            return this.normalizeAccount(
-              account
-            );
-          });
-
-        this.regions =
-          regionRecords
-            .map(region => {
-              return this.normalizeRegion(
-                region
-              );
-            })
-            .filter(region => {
-              return Number.isFinite(
-                region.id
-              );
-            })
-            .sort((first, second) => {
-              return first.region.localeCompare(
-                second.region
-              );
-            });
-      } catch (error) {
-        this.formError =
-          this.getErrorMessage(
-            error,
-            "Unable to load accounts and regions."
+        })
+        .sort((first, second) => {
+          return first.region.localeCompare(
+            second.region
           );
+        });
+  } catch (error) {
+    this.formError =
+      this.getErrorMessage(
+        error,
+        "Unable to load accounts and regions."
+      );
 
-        console.error(
-          "Unable to load form options:",
-          error
-        );
-      } finally {
-        this.optionsLoading = false;
-      }
-    },
+    console.error(
+      "Unable to load form options:",
+      error
+    );
+  } finally {
+    this.optionsLoading = false;
+  }
+},
 
 async openCreateModal() {
   this.resetForm();
@@ -1915,10 +1852,23 @@ async openCreateModal() {
 
   await this.loadFormOptions();
 
-  this.focusManagerSearchInput();
+  this.focusAccountInput();
 },
 
-async openEditModal(profile) {
+
+
+
+
+
+
+
+
+
+handleManagerSelection() {
+  this.formError = "";
+  this.formSubmitted = false;
+},
+   async openEditModal(profile) {
   this.resetForm();
 
   this.editingId =
@@ -1937,16 +1887,16 @@ async openEditModal(profile) {
   this.focusAccountInput();
 },
 
-closeFormModal() {
-  if (this.saving) {
-    return;
-  }
+        closeFormModal() {
+      if (this.saving) {
+        return;
+      }
 
-  this.showFormModal = false;
+      this.showFormModal = false;
+      this.resetForm();
+    },
 
-  this.resetForm();
-},
-
+    
 resetForm() {
   this.form =
     createEmptyForm();
@@ -1959,71 +1909,7 @@ resetForm() {
 
   this.formError =
     "";
-
-  this.managerSearch =
-    "";
 },
-
-focusManagerSearchInput() {
-  this.$nextTick(() => {
-    if (this.$refs.managerSearchInput) {
-      this.$refs.managerSearchInput.focus();
-    }
-  });
-},
-
-focusAccountInput() {
-  this.$nextTick(() => {
-    if (this.$refs.accountInput) {
-      this.$refs.accountInput.focus();
-    }
-  });
-},
-
-clearManagerSearch() {
-  this.managerSearch = "";
-
-  this.focusManagerSearchInput();
-},
-
-handleManagerSelection() {
-  this.formError = "";
-  this.formSubmitted = false;
-},
-    async openEditModal(profile) {
-      this.resetForm();
-
-      this.editingId =
-        Number(profile.id);
-
-      this.form.accountId =
-        Number(profile.accountId);
-
-      this.form.regionId =
-        Number(profile.regionId);
-
-      this.showFormModal = true;
-
-      await this.loadFormOptions();
-
-      this.focusAccountInput();
-    },
-
-        closeFormModal() {
-      if (this.saving) {
-        return;
-      }
-
-      this.showFormModal = false;
-      this.resetForm();
-    },
-
-    resetForm() {
-      this.form = createEmptyForm();
-      this.editingId = null;
-      this.formSubmitted = false;
-      this.formError = "";
-    },
 
     focusAccountInput() {
       this.$nextTick(() => {

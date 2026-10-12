@@ -809,20 +809,20 @@ const handleLogin =
        * Superusers should use the dedicated
        * Super Admin login page.
        */
-      if (
-        normalizeBoolean(
-          user.isSuperuser,
-          false
-        )
-      ) {
-        insertMessage(
-          "This is a Super Admin account. Please use the Super Admin portal."
-        );
+      // if (
+      //   normalizeBoolean(
+      //     user.isSuperuser,
+      //     false
+      //   )
+      // ) {
+      //   insertMessage(
+      //     "This is a Super Admin account. Please use the Super Admin portal."
+      //   );
 
-        form.password = "";
+      //   form.password = "";
 
-        return;
-      }
+      //   return;
+      // }
 
       const authenticatedUser =
         saveAuthentication(

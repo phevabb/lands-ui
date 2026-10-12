@@ -290,7 +290,7 @@
           </div>
         </div>
 
-        <button
+       <button
   type="button"
   @click="loadAccounts(currentPage)"
 >
@@ -519,21 +519,31 @@
         </button>
       </div>
 
-      <div
-        v-if="filteredAccounts.length"
-        class="pagination-footer"
-      >
+     <div
+  v-if="accounts.length"
+  class="pagination-footer"
+>
         <div class="pagination-information">
-          Showing
-          <strong>{{ paginationStart }}</strong>
-          to
-          <strong>{{ paginationEnd }}</strong>
-          of
-          <strong>
-  {{ totalRecords }}
-</strong>
-          users
-        </div>
+  Showing
+
+  <strong>
+    {{ paginationStart }}
+  </strong>
+
+  to
+
+  <strong>
+    {{ paginationEnd }}
+  </strong>
+
+  of
+
+  <strong>
+    {{ totalRecords }}
+  </strong>
+
+  users
+</div>
 
         <div class="pagination-controls">
           <label for="accounts-page-size">
@@ -551,7 +561,7 @@
             <option :value="50">50</option>
           </select>
 
-         <button
+<button
   type="button"
   class="pagination-button"
   :disabled="
@@ -560,14 +570,16 @@
   "
   @click="previousPage"
 >
-  <md-icon>chevron_left</md-icon>
+  <md-icon>
+    chevron_left
+  </md-icon>
 </button>
 
-          <span class="pagination-page">
-            {{ currentPage }} / {{ totalPages }}
-          </span>
+<span class="pagination-page">
+  {{ currentPage }} / {{ totalPages }}
+</span>
 
-         <button
+<button
   type="button"
   class="pagination-button"
   :disabled="
@@ -576,8 +588,12 @@
   "
   @click="nextPage"
 >
-  <md-icon>chevron_right</md-icon>
+  <md-icon>
+    chevron_right
+  </md-icon>
 </button>
+
+
         </div>
       </div>
     </section>
@@ -2520,69 +2536,27 @@ lastUpdated: null,
     },
 
 filteredAccounts() {
-  return this.accounts.filter(account => {
-    const matchesRole =
-      !this.filters.role ||
-      account.role === this.filters.role;
-
-    const matchesStatus =
-      !this.filters.status ||
-      (
-        this.filters.status === "active" &&
-        account.isActive
-      ) ||
-      (
-        this.filters.status === "inactive" &&
-        !account.isActive
-      );
-
-    const matchesStaff =
-      !this.filters.staff ||
-      (
-        this.filters.staff === "staff" &&
-        account.isStaff
-      ) ||
-      (
-        this.filters.staff === "non-staff" &&
-        !account.isStaff
-      );
-
-    const matchesSuperuser =
-      !this.filters.superuser ||
-      (
-        this.filters.superuser === "superuser" &&
-        account.isSuperuser
-      ) ||
-      (
-        this.filters.superuser === "regular" &&
-        !account.isSuperuser
-      );
-
-    return (
-      matchesRole &&
-      matchesStatus &&
-      matchesStaff &&
-      matchesSuperuser
-    );
-  });
+  return this.accounts;
 },
 
 
 
 
 
+sortedAccounts() {
+  return [
+    ...this.accounts
+  ].sort((first, second) => {
+    return (
+      Number(second.id) -
+      Number(first.id)
+    );
+  });
+},
 
 
 
-    sortedAccounts() {
-      return [...this.filteredAccounts].sort(
-        (first, second) => {
-          return Number(second.id) - Number(first.id);
-        }
-      );
-    },
-
-  totalPages() {
+totalPages() {
   return this.serverTotalPages;
 },
 
@@ -2599,10 +2573,10 @@ paginationStart() {
   }
 
   return (
-    (this.currentPage - 1) *
-      this.pageSize +
-    1
-  );
+    (
+      this.currentPage - 1
+    ) * this.pageSize
+  ) + 1;
 },
 
 paginationEnd() {
@@ -2617,9 +2591,12 @@ paginationEnd() {
     this.paginationStart +
       this.accounts.length -
       1,
+
     this.totalRecords
   );
 },
+
+
 
 
 
@@ -2707,7 +2684,7 @@ paginationEnd() {
     }
   },
 
- watch: {
+watch: {
   search() {
     if (this.searchTimer) {
       clearTimeout(
@@ -2729,10 +2706,20 @@ paginationEnd() {
     deep: true,
 
     handler() {
-      /*
-       * Dropdown filters currently apply to
-       * records on the loaded server page.
-       */
+      if (this.filterTimer) {
+        clearTimeout(
+          this.filterTimer
+        );
+      }
+
+      this.filterTimer =
+        setTimeout(async () => {
+          this.currentPage = 1;
+
+          await this.loadAccounts(1);
+
+          this.filterTimer = null;
+        }, 250);
     }
   },
 
@@ -2745,7 +2732,9 @@ paginationEnd() {
   }
 },
 
- async mounted() {
+
+
+async mounted() {
   await this.loadAccounts(1);
 },
 
@@ -2760,8 +2749,18 @@ beforeUnmount() {
     this.searchTimer = null;
   }
 
+  if (this.filterTimer) {
+    clearTimeout(
+      this.filterTimer
+    );
+
+    this.filterTimer = null;
+  }
+
   this.revokeProfilePicturePreview();
 },
+
+
 
   methods: {
 
@@ -2992,14 +2991,18 @@ async uploadProfilePicture() {
           : "";
     },
 
-getResponseRecords(responseData) {
+getResponseRecords(
+  responseData
+) {
   if (Array.isArray(responseData)) {
     return responseData;
   }
 
   if (
     responseData &&
-    Array.isArray(responseData.results)
+    Array.isArray(
+      responseData.results
+    )
   ) {
     return responseData.results;
   }
@@ -3007,62 +3010,43 @@ getResponseRecords(responseData) {
   if (
     responseData &&
     responseData.data &&
-    Array.isArray(responseData.data.results)
+    Array.isArray(
+      responseData.data.results
+    )
   ) {
     return responseData.data.results;
   }
 
   if (
     responseData &&
-    Array.isArray(responseData.data)
+    Array.isArray(
+      responseData.data
+    )
   ) {
     return responseData.data;
   }
 
-  const collectionNames = [
-    "accounts",
-    "academicQualifications",
-    "qualifications",
-    "departments",
-    "classes",
-    "staffClasses",
-    "districts",
-    "regions",
-    "currentGrades",
-    "nextGrades",
-    "changeOfGrades",
-    "managementUnits",
-    "titles",
-    "leaveTypes",
-    "onLeaveTypes"
-  ];
-
-  for (
-    const collectionName of
-    collectionNames
+  if (
+    responseData &&
+    Array.isArray(
+      responseData.accounts
+    )
   ) {
-    if (
-      responseData &&
-      Array.isArray(
-        responseData[collectionName]
-      )
-    ) {
-      return responseData[
-        collectionName
-      ];
-    }
+    return responseData.accounts;
   }
 
-
+  if (
+    responseData &&
+    responseData.data &&
+    Array.isArray(
+      responseData.data.accounts
+    )
+  ) {
+    return responseData.data.accounts;
+  }
 
   return [];
 },
-
-
-
-
-
-
 
 
 
@@ -3149,6 +3133,26 @@ async loadAccounts(
         ? this.search.trim()
         : undefined;
 
+    const roleValue =
+      this.filters.role
+        ? this.filters.role
+        : undefined;
+
+    const statusValue =
+      this.filters.status
+        ? this.filters.status
+        : undefined;
+
+    const staffValue =
+      this.filters.staff
+        ? this.filters.staff
+        : undefined;
+
+    const superuserValue =
+      this.filters.superuser
+        ? this.filters.superuser
+        : undefined;
+
     const response =
       await axios.get(
         `${API_BASE_URL}/accounts`,
@@ -3162,7 +3166,19 @@ async loadAccounts(
               this.pageSize,
 
             search:
-              searchValue
+              searchValue,
+
+            role:
+              roleValue,
+
+            status:
+              statusValue,
+
+            staff:
+              staffValue,
+
+            superuser:
+              superuserValue
           },
 
           timeout: 60000
@@ -3190,7 +3206,8 @@ async loadAccounts(
         responseData.totalRecords ??
         responseData.total ??
         responseData.data?.count ??
-        responseData.data?.totalRecords
+        responseData.data?.totalRecords ??
+        this.accounts.length
       );
 
     this.totalRecords =
@@ -3208,7 +3225,9 @@ async loadAccounts(
       );
 
     this.serverTotalPages =
-      Number.isFinite(responseTotalPages) &&
+      Number.isFinite(
+        responseTotalPages
+      ) &&
       responseTotalPages > 0
         ? responseTotalPages
         : Math.max(
@@ -3223,11 +3242,15 @@ async loadAccounts(
       Number(
         responseData.currentPage ??
         responseData.current_page ??
+        responseData.data?.currentPage ??
+        responseData.data?.current_page ??
         page
       );
 
     this.currentPage =
-      Number.isFinite(responseCurrentPage)
+      Number.isFinite(
+        responseCurrentPage
+      )
         ? Math.min(
             Math.max(
               responseCurrentPage,
@@ -3235,7 +3258,10 @@ async loadAccounts(
             ),
             this.serverTotalPages
           )
-        : page;
+        : Math.min(
+            page,
+            this.serverTotalPages
+          );
 
     this.nextPageUrl =
       responseData.next ??
@@ -3260,11 +3286,15 @@ async loadAccounts(
         url:
           `${API_BASE_URL}/accounts`,
 
-        requestedPage:
-          page,
+        page,
 
         search:
           this.search,
+
+        filters:
+          {
+            ...this.filters
+          },
 
         status:
           error.response?.status,
@@ -4513,7 +4543,7 @@ getErrorMessage(
       return "role-unassigned";
     },
 
-   clearSearch() {
+  async clearSearch() {
   if (this.searchTimer) {
     clearTimeout(
       this.searchTimer
@@ -4525,8 +4555,17 @@ getErrorMessage(
   this.search = "";
   this.currentPage = 1;
 
-  this.loadAccounts(1);
+  await this.loadAccounts(1);
+
+
+
+
 }, 
+
+
+
+
+
 clearFilters() {
   this.filters = {
     role: "",
@@ -4534,9 +4573,9 @@ clearFilters() {
     staff: "",
     superuser: ""
   };
-
-  this.currentPage = 1;
 },
+
+
 
 resetSearchAndFilters() {
   if (this.searchTimer) {
@@ -4547,6 +4586,16 @@ resetSearchAndFilters() {
     this.searchTimer = null;
   }
 
+  if (this.filterTimer) {
+    clearTimeout(
+      this.filterTimer
+    );
+
+    this.filterTimer = null;
+  }
+
+  this.search = "";
+
   this.filters = {
     role: "",
     status: "",
@@ -4554,16 +4603,50 @@ resetSearchAndFilters() {
     superuser: ""
   };
 
-  this.search = "";
   this.currentPage = 1;
-
-  this.loadAccounts(1);
 },
+
+
 
 async handlePageSizeChange() {
   this.currentPage = 1;
 
   await this.loadAccounts(1);
+},
+
+async previousPage() {
+  if (
+    this.loading ||
+    this.currentPage <= 1
+  ) {
+    return;
+  }
+
+  await this.loadAccounts(
+    this.currentPage - 1
+  );
+},
+
+async nextPage() {
+  if (
+    this.loading ||
+    this.currentPage >=
+      this.totalPages
+  ) {
+    return;
+  }
+
+  await this.loadAccounts(
+    this.currentPage + 1
+  );
+},
+
+rowNumber(index) {
+  return (
+    (
+      this.currentPage - 1
+    ) * this.pageSize
+  ) + index + 1;
 },
 
 async previousPage() {
