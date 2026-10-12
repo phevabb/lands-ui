@@ -83,19 +83,9 @@ async function fetchUsers(
     "";
 
   try {
-    console.log(
-      "Fetching accounts"
-    );
 
-    console.log(
-      "Requested page:",
-      safePage
-    );
 
-    console.log(
-      "Page size:",
-      safePageSize
-    );
+
 
     const response =
       await getAccounts({
@@ -109,10 +99,8 @@ async function fetchUsers(
     const responseData =
       response.data;
 
-    console.log(
-      "Accounts API response:",
-      responseData
-    );
+
+
 
     /*
      * Server-paginated response:
@@ -165,31 +153,7 @@ async function fetchUsers(
         responseData.previous ??
         null;
 
-      console.log(
-        "Paginated accounts loaded:",
-        {
-          currentPage:
-            currentPage.value,
 
-          totalPages:
-            totalPages.value,
-
-          totalRecords:
-            totalRecords.value,
-
-          pageSize:
-            itemsPerPage.value,
-
-          recordsOnPage:
-            rows.value.length,
-
-          next:
-            next.value,
-
-          previous:
-            previous.value
-        }
-      );
 
       return;
     }
@@ -265,23 +229,6 @@ async function fetchUsers(
       "The accounts response has an unexpected format.";
   } catch (error) {
 
-    console.log("error is print", error);
-    console.error(
-      "Unable to fetch accounts:",
-      {
-        status:
-          error.response?.status,
-
-        response:
-          error.response?.data,
-
-        message:
-          error.message,
-
-        code:
-          error.code
-      }
-    );
 
     resetAccountResults();
 
@@ -337,9 +284,7 @@ async function fetchUsers(
     isLoading.value =
       false;
 
-    console.log(
-      "Account loading completed"
-    );
+ 
   }
 }
 
@@ -427,31 +372,7 @@ function applyClientPagination(
       ? safePage - 1
       : null;
 
-  console.log(
-    "Client-paginated accounts:",
-    {
-      currentPage:
-        currentPage.value,
-
-      totalPages:
-        totalPages.value,
-
-      totalRecords:
-        totalRecords.value,
-
-      pageSize:
-        itemsPerPage.value,
-
-      recordsOnPage:
-        rows.value.length,
-
-      next:
-        next.value,
-
-      previous:
-        previous.value
-    }
-  );
+  
 }
 
 function normalizeTotalRecords(

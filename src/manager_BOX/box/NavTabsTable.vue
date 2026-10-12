@@ -19,7 +19,7 @@ const props = defineProps({
   pageSize: { type: Number, default: 10 } // page size from API
 })
 
-console.log("NavTabsTable props: print", props)
+
 
 const selected = ref([])
 const tableVisible = ref(true)

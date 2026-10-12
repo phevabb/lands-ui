@@ -229,25 +229,8 @@ async function loadPage() {
       nonPaginatedResponse?.data
     );
 
-    console.log(
-      "Filtered staff loaded:",
-      {
-        dept:
-          dept.value,
-
-        filterType:
-          filterType.value,
-
-        totalCount:
-          totalCount.value,
-
-        currentPageUsers:
-          users.value.length,
-
-        exportUsers:
-          usersNoPages.value.length
-      }
-    );
+  
+  
   } catch (error) {
     resetPage();
 
@@ -432,28 +415,7 @@ function applyPaginatedResponse(
       totalPages.value
     );
 
-  console.log(
-    "Filtered staff pagination:",
-    {
-      department:
-        dept.value,
-
-      currentPage:
-        currentPage.value,
-
-      pageSize:
-        itemsPerPage.value,
-
-      totalPages:
-        totalPages.value,
-
-      totalRecords:
-        totalCount.value,
-
-      recordsOnCurrentPage:
-        users.value.length
-    }
-  );
+ 
 }
 
 

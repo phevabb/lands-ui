@@ -291,11 +291,11 @@
         </div>
 
         <button
-          type="button"
-          @click="loadAccounts"
-        >
-          Try Again
-        </button>
+  type="button"
+  @click="loadAccounts(currentPage)"
+>
+  Try Again
+</button>
       </div>
 
       <div
@@ -551,27 +551,33 @@
             <option :value="50">50</option>
           </select>
 
-          <button
-            type="button"
-            class="pagination-button"
-            :disabled="currentPage === 1"
-            @click="previousPage"
-          >
-            <md-icon>chevron_left</md-icon>
-          </button>
+         <button
+  type="button"
+  class="pagination-button"
+  :disabled="
+    loading ||
+    currentPage <= 1
+  "
+  @click="previousPage"
+>
+  <md-icon>chevron_left</md-icon>
+</button>
 
           <span class="pagination-page">
             {{ currentPage }} / {{ totalPages }}
           </span>
 
-          <button
-            type="button"
-            class="pagination-button"
-            :disabled="currentPage === totalPages"
-            @click="nextPage"
-          >
-            <md-icon>chevron_right</md-icon>
-          </button>
+         <button
+  type="button"
+  class="pagination-button"
+  :disabled="
+    loading ||
+    currentPage >= totalPages
+  "
+  @click="nextPage"
+>
+  <md-icon>chevron_right</md-icon>
+</button>
         </div>
       </div>
     </section>
@@ -2372,9 +2378,10 @@ removeExistingProfilePicture: false,
       formSubmitted: false,
       activeFormTab: "account",
 
-      search: "",
-      errorMessage: "",
-      formError: "",
+  search: "",
+searchTimer: null,
+errorMessage: "",
+formError: "",
 
       accounts: [],
       lookupOptions: createEmptyLookups(),
@@ -2512,80 +2519,60 @@ lastUpdated: null,
       );
     },
 
-    filteredAccounts() {
-      const searchValue = this.search
-        ? this.search.trim().toLowerCase()
-        : "";
+filteredAccounts() {
+  return this.accounts.filter(account => {
+    const matchesRole =
+      !this.filters.role ||
+      account.role === this.filters.role;
 
-      return this.accounts.filter(account => {
-        const searchableValues = [
-          account.userId,
-          account.firstName,
-          account.middleName,
-          account.lastName,
-          account.fullName,
-          account.displayName,
-          account.phoneNumber,
-          account.ghanaCardNumber,
-          account.socialSecurityNumber,
-          account.nationalHealthInsuranceNumber,
-          account.role
-        ]
-          .filter(value => value !== null && value !== undefined)
-          .map(value => String(value).toLowerCase());
+    const matchesStatus =
+      !this.filters.status ||
+      (
+        this.filters.status === "active" &&
+        account.isActive
+      ) ||
+      (
+        this.filters.status === "inactive" &&
+        !account.isActive
+      );
 
-        const matchesSearch =
-          !searchValue ||
-          searchableValues.some(value =>
-            value.includes(searchValue)
-          );
+    const matchesStaff =
+      !this.filters.staff ||
+      (
+        this.filters.staff === "staff" &&
+        account.isStaff
+      ) ||
+      (
+        this.filters.staff === "non-staff" &&
+        !account.isStaff
+      );
 
-        const matchesRole =
-          !this.filters.role ||
-          account.role === this.filters.role;
+    const matchesSuperuser =
+      !this.filters.superuser ||
+      (
+        this.filters.superuser === "superuser" &&
+        account.isSuperuser
+      ) ||
+      (
+        this.filters.superuser === "regular" &&
+        !account.isSuperuser
+      );
 
-        const matchesStatus =
-          !this.filters.status ||
-          (
-            this.filters.status === "active" &&
-            account.isActive
-          ) ||
-          (
-            this.filters.status === "inactive" &&
-            !account.isActive
-          );
+    return (
+      matchesRole &&
+      matchesStatus &&
+      matchesStaff &&
+      matchesSuperuser
+    );
+  });
+},
 
-        const matchesStaff =
-          !this.filters.staff ||
-          (
-            this.filters.staff === "staff" &&
-            account.isStaff
-          ) ||
-          (
-            this.filters.staff === "non-staff" &&
-            !account.isStaff
-          );
 
-        const matchesSuperuser =
-          !this.filters.superuser ||
-          (
-            this.filters.superuser === "superuser" &&
-            account.isSuperuser
-          ) ||
-          (
-            this.filters.superuser === "regular" &&
-            !account.isSuperuser
-          );
 
-        return (
-          matchesSearch &&
-          matchesRole &&
-          matchesStatus &&
-          matchesStaff &&
-          matchesSuperuser
-        );
-      });
-    },
+
+
+
+
 
     sortedAccounts() {
       return [...this.filteredAccounts].sort(
@@ -2595,19 +2582,13 @@ lastUpdated: null,
       );
     },
 
-   totalPages() {
+  totalPages() {
   return this.serverTotalPages;
 },
 
-
-    paginatedAccounts() {
+paginatedAccounts() {
   return this.sortedAccounts;
 },
-
-
-
-
-
 
 paginationStart() {
   if (
@@ -2618,12 +2599,10 @@ paginationStart() {
   }
 
   return (
-    (
-      this.currentPage -
-      1
-    ) *
-    this.pageSize
-  ) + 1;
+    (this.currentPage - 1) *
+      this.pageSize +
+    1
+  );
 },
 
 paginationEnd() {
@@ -2638,29 +2617,10 @@ paginationEnd() {
     this.paginationStart +
       this.accounts.length -
       1,
-
     this.totalRecords
   );
 },
 
-
-
-paginationEnd() {
-  if (
-    this.totalRecords === 0 ||
-    this.accounts.length === 0
-  ) {
-    return 0;
-  }
-
-  return Math.min(
-    this.paginationStart +
-      this.accounts.length -
-      1,
-
-    this.totalRecords
-  );
-},
 
 
 
@@ -2747,40 +2707,58 @@ paginationEnd() {
     }
   },
 
-  watch: {
-   search() {
-  /*
-   * Search currently filters only the loaded server page.
-   * Do not change currentPage here.
-   */
-},
+ watch: {
+  search() {
+    if (this.searchTimer) {
+      clearTimeout(
+        this.searchTimer
+      );
+    }
 
-   filters: {
-  deep: true,
+    this.searchTimer =
+      setTimeout(async () => {
+        this.currentPage = 1;
 
-  handler() {
-    /*
-     * Filters currently apply only to the loaded page.
-     */
-  }
-},
+        await this.loadAccounts(1);
 
-    showDetailsModal() {
-      this.updateBodyScroll();
-    },
+        this.searchTimer = null;
+      }, 500);
+  },
 
-    showFormModal() {
-      this.updateBodyScroll();
+  filters: {
+    deep: true,
+
+    handler() {
+      /*
+       * Dropdown filters currently apply to
+       * records on the loaded server page.
+       */
     }
   },
 
- created() {
-  this.loadAccounts(1);
+  showDetailsModal() {
+    this.updateBodyScroll();
+  },
+
+  showFormModal() {
+    this.updateBodyScroll();
+  }
 },
 
-beforeDestroy() {
-  document.body.style.overflow =
-    "";
+ async mounted() {
+  await this.loadAccounts(1);
+},
+
+beforeUnmount() {
+  document.body.style.overflow = "";
+
+  if (this.searchTimer) {
+    clearTimeout(
+      this.searchTimer
+    );
+
+    this.searchTimer = null;
+  }
 
   this.revokeProfilePicturePreview();
 },
@@ -3075,10 +3053,7 @@ getResponseRecords(responseData) {
     }
   }
 
-  console.log(
-    "No record collection found in response:",
-    responseData
-  );
+
 
   return [];
 },
@@ -3156,32 +3131,23 @@ getResponseRecords(responseData) {
     },
 
 
-
 async loadAccounts(
   requestedPage = 1
 ) {
-  if (this.loading) {
-    return;
-  }
-
-  const page =
-    Math.max(
-      1,
-      Number(requestedPage) || 1
-    );
+  const page = Math.max(
+    1,
+    Number(requestedPage) || 1
+  );
 
   this.loading = true;
   this.errorMessage = "";
 
   try {
-    console.log(
-      "Requesting accounts:",
-      {
-        page,
-        pageSize:
-          this.pageSize
-      }
-    );
+    const searchValue =
+      this.search &&
+      this.search.trim()
+        ? this.search.trim()
+        : undefined;
 
     const response =
       await axios.get(
@@ -3191,37 +3157,25 @@ async loadAccounts(
 
           params: {
             page,
+
             page_size:
-              this.pageSize
-          }
+              this.pageSize,
+
+            search:
+              searchValue
+          },
+
+          timeout: 60000
         }
       );
 
-    console.log(
-      "Accounts response:",
-      response.data
-    );
+    const responseData =
+      response.data || {};
 
     const records =
       this.getResponseRecords(
-        response.data
+        responseData
       );
-
-    console.log(
-      "Records for requested page:",
-      {
-        requestedPage:
-          page,
-
-        recordCount:
-          records.length,
-
-        recordIds:
-          records.map(
-            account => account.id
-          )
-      }
-    );
 
     this.accounts =
       records.map(account => {
@@ -3232,65 +3186,86 @@ async loadAccounts(
 
     const responseCount =
       Number(
-        response.data?.count
+        responseData.count ??
+        responseData.totalRecords ??
+        responseData.total ??
+        responseData.data?.count ??
+        responseData.data?.totalRecords
       );
 
     this.totalRecords =
-      Number.isFinite(
-        responseCount
-      ) &&
+      Number.isFinite(responseCount) &&
       responseCount >= 0
         ? responseCount
         : this.accounts.length;
 
+    const responseTotalPages =
+      Number(
+        responseData.totalPages ??
+        responseData.total_pages ??
+        responseData.data?.totalPages ??
+        responseData.data?.total_pages
+      );
+
     this.serverTotalPages =
-      Math.max(
-        1,
-        Math.ceil(
-          this.totalRecords /
-          this.pageSize
-        )
+      Number.isFinite(responseTotalPages) &&
+      responseTotalPages > 0
+        ? responseTotalPages
+        : Math.max(
+            1,
+            Math.ceil(
+              this.totalRecords /
+                this.pageSize
+            )
+          );
+
+    const responseCurrentPage =
+      Number(
+        responseData.currentPage ??
+        responseData.current_page ??
+        page
       );
 
     this.currentPage =
-      Math.min(
-        page,
-        this.serverTotalPages
-      );
+      Number.isFinite(responseCurrentPage)
+        ? Math.min(
+            Math.max(
+              responseCurrentPage,
+              1
+            ),
+            this.serverTotalPages
+          )
+        : page;
 
     this.nextPageUrl =
-      response.data?.next ??
+      responseData.next ??
+      responseData.nextPageUrl ??
+      responseData.data?.next ??
+      responseData.data?.nextPageUrl ??
       null;
 
     this.previousPageUrl =
-      response.data?.previous ??
+      responseData.previous ??
+      responseData.previousPageUrl ??
+      responseData.data?.previous ??
+      responseData.data?.previousPageUrl ??
       null;
 
     this.lastUpdated =
       new Date();
-
-    console.log(
-      "Accounts page applied:",
-      {
-        currentPage:
-          this.currentPage,
-
-        totalPages:
-          this.serverTotalPages,
-
-        totalRecords:
-          this.totalRecords,
-
-        displayedIds:
-          this.accounts.map(
-            account => account.id
-          )
-      }
-    );
   } catch (error) {
     console.error(
-      "Error loading accounts:",
+      "Unable to fetch accounts:",
       {
+        url:
+          `${API_BASE_URL}/accounts`,
+
+        requestedPage:
+          page,
+
+        search:
+          this.search,
+
         status:
           error.response?.status,
 
@@ -3304,6 +3279,13 @@ async loadAccounts(
           error.code
       }
     );
+
+    this.accounts = [];
+    this.totalRecords = 0;
+    this.serverTotalPages = 1;
+    this.currentPage = 1;
+    this.nextPageUrl = null;
+    this.previousPageUrl = null;
 
     this.errorMessage =
       this.getErrorMessage(
@@ -4155,7 +4137,9 @@ validateForm() {
 
     this.resetForm();
 
-    await this.loadAccounts();
+   await this.loadAccounts(
+  this.currentPage
+);
   } catch (error) {
     if (!this.profilePictureError) {
       this.formError =
@@ -4250,7 +4234,9 @@ validateForm() {
           timerProgressBar: true
         });
 
-        await this.loadAccounts();
+   await this.loadAccounts(
+  this.currentPage
+);
       } catch (error) {
         await Swal.fire({
           title: "Delete failed",
@@ -4288,97 +4274,120 @@ validateForm() {
       });
     },
 
-    getErrorMessage(
-      error,
-      fallbackMessage
-    ) {
-      if (!error.response) {
-        return "Unable to connect to the HR backend.";
-      }
-      const err = error
-      console.log("error print is ", error)
+getErrorMessage(
+  error,
+  fallbackMessage
+) {
+  if (!error) {
+    return fallbackMessage;
+  }
 
-      const status =
-        error.response.status;
+  if (
+    error.code === "ECONNABORTED"
+  ) {
+    return "The request timed out. Confirm that the HR backend is running.";
+  }
 
-      const responseData =
-        error.response.data;
+  if (
+  error.code === "ERR_NETWORK"
+) {
+  return (
+    "Unable to connect to the HR backend " +
+    "at http://127.0.0.1:8888."
+  );
+}
 
-      if (
-        typeof responseData === "string" &&
-        responseData.trim()
-      ) {
-        return responseData;
-      }
+  if (!error.response) {
+    return (
+      error.message ||
+      "Unable to connect to the HR backend."
+    );
+  }
 
-      if (
-        responseData &&
-        typeof responseData.message === "string"
-      ) {
-        return responseData.message;
-      }
+  const status =
+    error.response.status;
 
-      if (
-        responseData &&
-        typeof responseData.error === "string"
-      ) {
-        return responseData.error;
-      }
+  const responseData =
+    error.response.data;
 
-      if (
-        responseData &&
-        Array.isArray(responseData.errors)
-      ) {
-        return responseData.errors
-          .map(item => {
-            if (typeof item === "string") {
-              return item;
-            }
+  if (
+    typeof responseData === "string" &&
+    responseData.trim()
+  ) {
+    return responseData.trim();
+  }
 
-            if (
-              item &&
-              typeof item.message === "string"
-            ) {
-              return item.message;
-            }
+  if (
+    responseData &&
+    typeof responseData.message === "string"
+  ) {
+    return responseData.message;
+  }
 
-            return "";
-          })
-          .filter(Boolean)
-          .join(", ");
-      }
+  if (
+    responseData &&
+    typeof responseData.error === "string"
+  ) {
+    return responseData.error;
+  }
 
-      if (status === 400) {
-        return "Please check the submitted account information.";
-      }
+  if (
+    responseData &&
+    Array.isArray(responseData.errors)
+  ) {
+    const messages =
+      responseData.errors
+        .map(item => {
+          if (typeof item === "string") {
+            return item;
+          }
 
-      if (status === 401) {
-        return "Your session is no longer valid.";
-      }
+          if (
+            item &&
+            typeof item.message === "string"
+          ) {
+            return item.message;
+          }
 
-      if (status === 403) {
-        return "You do not have permission to perform this action.";
-      }
+          return "";
+        })
+        .filter(Boolean);
 
-      if (status === 404) {
-        return "The account record or endpoint was not found.";
-      }
+    if (messages.length > 0) {
+      return messages.join(", ");
+    }
+  }
 
-      if (status === 409) {
-        return "The user ID, phone number, or another unique value already exists.";
-      }
+  if (status === 400) {
+    return "Please check the submitted account information.";
+  }
 
-      if (status === 422) {
-        return "The submitted account information could not be processed.";
-      }
+  if (status === 401) {
+    return "Your session is no longer valid. Please log in again.";
+  }
 
-      if (status === 500) {
-        return "The server could not process this request.";
-      }
+  if (status === 403) {
+    return "You do not have permission to perform this action.";
+  }
 
-      return fallbackMessage;
-    },
+  if (status === 404) {
+    return "The account record or API endpoint was not found.";
+  }
 
+  if (status === 409) {
+    return "The user ID, phone number, or another unique value already exists.";
+  }
+
+  if (status === 422) {
+    return "The submitted account information could not be processed.";
+  }
+
+  if (status >= 500) {
+    return "The HR backend could not process this request.";
+  }
+
+  return fallbackMessage;
+},
     escapeHtml(value) {
       const element =
         document.createElement("div");
@@ -4504,33 +4513,83 @@ validateForm() {
       return "role-unassigned";
     },
 
-    clearSearch() {
-      this.search = "";
-      this.currentPage = 1;
-    },
+   clearSearch() {
+  if (this.searchTimer) {
+    clearTimeout(
+      this.searchTimer
+    );
 
-    clearFilters() {
-      this.filters = {
-        role: "",
-        status: "",
-        staff: "",
-        superuser: ""
-      };
+    this.searchTimer = null;
+  }
 
-      this.currentPage = 1;
-    },
+  this.search = "";
+  this.currentPage = 1;
 
-    resetSearchAndFilters() {
-      this.search = "";
-      this.clearFilters();
-    },
+  this.loadAccounts(1);
+}, 
+clearFilters() {
+  this.filters = {
+    role: "",
+    status: "",
+    staff: "",
+    superuser: ""
+  };
+
+  this.currentPage = 1;
+},
+
+resetSearchAndFilters() {
+  if (this.searchTimer) {
+    clearTimeout(
+      this.searchTimer
+    );
+
+    this.searchTimer = null;
+  }
+
+  this.filters = {
+    role: "",
+    status: "",
+    staff: "",
+    superuser: ""
+  };
+
+  this.search = "";
+  this.currentPage = 1;
+
+  this.loadAccounts(1);
+},
 
 async handlePageSizeChange() {
-  this.currentPage =
-    1;
+  this.currentPage = 1;
+
+  await this.loadAccounts(1);
+},
+
+async previousPage() {
+  if (
+    this.loading ||
+    this.currentPage <= 1
+  ) {
+    return;
+  }
 
   await this.loadAccounts(
-    1
+    this.currentPage - 1
+  );
+},
+
+async nextPage() {
+  if (
+    this.loading ||
+    this.currentPage >=
+      this.totalPages
+  ) {
+    return;
+  }
+
+  await this.loadAccounts(
+    this.currentPage + 1
   );
 },
 

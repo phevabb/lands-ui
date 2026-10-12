@@ -711,10 +711,7 @@ function notifySidebarVisibility(
     )
   );
 
-  console.log(
-    "Sidebar state:",
-    detail
-  );
+
 }
 
 function loadStoredUser() {

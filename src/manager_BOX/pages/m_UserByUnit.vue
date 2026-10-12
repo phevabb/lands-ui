@@ -298,28 +298,12 @@ async function loadPageData() {
       1
     );
 
-    console.log(
-      "Manager filtered staff page loaded:",
-      {
-        department:
-          dept.value,
 
-        filterType:
-          filterType.value,
-
-        currentPage:
-          currentPage.value,
-
-        totalPages:
-          totalPages.value,
-
-        totalCount:
-          totalCount.value,
-
-        pageUsers:
-          users.value.length
-      }
-    );
+  
+  
+  
+  
+  
   } catch (error) {
     resetPageData();
 
@@ -520,39 +504,9 @@ function applyPaginatedResponse(
   selectedRow.value =
     null;
 
-  console.log(
-    "Filtered staff page applied"
-  );
+  
 
-  console.log(
-    "Department:",
-    dept.value
-  );
-
-  console.log(
-    "Current page:",
-    currentPage.value
-  );
-
-  console.log(
-    "Page size:",
-    PAGE_SIZE
-  );
-
-  console.log(
-    "Total pages:",
-    totalPages.value
-  );
-
-  console.log(
-    "Total records:",
-    totalCount.value
-  );
-
-  console.log(
-    "Records on current page:",
-    users.value.length
-  );
+ 
 }
 
 
@@ -592,16 +546,10 @@ function applyNonPaginatedResponse(
       normalizeAccount
     );
 
-  console.log(
-    "Non-paginated filtered staff applied:",
-    {
-      department:
-        dept.value,
 
-      records:
-        usersNoPages.value.length
-    }
-  );
+
+
+
 }
 
 
@@ -789,10 +737,7 @@ function selectRow(
   selectedRow.value =
     staff;
 
-  console.log(
-    "Opening Manager staff details:",
-    accountId
-  );
+
 
   router.push({
     name:

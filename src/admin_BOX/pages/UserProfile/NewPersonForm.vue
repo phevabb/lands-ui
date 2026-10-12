@@ -812,15 +812,7 @@ function handleSubmit() {
     );
   }
 
-  console.log(
-    "Creating new account"
-  );
 
-  console.log(
-    "Profile picture included:",
-    profilePictureFile.value instanceof
-      File
-  );
 
   for (
     const [
@@ -831,19 +823,11 @@ function handleSubmit() {
     if (
       value instanceof File
     ) {
-      console.log(
-        key,
-        {
-          name: value.name,
-          type: value.type,
-          size: value.size
-        }
-      );
+     
     } else {
-      console.log(
-        key,
-        value
-      );
+    
+    
+
     }
   }
 

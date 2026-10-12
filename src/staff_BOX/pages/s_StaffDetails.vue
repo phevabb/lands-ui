@@ -357,7 +357,7 @@ const fetchUserDetails = async () => {
   try {
     const id_user = route.params.id;
     const res = await get_user_details(id_user);
-    console.log("response from API: print", res.data); // Log the response for debugging
+
     user.value = res.data;
   } catch (error) {
     console.error("Error fetching user details: print", error);
@@ -385,7 +385,6 @@ const staff = computed(() => {
     user.value || {};
 
 
-    console.log("Staff details computed property: print", account); // Log the account object for debugging
 
   return {
     id:

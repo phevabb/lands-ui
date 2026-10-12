@@ -654,14 +654,10 @@ const clearFile = () => {
 
 // Handle form submission
 const handleSubmit = () => {
-  console.log(
-    "Child form submit triggered"
-  );
+
 
   if (props.submitting) {
-    console.log(
-      "Submission already in progress"
-    );
+   
 
     return;
   }
@@ -748,20 +744,6 @@ const handleSubmit = () => {
     )
   );
 
-  console.log(
-    "New profile picture included:",
-    profilePictureFile.value instanceof
-      File
-  );
-
-  console.log(
-    "Remove profile picture:",
-    removeProfilePicture.value
-  );
-
-  console.log(
-    "Multipart form values:"
-  );
 
   for (
     const [
@@ -772,30 +754,17 @@ const handleSubmit = () => {
     if (
       value instanceof File
     ) {
-      console.log(
-        key,
-        {
-          name:
-            value.name,
-
-          type:
-            value.type,
-
-          size:
-            value.size
-        }
-      );
+    
     } else {
-      console.log(
-        key,
-        value
-      );
+   
+    
+    
+    
+    
+    
     }
   }
 
-  console.log(
-    "Emitting submit-form event"
-  );
 
   emit(
     "submit-form",

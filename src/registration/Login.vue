@@ -716,8 +716,7 @@ const redirectAuthenticatedUser =
       
     ) {
 
-      console.log("Staff role detected. print:", user); // Debugging log
-      
+
       const destination =
         `/staff/staff-details/${user.id}`;
 

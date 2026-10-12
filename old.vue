@@ -38,18 +38,12 @@ async function fetchUsers(page = 1) {
       page_size: pageSize
     });
 
-    console.log(
-      "Accounts API response: print",
-      response
-    );
+    
 
     const responseData =
       response.data;
 
-    console.log(
-      "Accounts API response:",
-      responseData
-    );
+    
 
     /*
      * Paginated response:
@@ -102,31 +96,6 @@ async function fetchUsers(page = 1) {
         responseData.previous ??
         null;
 
-      console.log(
-        "Paginated accounts:",
-        rows.value
-      );
-
-      console.log(
-        "Account pagination:",
-        {
-          currentPage:
-            currentPage.value,
-
-          totalPages:
-            totalPages.value,
-
-          totalRecords,
-
-          pageSize,
-
-          next:
-            next.value,
-
-          previous:
-            previous.value
-        }
-      );
 
       return;
     }
@@ -334,31 +303,10 @@ function applyClientPagination(
       ? safePage - 1
       : null;
 
-  console.log(
-    "Client-paginated accounts:",
-    rows.value
-  );
+  
 
-  console.log(
-    "Client pagination information:",
-    {
-      currentPage:
-        currentPage.value,
 
-      totalPages:
-        totalPages.value,
 
-      totalRecords,
-
-      pageSize,
-
-      next:
-        next.value,
-
-      previous:
-        previous.value
-    }
-  );
 }
 
 function resetAccountResults() {

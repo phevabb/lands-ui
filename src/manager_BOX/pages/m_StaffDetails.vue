@@ -412,7 +412,6 @@ const removeUser = async () => {
 
   } catch (error) {
 
-    console.log("err is print", error)
 
     Swal.fire({
       icon: "error",
@@ -426,16 +425,21 @@ const removeUser = async () => {
 // Fetch user details from API
 const fetchUserDetails = async () => {
   try {
-    console.log("Fetching user details for ID:", route.params.id);
+  
+  
+
+ 
+ 
     const id_user = route.params.id;
     const res = await admin_get_user_details(id_user);
     
-    console.log("User details fetched: print details", res.data);
-    console.log("User details fetched: print", res.data);
+
     user.value = res.data;
   } catch (error) {
-    console.error("Error fetching user details:", error);
-    console.log("error is print", error);
+  
+  
+
+ 
   }
 };
 

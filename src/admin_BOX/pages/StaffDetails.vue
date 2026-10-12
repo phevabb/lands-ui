@@ -466,13 +466,7 @@ const removeUser = async () => {
 }
 
   } catch (error) {
-    console.log("Error removing user: print", error);
 
-    Swal.fire({
-      icon: "error",
-      title: "Failed",
-      text: "Failed to remove user. Please try again.",
-    });
   }
 };
 
@@ -484,19 +478,7 @@ const fetchUserDetails = async () => {
       route.params.id
     );
 
-  console.log(
-    "Fetching account details:"
-  );
 
-  console.log(
-    "Route account ID:",
-    route.params.id
-  );
-
-  console.log(
-    "Normalized account ID:",
-    accountId
-  );
 
   if (
     !Number.isInteger(accountId) ||
@@ -522,10 +504,7 @@ const fetchUserDetails = async () => {
         accountId
       );
 
-    console.log(
-      "User details fetched:",
-      response.data
-    );
+
 
     user.value =
       response.data;

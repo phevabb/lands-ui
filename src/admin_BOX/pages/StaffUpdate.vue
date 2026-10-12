@@ -98,17 +98,12 @@ async function loadUpdatePage() {
   }
 
   try {
-    console.log(
-      "Loading Admin user fields"
-    );
+
 
     const fieldsResponse =
       await user_fields();
 
-    console.log(
-      "Admin user-fields response:",
-      fieldsResponse.data
-    );
+
 
     userFields.value =
       Array.isArray(
@@ -155,48 +150,20 @@ async function loadUpdatePage() {
   }
 
   try {
-    console.log(
-      "Loading user details using account ID:",
-      accountId
-    );
+
 
     const userDetailsResponse =
       await get_user_details(
         accountId
       );
 
-    console.log(
-      "User-details response:",
-      userDetailsResponse.data
-    );
-
+ 
     userData.value =
       normalizeUserDetails(
         userDetailsResponse.data
       );
   } catch (error) {
-    console.error(
-      "USER DETAILS REQUEST FAILED:",
-      {
-        accountId:
-          accountId,
-
-        url:
-          `${error.config?.baseURL ?? ""}` +
-          `${error.config?.url ?? ""}`,
-
-        status:
-          error.response?.status,
-
-        response:
-          error.response?.data,
-
-        message:
-          error.message
-      }
-    );
-
-    pageError.value =
+      pageError.value =
       getRequestErrorMessage(
         error,
         "Failed to load user details."
@@ -209,15 +176,8 @@ async function loadUpdatePage() {
 async function handleFormSubmit(
   submittedData
 ) {
-  console.log(
-    "Parent received submit-form event"
-  );
 
-  console.log(
-    "Payload is FormData:",
-    submittedData instanceof
-      FormData
-  );
+
 
   if (isSubmitting.value) {
     return;
@@ -276,10 +236,7 @@ async function handleFormSubmit(
   isSubmitting.value = true;
 
   try {
-    console.log(
-      "Updating account:",
-      accountId
-    );
+   
 
     const response =
       await patch_user(
@@ -287,10 +244,7 @@ async function handleFormSubmit(
         submittedData
       );
 
-    console.log(
-      "User update response:",
-      response.data
-    );
+  
 
     successMessage.value =
       "User updated successfully!";
@@ -403,9 +357,6 @@ function normalizeMultipartFields(
 function printMultipartPayload(
   payload
 ) {
-  console.log(
-    "Multipart update payload:"
-  );
 
   for (
     const [
@@ -418,27 +369,11 @@ function printMultipartPayload(
         "undefined" &&
       value instanceof File
     ) {
-      console.log(
-        key,
-        {
-          fileName:
-            value.name,
-
-          fileType:
-            value.type,
-
-          fileSize:
-            value.size
-        }
-      );
-
+    
       continue;
     }
 
-    console.log(
-      key,
-      value
-    );
+    
   }
 }
 

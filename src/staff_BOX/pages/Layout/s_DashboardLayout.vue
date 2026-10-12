@@ -121,10 +121,6 @@ function handleSidebarVisibility(
   sidebarVisible.value =
     Boolean(visible);
 
-  console.log(
-    "Staff dashboard sidebar visibility:",
-    sidebarVisible.value
-  );
 }
 
 function handleSidebarVisibilityEvent(
@@ -316,9 +312,7 @@ async function handleLogout() {
   try {
     await logout();
 
-    console.log(
-      "Staff backend logout completed successfully"
-    );
+
   } catch (error) {
     console.error(
       "Staff backend logout request failed:",

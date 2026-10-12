@@ -1132,14 +1132,7 @@ export default {
         "";
 
       try {
-        console.log(
-          "Loading removal logs:",
-          {
-            page,
-            pageSize:
-              this.pageSize
-          }
-        );
+      
 
         const response =
           await get_removal_logs(
@@ -1147,7 +1140,7 @@ export default {
             this.pageSize
           );
 
-          console.log("removed logs print", response)
+
 
         const responseData =
           response.data &&
@@ -1224,27 +1217,8 @@ export default {
         this.lastUpdated =
           new Date();
 
-        console.log(
-          "Removal logs loaded:",
-          {
-            currentPage:
-              this.currentPage,
 
-            totalPages:
-              this.totalPages,
-
-            totalRecords:
-              this.totalRecords,
-
-            returned:
-              this.logs.length,
-
-            recordIds:
-              this.logs.map(
-                log => log.id
-              )
-          }
-        );
+      
       } catch (error) {
         console.error(
           "Unable to load removal logs:",

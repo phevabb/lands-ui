@@ -84,20 +84,7 @@ async function fetchUsers(
   errorMessage.value = "";
 
   try {
-    console.log(
-      "Fetching Manager users"
-    );
-
-    console.log(
-      "Requested page:",
-      safePage
-    );
-
-    console.log(
-      "Page size:",
-      safePageSize
-    );
-
+  
     const response =
       await manager_all_users({
         page:
@@ -110,10 +97,7 @@ async function fetchUsers(
     const responseData =
       response.data || {};
 
-    console.log(
-      "Manager users response:",
-      responseData
-    );
+
 
     rows.value =
       Array.isArray(
@@ -150,51 +134,16 @@ async function fetchUsers(
       responseData.previous ||
       null;
 
-    console.log(
-      "Manager users loaded successfully"
-    );
 
-    console.log(
-      "Current page:",
-      currentPage.value
-    );
 
-    console.log(
-      "Page size:",
-      itemsPerPage.value
-    );
 
-    console.log(
-      "Total pages:",
-      totalPages.value
-    );
 
-    console.log(
-      "Total records:",
-      totalRecords.value
-    );
 
-    console.log(
-      "Records returned:",
-      rows.value.length
-    );
   } catch (error) {
-    console.log(
-      "Manager users request failed:",
-      {
-        status:
-          error.response?.status,
 
-        response:
-          error.response?.data,
 
-        message:
-          error.message,
 
-        code:
-          error.code
-      }
-    );
+
 
     rows.value = [];
 
@@ -227,9 +176,6 @@ async function fetchUsers(
   } finally {
     isLoading.value = false;
 
-    console.log(
-      "Manager users loading completed"
-    );
   }
 }
 

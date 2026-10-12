@@ -113,17 +113,12 @@ async function loadUpdatePage() {
    * request failed and prevents confusing error messages.
    */
   try {
-    console.log(
-      "Loading Manager user fields"
-    );
+
 
     const fieldsResponse =
       await user_fields();
 
-    console.log(
-      "Manager user-fields response:",
-      fieldsResponse.data
-    );
+
 
     userFields.value =
       extractUserFields(
@@ -176,30 +171,20 @@ async function loadUpdatePage() {
    * Load the selected account.
    */
   try {
-    console.log(
-      "Loading Manager user details using account ID:",
-      accountId
-    );
-
+    
     const userDetailsResponse =
       await get_user_details(
         accountId
       );
 
-    console.log(
-      "Manager user-details response:",
-      userDetailsResponse.data
-    );
+    
 
     userData.value =
       normalizeUserDetails(
         userDetailsResponse.data
       );
 
-    console.log(
-      "Normalized Manager form values:",
-      userData.value
-    );
+    
   } catch (error) {
     console.error(
       "MANAGER USER DETAILS REQUEST FAILED:",
@@ -279,15 +264,7 @@ function extractUserFields(
 async function handleFormSubmit(
   submittedData
 ) {
-  console.log(
-    "Manager parent received submit-form event"
-  );
-
-  console.log(
-    "Payload is FormData:",
-    submittedData instanceof
-      FormData
-  );
+ 
 
   if (
     isSubmitting.value
@@ -354,10 +331,7 @@ async function handleFormSubmit(
     true;
 
   try {
-    console.log(
-      "Manager updating account:",
-      accountId
-    );
+ 
 
     const response =
       await patch_user(
@@ -365,10 +339,7 @@ async function handleFormSubmit(
         submittedData
       );
 
-    console.log(
-      "Manager user-update response:",
-      response.data
-    );
+ 
 
     successMessage.value =
       response.data?.message ||
@@ -547,9 +518,7 @@ function normalizeMultipartValue(
 function printMultipartPayload(
   payload
 ) {
-  console.log(
-    "Manager multipart update payload:"
-  );
+
 
   for (
     const [
@@ -563,27 +532,12 @@ function printMultipartPayload(
       value instanceof
         File
     ) {
-      console.log(
-        key,
-        {
-          fileName:
-            value.name,
-
-          fileType:
-            value.type,
-
-          fileSize:
-            value.size
-        }
-      );
+    
 
       continue;
     }
 
-    console.log(
-      key,
-      value
-    );
+   
   }
 }
 

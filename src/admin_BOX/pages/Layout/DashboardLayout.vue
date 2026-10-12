@@ -69,10 +69,7 @@ function handleSidebarVisibility(
   sidebarVisible.value =
     Boolean(visible);
 
-  console.log(
-    "Dashboard sidebar visible:",
-    sidebarVisible.value
-  );
+
 }
 
 function toggleAccountDropdown() {
@@ -139,15 +136,14 @@ async function handleLogout() {
   try {
     await logout();
 
-    console.log(
-      "Backend logout completed successfully"
-    );
+
+
+
   } catch (error) {
-    console.error(
-      "Backend logout request failed:",
-      error.response?.data ||
-      error
-    );
+
+
+
+
   } finally {
     clearAuthentication();
 

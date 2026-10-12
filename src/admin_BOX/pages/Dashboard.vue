@@ -51,7 +51,13 @@ async function fetchUsers(tab, apiFunc, page, name_) {
     tab.previous = data.previous;
     
   } catch (err) {
-    console.log("Error fetching users for tab print:", tab.name_, err);
+   
+
+   
+   
+   
+   
+   
     if (err.message.includes("Network Error") || err.code === "ERR_NETWORK") {
       errorMessage.value = "Please check your internet connection.";
     } else {
@@ -146,10 +152,7 @@ onMounted(async () => {
     /*
      * Print only the Ktor dashboard summary.
      */
-    console.log(
-      "Admin dashboard summary:",
-      summaryData
-    );
+ 
 
     /*
      * Ktor uses camelCase response properties.

@@ -141,15 +141,7 @@ onMounted(() => {
 
   validLink.value = Boolean(token.value);
 
-  console.log(
-    "Password reset token present:",
-    Boolean(token.value)
-  );
 
-  console.log(
-    "Password reset token length:",
-    token.value.length
-  );
 
   if (!token.value) {
     error.value =
@@ -234,17 +226,12 @@ async function handleSubmit() {
       newPassword: password1.value,
       confirmPassword: password2.value
     };
+         
 
-    console.log(
-      "Submitting password reset:",
-      {
-        tokenPresent: Boolean(payload.token),
-        tokenLength: payload.token.length,
-        newPasswordPresent: Boolean(payload.newPassword),
-        confirmPasswordPresent:
-          Boolean(payload.confirmPassword)
-      }
-    );
+
+
+
+
 
     await resetpasswordconfirm(payload);
 

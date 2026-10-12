@@ -223,9 +223,7 @@ async function loadUserFields() {
   backendErrors.value = {};
 
   try {
-    console.log(
-      "Loading new-person fields"
-    );
+
 
     const response =
       await user_fields();
@@ -248,10 +246,9 @@ async function loadUserFields() {
 
     initializeFormData();
 
-    console.log(
-      "New-person fields loaded:",
-      userFields.value.length
-    );
+  
+  
+  
   } catch (error) {
     console.error(
       "Unable to load new-person fields:",
@@ -845,9 +842,7 @@ async function handleSubmit() {
   submitting.value = true;
 
   try {
-    console.log(
-      "Submitting new-person form"
-    );
+
 
     for (
       const [
@@ -858,24 +853,14 @@ async function handleSubmit() {
       if (
         value instanceof File
       ) {
-        console.log(
-          key,
-          {
-            name:
-              value.name,
 
-            type:
-              value.type,
 
-            size:
-              value.size
-          }
-        );
+
+
+      
       } else {
-        console.log(
-          key,
-          value
-        );
+      
+     
       }
     }
 
@@ -884,10 +869,7 @@ async function handleSubmit() {
         requestData
       );
 
-    console.log(
-      "New user created:",
-      response.data
-    );
+
 
     await Swal.fire({
       icon: "success",

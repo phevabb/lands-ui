@@ -76,10 +76,7 @@ function handleSidebarVisibility(
   sidebarVisible.value =
     Boolean(visible);
 
-  console.log(
-    "Manager sidebar visible:",
-    sidebarVisible.value
-  );
+
 }
 
 function setActive(
@@ -151,9 +148,6 @@ async function handleLogout() {
   try {
     await logout();
 
-    console.log(
-      "Manager backend logout completed successfully"
-    );
   } catch (error) {
     console.error(
       "Manager backend logout request failed:",

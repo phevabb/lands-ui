@@ -458,10 +458,6 @@ async function loadSearchRecords() {
     const response =
       await all_users_to_excel();
 
-    console.log(
-      "Manager region users response:",
-      response.data
-    );
 
     const accounts =
       extractAccounts(
@@ -473,10 +469,7 @@ async function loadSearchRecords() {
         return normalizeAccount(item);
       });
 
-    console.log(
-      "Manager users available for search:",
-      rows2.value.length
-    );
+ 
   } catch (error) {
     rows2.value = [];
 
@@ -647,10 +640,7 @@ function handleUserSelected(accountId) {
     return;
   }
 
-  console.log(
-    "Opening Manager staff details:",
-    normalizedAccountId
-  );
+  
 
   router.push(
     `/manager/staff-details/${normalizedAccountId}`
@@ -715,10 +705,7 @@ function selectUser(item) {
     return;
   }
 
-  console.log(
-    "Selected Manager-region account ID:",
-    accountId
-  );
+
 
   emit(
     "user-selected",
