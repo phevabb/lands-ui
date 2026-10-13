@@ -2,7 +2,6 @@
 
 
 
-
 <script setup>
 import {
   computed,
@@ -16,21 +15,17 @@ import {
   useRouter
 } from "vue-router/composables";
 
-import * as XLSX from "xlsx";
-
-
 import {
   saveAs
 } from "file-saver";
 
+import * as XLSX from "xlsx";
+
 import SimpleTableUnit from "@/admin_BOX/pages/SimpleTableUnit.vue";
 
-
 import {
-  users_per_department,
-  users_per_department_no_pages
+  users_per_department
 } from "../../services/api";
-
 
 const route =
   useRoute();
@@ -41,23 +36,14 @@ const router =
 const users =
   ref([]);
 
-const usersNoPages =
-  ref([]);
-
 const dept =
   ref("");
 
 const filterType =
   ref("");
 
-const searchQuery =
-  ref("");
-
-const selectedRow =
-  ref(null);
-
 const isLoading =
-  ref(true);
+  ref(false);
 
 const exportLoading =
   ref(false);
@@ -74,87 +60,32 @@ const next =
 const previous =
   ref(null);
 
-const totalPages =
-  ref(1);
-
 const currentPage =
   ref(1);
 
 const itemsPerPage =
   ref(10);
 
-const filteredUsers =
+const totalPages =
   computed(() => {
-    const query =
-      searchQuery.value
-        .trim()
-        .toLowerCase();
-
-    if (!query) {
-      return users.value;
-    }
-
-    return users.value.filter(
-      staff => {
-        const searchableValues = [
-          staff.userId,
-          staff.fullName,
-          staff.firstName,
-          staff.middleName,
-          staff.lastName,
-          staff.phoneNumber,
-          staff.email,
-          staff.supervisorName
-        ];
-
-        return searchableValues.some(
-          value => {
-            return String(
-              value ?? ""
-            )
-              .toLowerCase()
-              .includes(query);
-          }
-        );
-      }
-    );
-  });
-
-const showingRange =
-  computed(() => {
-    if (
-      totalCount.value === 0
-    ) {
-      return "Showing 0 of 0";
-    }
-
-    const start =
-      (
-        (
-          currentPage.value -
-          1
-        ) *
-        PAGE_SIZE
-      ) + 1;
-
-    const end =
-      Math.min(
-        currentPage.value *
-          PAGE_SIZE,
-        totalCount.value
-      );
-
-    return (
-      `Showing ${start}-${end} ` +
-      `of ${totalCount.value}`
+    return Math.max(
+      1,
+      Math.ceil(
+        totalCount.value /
+          itemsPerPage.value
+      )
     );
   });
 
 const canExport =
   computed(() => {
     return (
-      usersNoPages.value.length >
-      0
+      !isLoading.value &&
+      !exportLoading.value &&
+      totalCount.value > 0 &&
+      Boolean(
+        dept.value
+      )
     );
   });
 
@@ -175,8 +106,8 @@ watch(
       return;
     }
 
-    currentPage.value = 1;
-    searchQuery.value = "";
+    currentPage.value =
+      1;
 
     await loadPage();
   }
@@ -192,71 +123,24 @@ async function loadPage() {
     errorMessage.value =
       "A department or staff category is required.";
 
-    isLoading.value = false;
-
     return;
   }
 
-  isLoading.value = true;
-  errorMessage.value = "";
-  dept.value = departmentName;
+  dept.value =
+    departmentName;
 
-  try {
-    const [
-      paginatedResponse,
-      nonPaginatedResponse
-    ] = await Promise.all([
-      users_per_department(
-        departmentName,
-        {
-          page: 1,
-          page_size:
-            itemsPerPage.value
-        }
-      ),
+  currentPage.value =
+    1;
 
-      users_per_department_no_pages(
-        departmentName
-      )
-    ]);
-
-    applyPaginatedResponse(
-      paginatedResponse?.data,
-      1
-    );
-
-    applyNonPaginatedResponse(
-      nonPaginatedResponse?.data
-    );
-
-  
-  
-  } catch (error) {
-    resetPage();
-
-    console.error(
-      "Unable to load filtered staff:",
-      error.response?.data ||
-      error.message ||
-      error
-    );
-
-    errorMessage.value =
-      getErrorMessage(
-        error
-      );
-  } finally {
-    isLoading.value = false;
-  }
+  await fetchUsers(1);
 }
 
 async function fetchUsers(
-  page = 1
+  requestedPage = 1
 ) {
-  const requestedPage =
-    normalizePage(
-      page
-    );
+  if (isLoading.value) {
+    return;
+  }
 
   const departmentName =
     dept.value ||
@@ -269,32 +153,39 @@ async function fetchUsers(
     return;
   }
 
-  isLoading.value = true;
-  errorMessage.value = "";
+  const page =
+    normalizePage(
+      requestedPage
+    );
+
+  isLoading.value =
+    true;
+
+  errorMessage.value =
+    "";
 
   try {
     const response =
-  await users_per_department(
-    departmentName,
-    {
-      page:
-        requestedPage,
+      await users_per_department(
+        departmentName,
+        {
+          page,
 
-      page_size:
-        itemsPerPage.value
-    }
-  );
+          page_size:
+            itemsPerPage.value
+        }
+      );
 
     applyPaginatedResponse(
       response?.data,
-      requestedPage
+      page
     );
   } catch (error) {
     console.error(
-      "Unable to retrieve filtered staff page:",
-      error.response?.data ||
-      error.message ||
-      error
+      "Unable to retrieve filtered staff:",
+      error?.response?.data ||
+        error?.message ||
+        error
     );
 
     errorMessage.value =
@@ -302,12 +193,180 @@ async function fetchUsers(
         error
       );
   } finally {
-    isLoading.value = false;
+    isLoading.value =
+      false;
   }
 }
 
+function applyPaginatedResponse(
+  responseData,
+  requestedPage
+) {
+  const data =
+    responseData &&
+    typeof responseData ===
+      "object"
+      ? responseData
+      : {};
 
+  const results =
+    data.results &&
+    typeof data.results ===
+      "object"
+      ? data.results
+      : {};
 
+  const responseUsers =
+    Array.isArray(
+      results.users
+    )
+      ? results.users
+      : [];
+
+  users.value =
+    responseUsers.map(account => {
+      return normalizeAccount(
+        account
+      );
+    });
+
+  const responseDepartment =
+    results.dept ??
+    dept.value;
+
+  dept.value =
+    String(
+      responseDepartment ?? ""
+    ).trim();
+
+  filterType.value =
+    String(
+      results.filterType ??
+      results.filter_type ??
+      ""
+    ).trim();
+
+  totalCount.value =
+    normalizeCount(
+      data.count ??
+      results.count
+    );
+
+  next.value =
+    typeof data.next ===
+      "string" &&
+    data.next.trim()
+      ? data.next
+      : null;
+
+  previous.value =
+    typeof data.previous ===
+      "string" &&
+    data.previous.trim()
+      ? data.previous
+      : null;
+
+  currentPage.value =
+    Math.min(
+      normalizePage(
+        requestedPage
+      ),
+      totalPages.value
+    );
+}
+
+function normalizeAccount(
+  account
+) {
+  const source =
+    account &&
+    typeof account ===
+      "object"
+      ? account
+      : {};
+
+  return {
+    id:
+      normalizeAccountId(
+        source.id ??
+        source.accountId ??
+        source.account_id
+      ),
+
+    userId:
+      String(
+        source.userId ??
+        source.user_id ??
+        ""
+      ).trim(),
+
+    firstName:
+      String(
+        source.firstName ??
+        source.first_name ??
+        ""
+      ).trim(),
+
+    fullName:
+      String(
+        source.fullName ??
+        source.full_name ??
+        createFullName(
+          source
+        )
+      ).trim(),
+
+    phoneNumber:
+      String(
+        source.phoneNumber ??
+        source.phone_number ??
+        ""
+      ).trim(),
+
+    profilePictureUrl:
+      source.profilePictureUrl ??
+      source.profile_picture_url ??
+      source.profilePicture ??
+      source.profile_picture ??
+      null
+  };
+}
+
+function createFullName(
+  account
+) {
+  const nameParts = [
+    account.firstName ??
+      account.first_name,
+
+    account.middleName ??
+      account.middle_name,
+
+    account.lastName ??
+      account.last_name
+  ];
+
+  return nameParts
+    .filter(value => {
+      if (
+        value === null ||
+        value === undefined
+      ) {
+        return false;
+      }
+
+      return (
+        String(value).trim() !==
+        ""
+      );
+    })
+    .map(value => {
+      return String(
+        value
+      ).trim();
+    })
+    .join(" ");
+}
 
 function goToUserDetail(
   id
@@ -337,408 +396,28 @@ function goToUserDetail(
   });
 }
 
-
-
-
-function applyPaginatedResponse(
-  responseData,
-  requestedPage
-) {
-  const data =
-    responseData &&
-    typeof responseData ===
-      "object"
-      ? responseData
-      : {};
-
-  const results =
-    data.results &&
-    typeof data.results ===
-      "object"
-      ? data.results
-      : {};
-
-  users.value =
-    Array.isArray(
-      results.users
-    )
-      ? results.users.map(
-          normalizeAccount
-        )
-      : [];
-
-  dept.value =
-    String(
-      results.dept ??
-      dept.value
-    ).trim();
-
-  filterType.value =
-    String(
-      results.filter_type ??
-      results.filterType ??
-      ""
-    ).trim();
-
-  totalCount.value =
-    normalizeCount(
-      data.count ??
-      results.count
-    );
-
-  next.value =
-    typeof data.next ===
-      "string"
-      ? data.next
-      : null;
-
-  previous.value =
-    typeof data.previous ===
-      "string"
-      ? data.previous
-      : null;
-
-  totalPages.value =
-    Math.max(
-      1,
-      Math.ceil(
-        totalCount.value /
-        itemsPerPage.value
-      )
-    );
-
-  currentPage.value =
-    Math.min(
-      normalizePage(
-        requestedPage
-      ),
-      totalPages.value
-    );
-
- 
-}
-
-
-
-
-function applyNonPaginatedResponse(
-  responseData
-) {
-  const data =
-    responseData &&
-    typeof responseData ===
-      "object"
-      ? responseData
-      : {};
-
-  usersNoPages.value =
-    Array.isArray(
-      data.users
-    )
-      ? data.users.map(
-          normalizeAccount
-        )
-      : [];
-}
-
-function normalizeAccount(
-  account
-) {
-  return {
-    ...account,
-
-    id:
-      normalizeAccountId(
-        account.id ??
-        account.accountId ??
-        account.account_id
-      ),
-
-    userId:
-      String(
-        account.userId ??
-        account.user_id ??
-        ""
-      ),
-
-    firstName:
-      String(
-        account.firstName ??
-        account.first_name ??
-        ""
-      ),
-
-    middleName:
-      String(
-        account.middleName ??
-        account.middle_name ??
-        ""
-      ),
-
-    lastName:
-      String(
-        account.lastName ??
-        account.last_name ??
-        ""
-      ),
-
-    fullName:
-      String(
-        account.fullName ??
-        account.full_name ??
-        createFullName(account)
-      ),
-
-    phoneNumber:
-      String(
-        account.phoneNumber ??
-        account.phone_number ??
-        ""
-      ),
-
-    email:
-      String(
-        account.email ??
-        ""
-      ),
-
-    supervisorName:
-      String(
-        account.supervisorName ??
-        account.supervisor_name ??
-        ""
-      ),
-
-    profilePictureUrl:
-      account.profilePictureUrl ??
-      account.profile_picture_url ??
-      account.profilePicture ??
-      account.profile_picture ??
-      null,
-
-    role:
-      String(
-        account.role ??
-        ""
-      ),
-
-    gender:
-      String(
-        account.gender ??
-        ""
-      ),
-
-    staffCategory:
-      String(
-        account.staffCategory ??
-        account.staff_category ??
-        ""
-      ),
-
-    directorateName:
-      String(
-        account.directorateName ??
-        account.directorate_name ??
-        account.directorate ??
-        ""
-      ),
-
-    categoryName:
-      String(
-        account.categoryName ??
-        account.category_name ??
-        account.category ??
-        ""
-      ),
-
-    districtName:
-      String(
-        account.districtName ??
-        account.district_name ??
-        account.district ??
-        ""
-      ),
-
-    regionName:
-      String(
-        account.regionName ??
-        account.region_name ??
-        account.region ??
-        ""
-      ),
-
-    currentGradeName:
-      String(
-        account.currentGradeName ??
-        account.current_grade_name ??
-        account.current_grade ??
-        ""
-      ),
-
-    managementUnitCostCentreName:
-      String(
-        account.managementUnitCostCentreName ??
-        account.management_unit_cost_centre_name ??
-        account.management_unit_cost_centre ??
-        ""
-      )
-  };
-}
-
-function createFullName(
-  account
-) {
-  return [
-    account.firstName ??
-      account.first_name,
-
-    account.middleName ??
-      account.middle_name,
-
-    account.lastName ??
-      account.last_name
-  ]
-    .filter(
-      value => {
-        return (
-          value !== null &&
-          value !== undefined &&
-          String(value).trim()
-        );
-      }
-    )
-    .map(
-      value => {
-        return String(
-          value
-        ).trim();
-      }
-    )
-    .join(" ");
-}
-
-function selectRow(
-  staff
-) {
-  const accountId =
-    normalizeAccountId(
-      staff?.id
-    );
-
-  if (!accountId) {
-    console.error(
-      "Selected staff record has no valid account ID:",
-      staff
-    );
-
-    return;
-  }
-
-  selectedRow.value =
-    staff;
-
-  router.push({
-    name:
-      "Staff Details",
-
-    params: {
-      id:
-        accountId
-    }
-  });
-}
-
-
-
-
-
-
-function getProfilePictureSrc(
-  profilePicture
-) {
-  if (
-    !profilePicture ||
-    profilePicture ===
-      "-"
-  ) {
-    return DEFAULT_AVATAR;
-  }
-
-  const picture =
-    String(
-      profilePicture
-    ).trim();
-
-  if (
-    picture.startsWith(
-      "http://"
-    ) ||
-    picture.startsWith(
-      "https://"
-    ) ||
-    picture.startsWith(
-      "data:"
-    ) ||
-    picture.startsWith(
-      "blob:"
-    )
-  ) {
-    return picture;
-  }
-
-  const baseUrl =
-    String(
-      api.defaults.baseURL ??
-      ""
-    ).replace(
-      /\/+$/,
-      ""
-    );
-
-  const path =
-    picture.replace(
-      /^\/+/,
-      ""
-    );
-
-  if (!baseUrl) {
-    return `/${path}`;
-  }
-
-  return `${baseUrl}/${path}`;
-}
-
 async function exportExcel() {
-  if (exportLoading.value) {
+  if (
+    exportLoading.value ||
+    !dept.value ||
+    totalCount.value <= 0
+  ) {
     return;
   }
 
-  exportLoading.value = true;
-  errorMessage.value = "";
+  exportLoading.value =
+    true;
+
+  errorMessage.value =
+    "";
 
   try {
-    let exportUsers =
-      usersNoPages.value;
+    const exportUsers =
+      await loadAllPagesForExport();
 
     if (
-      exportUsers.length === 0 &&
-      dept.value
-    ) {
-      const response =
-        await users_per_department_no_pages(
-          dept.value
-        );
-
-      applyNonPaginatedResponse(
-        response?.data
-      );
-
-      exportUsers =
-        usersNoPages.value;
-    }
-
-    if (
-      exportUsers.length === 0
+      exportUsers.length ===
+      0
     ) {
       errorMessage.value =
         "No staff records are available to export.";
@@ -747,71 +426,24 @@ async function exportExcel() {
     }
 
     const exportData =
-      exportUsers.map(
-        staff => {
-          return {
-            "Account ID":
-              staff.id ??
-              "",
+      exportUsers.map(staff => {
+        return {
+          "Account ID":
+            staff.id ?? "",
 
-            "Staff ID":
-              staff.userId ||
-              "",
+          "Staff ID":
+            staff.userId || "",
 
-            "Full Name":
-              staff.fullName ||
-              "",
+          "First Name":
+            staff.firstName || "",
 
-            "Phone Number":
-              staff.phoneNumber ||
-              "",
+          "Full Name":
+            staff.fullName || "",
 
-            "Email":
-              staff.email ||
-              "",
-
-            "Role":
-              staff.role ||
-              "",
-
-            "Gender":
-              staff.gender ||
-              "",
-
-            "Staff Category":
-              staff.staffCategory ||
-              "",
-
-            "Supervisor's Name":
-              staff.supervisorName ||
-              "",
-
-            "Directorate":
-              staff.directorateName ||
-              "",
-
-            "Class":
-              staff.categoryName ||
-              "",
-
-            "District":
-              staff.districtName ||
-              "",
-
-            "Region":
-              staff.regionName ||
-              "",
-
-            "Current Grade":
-              staff.currentGradeName ||
-              "",
-
-            "Management Unit":
-              staff.managementUnitCostCentreName ||
-              ""
-          };
-        }
-      );
+          "Phone Number":
+            staff.phoneNumber || ""
+        };
+      });
 
     const worksheet =
       XLSX.utils.json_to_sheet(
@@ -854,26 +486,157 @@ async function exportExcel() {
 
     saveAs(
       excelFile,
-      `${createFileName(dept.value)}.xlsx`
+      `${createFileName(
+        dept.value
+      )}.xlsx`
     );
   } catch (error) {
     console.error(
       "Unable to export filtered staff:",
-      error.response?.data ||
-      error.message ||
-      error
+      error?.response?.data ||
+        error?.message ||
+        error
     );
 
     errorMessage.value =
-      error.response?.data?.detail ||
-      "The staff records could not be exported.";
+      getErrorMessage(
+        error
+      );
   } finally {
-    exportLoading.value = false;
+    exportLoading.value =
+      false;
   }
 }
 
-function clearSearch() {
-  searchQuery.value = "";
+async function loadAllPagesForExport() {
+  const exportPageSize =
+    100;
+
+  const firstResponse =
+    await users_per_department(
+      dept.value,
+      {
+        page:
+          1,
+
+        page_size:
+          exportPageSize
+      }
+    );
+
+  const firstResponseData =
+    firstResponse?.data || {};
+
+  const firstResults =
+    firstResponseData.results &&
+    typeof firstResponseData.results ===
+      "object"
+      ? firstResponseData.results
+      : {};
+
+  const firstPageRecords =
+    Array.isArray(
+      firstResults.users
+    )
+      ? firstResults.users
+      : [];
+
+  const firstPageUsers =
+    firstPageRecords.map(account => {
+      return normalizeAccount(
+        account
+      );
+    });
+
+  const exportTotalCount =
+    normalizeCount(
+      firstResponseData.count ??
+      firstResults.count
+    );
+
+  const exportTotalPages =
+    Math.max(
+      1,
+      Math.ceil(
+        exportTotalCount /
+          exportPageSize
+      )
+    );
+
+  const allUsers = [
+    ...firstPageUsers
+  ];
+
+  for (
+    let page = 2;
+    page <= exportTotalPages;
+    page += 1
+  ) {
+    const response =
+      await users_per_department(
+        dept.value,
+        {
+          page,
+
+          page_size:
+            exportPageSize
+        }
+      );
+
+    const responseData =
+      response?.data || {};
+
+    const results =
+      responseData.results &&
+      typeof responseData.results ===
+        "object"
+        ? responseData.results
+        : {};
+
+    const pageRecords =
+      Array.isArray(
+        results.users
+      )
+        ? results.users
+        : [];
+
+    const pageUsers =
+      pageRecords.map(account => {
+        return normalizeAccount(
+          account
+        );
+      });
+
+    allUsers.push(
+      ...pageUsers
+    );
+  }
+
+  const uniqueUsers =
+    new Map();
+
+  allUsers.forEach(account => {
+    if (account.id !== null) {
+      uniqueUsers.set(
+        account.id,
+        account
+      );
+    }
+  });
+
+  return Array.from(
+    uniqueUsers.values()
+  );
+}
+
+function handleExportError(
+  message
+) {
+  errorMessage.value =
+    String(
+      message ||
+      "Unable to process the staff records."
+    );
 }
 
 function getDepartmentFromRoute() {
@@ -889,7 +652,9 @@ function getDepartmentFromRoute() {
 
   try {
     return decodeURIComponent(
-      String(queryValue)
+      String(
+        queryValue
+      )
     ).trim();
   } catch (error) {
     return String(
@@ -898,108 +663,22 @@ function getDepartmentFromRoute() {
   }
 }
 
-function getCurrentPageFromUrl(
-  nextUrl,
-  previousUrl,
-  count,
-  pageSize = PAGE_SIZE,
-  fallbackPage = 1
-) {
-  const safeFallbackPage =
-    normalizePage(
-      fallbackPage
-    );
-
-  try {
-    const nextPage =
-      extractPageFromUrl(
-        nextUrl
-      );
-
-    const previousPage =
-      extractPageFromUrl(
-        previousUrl
-      );
-
-    if (
-      previousPage !== null
-    ) {
-      return previousPage + 1;
-    }
-
-    if (
-      nextPage !== null
-    ) {
-      return Math.max(
-        1,
-        nextPage - 1
-      );
-    }
-
-    const calculatedPages =
-      Math.max(
-        1,
-        Math.ceil(
-          normalizeCount(count) /
-          pageSize
-        )
-      );
-
-    return Math.min(
-      safeFallbackPage,
-      calculatedPages
-    );
-  } catch (error) {
-    return safeFallbackPage;
-  }
-}
-
-function extractPageFromUrl(
-  url
-) {
-  if (
-    typeof url !==
-      "string" ||
-    !url.trim()
-  ) {
-    return null;
-  }
-
-  const parsedUrl =
-    new URL(
-      url,
-      window.location.origin
-    );
-
-  const page =
-    Number(
-      parsedUrl.searchParams.get(
-        "page"
-      )
-    );
-
-  return (
-    Number.isInteger(page) &&
-    page > 0
-  )
-    ? page
-    : null;
-}
-
 function normalizePage(
   page
 ) {
   const normalizedPage =
     Number(page);
 
-  return (
-    Number.isInteger(
+  if (
+    !Number.isInteger(
       normalizedPage
-    ) &&
-    normalizedPage > 0
-  )
-    ? normalizedPage
-    : 1;
+    ) ||
+    normalizedPage <= 0
+  ) {
+    return 1;
+  }
+
+  return normalizedPage;
 }
 
 function normalizeCount(
@@ -1008,12 +687,16 @@ function normalizeCount(
   const count =
     Number(value);
 
-  return (
-    Number.isFinite(count) &&
-    count >= 0
-  )
-    ? count
-    : 0;
+  if (
+    !Number.isFinite(
+      count
+    ) ||
+    count < 0
+  ) {
+    return 0;
+  }
+
+  return count;
 }
 
 function normalizeAccountId(
@@ -1022,24 +705,34 @@ function normalizeAccountId(
   const accountId =
     Number(value);
 
-  return (
-    Number.isInteger(accountId) &&
-    accountId > 0
-  )
-    ? accountId
-    : null;
+  if (
+    !Number.isInteger(
+      accountId
+    ) ||
+    accountId <= 0
+  ) {
+    return null;
+  }
+
+  return accountId;
 }
 
 function createWorksheetName(
   value
 ) {
+  const invalidCharacters =
+    new RegExp(
+      "[\\\\/?\\x2A\\[\\]:]",
+      "g"
+    );
+
   const name =
     String(
       value ||
       "Staff"
     )
       .replace(
-        /[\\/?*[\]:]/g,
+        invalidCharacters,
         ""
       )
       .trim();
@@ -1079,24 +772,41 @@ function getErrorMessage(
   error
 ) {
   if (
-    error.message?.includes(
+    error?.message?.includes(
       "Network Error"
     ) ||
-    error.code ===
+    error?.code ===
       "ERR_NETWORK"
   ) {
-    return "Please check your internet connection.";
+    return (
+      "Please check your internet " +
+      "connection."
+    );
   }
 
   if (
-    error.response?.status ===
+    error?.response?.status ===
+      400
+  ) {
+    return (
+      error.response?.data?.detail ||
+      error.response?.data?.dept?.[0] ||
+      "A valid filter is required."
+    );
+  }
+
+  if (
+    error?.response?.status ===
       401
   ) {
-    return "Authentication is required.";
+    return (
+      error.response?.data?.detail ||
+      "Authentication is required."
+    );
   }
 
   if (
-    error.response?.status ===
+    error?.response?.status ===
       403
   ) {
     return (
@@ -1105,26 +815,60 @@ function getErrorMessage(
     );
   }
 
+  if (
+    error?.response?.status ===
+      404
+  ) {
+    return (
+      error.response?.data?.detail ||
+      "The requested staff records were not found."
+    );
+  }
+
+  if (
+    error?.response?.status >=
+      500
+  ) {
+    return (
+      error.response?.data?.detail ||
+      "The server could not retrieve the staff records."
+    );
+  }
+
   return (
-    error.response?.data?.detail ||
+    error?.response?.data?.detail ||
+    error?.message ||
     "Something went wrong while fetching staff data."
   );
 }
 
 function resetPage() {
-  users.value = [];
-  usersNoPages.value = [];
-  dept.value = "";
-  filterType.value = "";
-  searchQuery.value = "";
-  selectedRow.value = null;
-  totalCount.value = 0;
-  next.value = null;
-  previous.value = null;
-  totalPages.value = 1;
-  currentPage.value = 1;
+  users.value =
+    [];
+
+  dept.value =
+    "";
+
+  filterType.value =
+    "";
+
+  totalCount.value =
+    0;
+
+  next.value =
+    null;
+
+  previous.value =
+    null;
+
+  currentPage.value =
+    1;
+
+  errorMessage.value =
+    "";
 }
 </script>
+
 
 <template>
   <div class="premium-container">
@@ -1266,6 +1010,8 @@ function resetPage() {
     </div>
   </div>
 </template>
+
+
 
 
 <style scoped>

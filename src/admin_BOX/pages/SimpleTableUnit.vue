@@ -437,9 +437,6 @@ const filteredRows2 = computed(() => {
   });
 });
 
-onMounted(async () => {
-  await loadSearchRecords();
-});
 
 async function loadSearchRecords() {
   searchLoading.value = true;

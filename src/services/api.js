@@ -954,6 +954,25 @@ export function users_per_department(
   dept,
   params = {}
 ) {
+  const page =
+    Math.max(
+      1,
+      Number(params.page) || 1
+    );
+
+  const pageSize =
+    Math.min(
+      100,
+      Math.max(
+        1,
+        Number(
+          params.page_size ??
+          params.pageSize ??
+          10
+        ) || 10
+      )
+    );
+
   return api.get(
     "/manager/users-per-department/admin",
     {
@@ -963,18 +982,16 @@ export function users_per_department(
             dept ?? ""
           ).trim(),
 
-        page:
-          params.page ??
-          1,
+        page,
 
         page_size:
-          params.page_size ??
-          params.pageSize ??
-          10
+          pageSize
       }
     }
   );
 }
+
+
 
 export function users_per_department_no_pages(
   dept

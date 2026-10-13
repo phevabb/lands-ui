@@ -101,64 +101,35 @@ function getCurrentPageFromUrl(next, previous, count, pageSize = 10) {
 }
 
 
-
 onMounted(async () => {
-  isLoading.value = true;
-  errorMessage.value = "";
+  isLoading.value =
+    true;
+
+  errorMessage.value =
+    "";
 
   try {
-    /*
-     * Keep the new Ktor Admin summary API together
-     * with all legacy Django statistics APIs.
-     */
-    const [
-      { data: summaryData },
-      { data: proData },
-      { data: conData },
-      { data: leaData },
-      { data: classData },
-      { data: dirData },
-      { data: regData },
-      { data: manData },
-      { data: senData },
-      { data: genData },
-      { data: ageData },
-      { data: salData }
-    ] = await Promise.all([
-      /*
-       * New Ktor API:
-       * GET /api/admin/dashboard-summary
-       */
-      admin_dashboard_summary(),
+    const statisticsPromise =
+      Promise.all([
+        pro_stats(),
+        contract_stats(),
+        leave_stats(),
+        class_stats(),
+        directorate_stats(),
+        region_stats(),
+        management_stats(),
+        senior_stats(),
+        gender_stats(),
+        age_stats(),
+        salary_stats()
+      ]);
 
-      /*
-       * Legacy Django APIs.
-       * Keep these because the dashboard tabs
-       * still depend on their responses.
-       */
-      pro_stats(),
-      contract_stats(),
-      leave_stats(),
-      class_stats(),
-      directorate_stats(),
-      region_stats(),
-      management_stats(),
-      senior_stats(),
-      gender_stats(),
-      age_stats(),
-      salary_stats()
-    ]);
+    const summaryResponse =
+      await admin_dashboard_summary();
 
-    /*
-     * Print only the Ktor dashboard summary.
-     */
- 
+    const summaryData =
+      summaryResponse?.data || {};
 
-    /*
-     * Ktor uses camelCase response properties.
-     *
-     * Nullish coalescing preserves valid zero values.
-     */
     allUsers.value =
       Number(
         summaryData.numOfUsers ??
@@ -195,16 +166,62 @@ onMounted(async () => {
         0
       );
 
-    /*
-     * Keep all your existing legacy Django
-     * tab definitions below this point.
-     */
+    const [
+      professionalResponse,
+      contractResponse,
+      leaveResponse,
+      classResponse,
+      directorateResponse,
+      regionResponse,
+      managementResponse,
+      staffCategoryResponse,
+      genderResponse,
+      ageResponse,
+      salaryResponse
+    ] = await statisticsPromise;
+
+    const proData =
+      professionalResponse?.data || {};
+
+    const conData =
+      contractResponse?.data || {};
+
+    const leaData =
+      leaveResponse?.data || {};
+
+    const classData =
+      classResponse?.data || {};
+
+    const dirData =
+      directorateResponse?.data || {};
+
+    const regData =
+      regionResponse?.data || {};
+
+    const manData =
+      managementResponse?.data || {};
+
+    const senData =
+      staffCategoryResponse?.data || {};
+
+    const genData =
+      genderResponse?.data || {};
+
+    const ageData =
+      ageResponse?.data || {};
+
+    const salData =
+      salaryResponse?.data || {};
 
     const proTab = {
-      id: "tab-pro",
+      id:
+        "tab-pro",
+
       label:
         "Professionals and Sub Professionals",
-      icon: "school",
+
+      icon:
+        "school",
 
       users:
         (
@@ -214,6 +231,7 @@ onMounted(async () => {
           return {
             name:
               item.professional,
+
             count:
               item.count
           };
@@ -236,12 +254,15 @@ onMounted(async () => {
         ),
 
       totalPages:
-        Math.ceil(
-          (
-            proData.count ??
-            0
-          ) /
-          page_size
+        Math.max(
+          1,
+          Math.ceil(
+            (
+              proData.count ??
+              0
+            ) /
+              page_size
+          )
         ),
 
       name_:
@@ -252,9 +273,14 @@ onMounted(async () => {
     };
 
     const conTab = {
-      id: "tab-CON",
-      label: "Contract Types",
-      icon: "school",
+      id:
+        "tab-CON",
+
+      label:
+        "Contract Types",
+
+      icon:
+        "school",
 
       users:
         (
@@ -263,6 +289,7 @@ onMounted(async () => {
         ).map(item => {
           return {
             name:
+              item.contractType ??
               item.contract_type,
 
             count:
@@ -287,12 +314,15 @@ onMounted(async () => {
         ),
 
       totalPages:
-        Math.ceil(
-          (
-            conData.count ??
-            0
-          ) /
-          page_size
+        Math.max(
+          1,
+          Math.ceil(
+            (
+              conData.count ??
+              0
+            ) /
+              page_size
+          )
         ),
 
       name_:
@@ -303,9 +333,14 @@ onMounted(async () => {
     };
 
     const leaTab = {
-      id: "tab-lea",
-      label: "Leave Types",
-      icon: "school",
+      id:
+        "tab-lea",
+
+      label:
+        "Leave Types",
+
+      icon:
+        "school",
 
       users:
         (
@@ -314,6 +349,7 @@ onMounted(async () => {
         ).map(item => {
           return {
             name:
+              item.leaveType ??
               item.leave_type,
 
             count:
@@ -338,12 +374,15 @@ onMounted(async () => {
         ),
 
       totalPages:
-        Math.ceil(
-          (
-            leaData.count ??
-            0
-          ) /
-          page_size
+        Math.max(
+          1,
+          Math.ceil(
+            (
+              leaData.count ??
+              0
+            ) /
+              page_size
+          )
         ),
 
       name_:
@@ -354,9 +393,14 @@ onMounted(async () => {
     };
 
     const classTab = {
-      id: "tab-classes",
-      label: "Classes",
-      icon: "school",
+      id:
+        "tab-classes",
+
+      label:
+        "Classes",
+
+      icon:
+        "school",
 
       users:
         (
@@ -365,6 +409,7 @@ onMounted(async () => {
         ).map(item => {
           return {
             name:
+              item.className ??
               item.class,
 
             count:
@@ -389,24 +434,33 @@ onMounted(async () => {
         ),
 
       totalPages:
-        Math.ceil(
-          (
-            classData.count ??
-            0
-          ) /
-          page_size
+        Math.max(
+          1,
+          Math.ceil(
+            (
+              classData.count ??
+              0
+            ) /
+              page_size
+          )
         ),
 
-      name_: "Class",
+      name_:
+        "Class",
 
       apiFunc:
         class_stats
     };
 
     const directorateTab = {
-      id: "tab-dept",
-      label: "Departments",
-      icon: "account_balance",
+      id:
+        "tab-dept",
+
+      label:
+        "Departments",
+
+      icon:
+        "account_balance",
 
       users:
         (
@@ -439,12 +493,15 @@ onMounted(async () => {
         ),
 
       totalPages:
-        Math.ceil(
-          (
-            dirData.count ??
-            0
-          ) /
-          page_size
+        Math.max(
+          1,
+          Math.ceil(
+            (
+              dirData.count ??
+              0
+            ) /
+              page_size
+          )
         ),
 
       name_:
@@ -455,9 +512,14 @@ onMounted(async () => {
     };
 
     const regionTab = {
-      id: "tab-reg",
-      label: "Regions",
-      icon: "account_balance",
+      id:
+        "tab-reg",
+
+      label:
+        "Regions",
+
+      icon:
+        "account_balance",
 
       users:
         (
@@ -490,24 +552,31 @@ onMounted(async () => {
         ),
 
       totalPages:
-        Math.ceil(
-          (
-            regData.count ??
-            0
-          ) /
-          page_size
+        Math.max(
+          1,
+          Math.ceil(
+            (
+              regData.count ??
+              0
+            ) /
+              page_size
+          )
         ),
 
-      name_: "Region",
+      name_:
+        "Region",
 
       apiFunc:
         region_stats
     };
 
     const manTab = {
-      id: "tab-man",
+      id:
+        "tab-man",
+
       label:
         "Management Unit",
+
       icon:
         "account_balance",
 
@@ -518,6 +587,7 @@ onMounted(async () => {
         ).map(item => {
           return {
             name:
+              item.managementUnit ??
               item.management_unit,
 
             count:
@@ -542,12 +612,15 @@ onMounted(async () => {
         ),
 
       totalPages:
-        Math.ceil(
-          (
-            manData.count ??
-            0
-          ) /
-          page_size
+        Math.max(
+          1,
+          Math.ceil(
+            (
+              manData.count ??
+              0
+            ) /
+              page_size
+          )
         ),
 
       name_:
@@ -558,9 +631,12 @@ onMounted(async () => {
     };
 
     const senTab = {
-      id: "tab-sen",
+      id:
+        "tab-sen",
+
       label:
         "Senior/Junior Staff",
+
       icon:
         "account_balance",
 
@@ -571,6 +647,7 @@ onMounted(async () => {
         ).map(item => {
           return {
             name:
+              item.staffCategory ??
               item.staff_category,
 
             count:
@@ -595,12 +672,15 @@ onMounted(async () => {
         ),
 
       totalPages:
-        Math.ceil(
-          (
-            senData.count ??
-            0
-          ) /
-          page_size
+        Math.max(
+          1,
+          Math.ceil(
+            (
+              senData.count ??
+              0
+            ) /
+              page_size
+          )
         ),
 
       name_:
@@ -611,8 +691,12 @@ onMounted(async () => {
     };
 
     const genTab = {
-      id: "tab-gen",
-      label: "Gender",
+      id:
+        "tab-gen",
+
+      label:
+        "Gender",
+
       icon:
         "account_balance",
 
@@ -648,23 +732,31 @@ onMounted(async () => {
         ),
 
       totalPages:
-        Math.ceil(
-          (
-            genData.count ??
-            0
-          ) /
-          page_size
+        Math.max(
+          1,
+          Math.ceil(
+            (
+              genData.count ??
+              0
+            ) /
+              page_size
+          )
         ),
 
-      name_: "Gender",
+      name_:
+        "Gender",
 
       apiFunc:
         gender_stats
     };
 
     const ageTab = {
-      id: "tab-age",
-      label: "Age Groups",
+      id:
+        "tab-age",
+
+      label:
+        "Age Groups",
+
       icon:
         "account_balance",
 
@@ -675,6 +767,7 @@ onMounted(async () => {
         ).map(item => {
           return {
             name:
+              item.ageRange ??
               item.age_range,
 
             count:
@@ -699,12 +792,15 @@ onMounted(async () => {
         ),
 
       totalPages:
-        Math.ceil(
-          (
-            ageData.count ??
-            0
-          ) /
-          page_size
+        Math.max(
+          1,
+          Math.ceil(
+            (
+              ageData.count ??
+              0
+            ) /
+              page_size
+          )
         ),
 
       name_:
@@ -715,8 +811,12 @@ onMounted(async () => {
     };
 
     const salTab = {
-      id: "tab-sal",
-      label: "Grade Levels",
+      id:
+        "tab-sal",
+
+      label:
+        "Grade Levels",
+
       icon:
         "account_balance",
 
@@ -727,6 +827,7 @@ onMounted(async () => {
         ).map(item => {
           return {
             name:
+              item.salaryRange ??
               item.salary_range,
 
             count:
@@ -751,12 +852,15 @@ onMounted(async () => {
         ),
 
       totalPages:
-        Math.ceil(
-          (
-            salData.count ??
-            0
-          ) /
-          page_size
+        Math.max(
+          1,
+          Math.ceil(
+            (
+              salData.count ??
+              0
+            ) /
+              page_size
+          )
         ),
 
       name_:
@@ -795,39 +899,40 @@ onMounted(async () => {
   } catch (error) {
     console.error(
       "Unable to load dashboard data:",
-      error.response?.data ||
-      error.message ||
-      error
+      error?.response?.data ||
+        error?.message ||
+        error
     );
 
     if (
-      error.message?.includes(
+      error?.message?.includes(
         "Network Error"
       ) ||
-      error.code ===
+      error?.code ===
         "ERR_NETWORK"
     ) {
       errorMessage.value =
         "Please check your internet connection.";
     } else if (
-      error.response?.status ===
-      401
+      error?.response?.status ===
+        401
     ) {
       errorMessage.value =
         "Your session has expired. Please sign in again.";
     } else if (
-      error.response?.status ===
-      403
+      error?.response?.status ===
+        403
     ) {
       errorMessage.value =
         "You do not have permission to view this dashboard.";
     } else {
       errorMessage.value =
-        error.response?.data?.detail ||
+        error?.response?.data?.detail ||
         "Something went wrong while fetching dashboard data.";
     }
   } finally {
-    isLoading.value = false;
+    isLoading.value =
+      false;
   }
 });
 
