@@ -1,3 +1,4 @@
+
 <script setup>
 import {
   computed,
@@ -21,8 +22,7 @@ import Pagination from "../../components/Pagination.vue";
 
 import api, {
   DEFAULT_AVATAR,
-  manager_users_per_department,
-  manager_users_per_department_no_pages
+  manager_users_per_department
 } from "../../services/api";
 
 const route =
@@ -31,10 +31,13 @@ const route =
 const router =
   useRouter();
 
-const users =
-  ref([]);
+const PAGE_SIZE =
+  10;
 
-const usersNoPages =
+const EXPORT_PAGE_SIZE =
+  100;
+
+const users =
   ref([]);
 
 const dept =
@@ -50,7 +53,7 @@ const selectedRow =
   ref(null);
 
 const isLoading =
-  ref(true);
+  ref(false);
 
 const exportLoading =
   ref(false);
@@ -72,10 +75,6 @@ const totalPages =
 
 const currentPage =
   ref(1);
-
-const PAGE_SIZE =
-  10;
-
 
 const numberedUsers =
   computed(() => {
@@ -142,9 +141,6 @@ const filteredUsers =
     );
   });
 
-
-
-
 const paginationStart =
   computed(() => {
     if (
@@ -205,27 +201,15 @@ const pageSummary =
     );
   });
 
-function rowNumber(
-  index
-) {
-  return (
-    (
-      currentPage.value -
-      1
-    ) *
-    PAGE_SIZE
-  ) + index + 1;
-}
-
-
-
-
-
 const canExport =
   computed(() => {
     return (
-      usersNoPages.value.length >
-      0
+      !isLoading.value &&
+      !exportLoading.value &&
+      totalCount.value > 0 &&
+      Boolean(
+        dept.value
+      )
     );
   });
 
@@ -246,7 +230,11 @@ watch(
       return;
     }
 
-    currentPage.value = 1;
+    currentPage.value =
+      1;
+
+    searchQuery.value =
+      "";
 
     await loadPageData();
   }
@@ -262,17 +250,8 @@ async function loadPageData() {
     errorMessage.value =
       "A department or staff category is required.";
 
-    isLoading.value =
-      false;
-
     return;
   }
-
-  isLoading.value =
-    true;
-
-  errorMessage.value =
-    "";
 
   dept.value =
     departmentName;
@@ -280,95 +259,16 @@ async function loadPageData() {
   currentPage.value =
     1;
 
-  try {
-    const paginatedResponse =
-      await manager_users_per_department(
-        departmentName,
-        {
-          page:
-            1,
-
-          page_size:
-            PAGE_SIZE
-        }
-      );
-
-    applyPaginatedResponse(
-      paginatedResponse?.data,
-      1
-    );
-
-
-  
-  
-  
-  
-  
-  } catch (error) {
-    resetPageData();
-
-    console.error(
-      "Unable to load filtered staff page:",
-      {
-        status:
-          error.response?.status,
-
-        response:
-          error.response?.data,
-
-        message:
-          error.message
-      }
-    );
-
-    errorMessage.value =
-      getErrorMessage(
-        error
-      );
-
-    return;
-  } finally {
-    isLoading.value =
-      false;
-  }
-
-  /*
-   * Load export records separately.
-   * Failure here must not empty the table.
-   */
-  try {
-    const nonPaginatedResponse =
-      await manager_users_per_department_no_pages(
-        departmentName
-      );
-
-    applyNonPaginatedResponse(
-      nonPaginatedResponse?.data
-    );
-  } catch (error) {
-    usersNoPages.value = [];
-
-    console.error(
-      "Unable to preload export records:",
-      {
-        status:
-          error.response?.status,
-
-        response:
-          error.response?.data,
-
-        message:
-          error.message
-      }
-    );
-  }
+  await fetchUsers(1);
 }
-
-
 
 async function fetchUsers(
   page = 1
 ) {
+  if (isLoading.value) {
+    return;
+  }
+
   const requestedPage =
     normalizePage(
       page
@@ -385,8 +285,11 @@ async function fetchUsers(
     return;
   }
 
-  isLoading.value = true;
-  errorMessage.value = "";
+  isLoading.value =
+    true;
+
+  errorMessage.value =
+    "";
 
   try {
     const response =
@@ -408,23 +311,27 @@ async function fetchUsers(
   } catch (error) {
     console.error(
       "Unable to load filtered staff page:",
-      error.response?.data ||
-      error.message ||
-      error
-    );
+      {
+        status:
+          error?.response?.status,
 
-    users.value = [];
+        response:
+          error?.response?.data,
+
+        message:
+          error?.message
+      }
+    );
 
     errorMessage.value =
       getErrorMessage(
         error
       );
   } finally {
-    isLoading.value = false;
+    isLoading.value =
+      false;
   }
 }
-
-
 
 function applyPaginatedResponse(
   responseData,
@@ -444,14 +351,21 @@ function applyPaginatedResponse(
       ? data.results
       : {};
 
-  users.value =
+  const records =
     Array.isArray(
       results.users
     )
-      ? results.users.map(
-          normalizeAccount
-        )
+      ? results.users
       : [];
+
+  users.value =
+    records.map(
+      account => {
+        return normalizeAccount(
+          account
+        );
+      }
+    );
 
   dept.value =
     String(
@@ -461,10 +375,10 @@ function applyPaginatedResponse(
 
   filterType.value =
     String(
-      results.filter_type ??
       results.filterType ??
+      results.filter_type ??
       ""
-    );
+    ).trim();
 
   totalCount.value =
     normalizeCount(
@@ -474,13 +388,15 @@ function applyPaginatedResponse(
 
   next.value =
     typeof data.next ===
-      "string"
+      "string" &&
+    data.next.trim()
       ? data.next
       : null;
 
   previous.value =
     typeof data.previous ===
-      "string"
+      "string" &&
+    data.previous.trim()
       ? data.previous
       : null;
 
@@ -489,7 +405,7 @@ function applyPaginatedResponse(
       1,
       Math.ceil(
         totalCount.value /
-        PAGE_SIZE
+          PAGE_SIZE
       )
     );
 
@@ -503,180 +419,137 @@ function applyPaginatedResponse(
 
   selectedRow.value =
     null;
-
-  
-
- 
 }
-
-
-
-
-
-function applyNonPaginatedResponse(
-  responseData
-) {
-  const data =
-    responseData &&
-    typeof responseData ===
-      "object"
-      ? responseData
-      : {};
-
-  const results =
-    data.results &&
-    typeof data.results ===
-      "object"
-      ? data.results
-      : {};
-
-  const records =
-    Array.isArray(data.users)
-      ? data.users
-      : Array.isArray(
-          results.users
-        )
-        ? results.users
-        : Array.isArray(data)
-          ? data
-          : [];
-
-  usersNoPages.value =
-    records.map(
-      normalizeAccount
-    );
-
-
-
-
-
-}
-
-
 
 function normalizeAccount(
   account
 ) {
+  const source =
+    account &&
+    typeof account ===
+      "object"
+      ? account
+      : {};
+
   return {
-    ...account,
+    ...source,
 
     id:
       normalizeAccountId(
-        account.id ??
-        account.accountId ??
-        account.account_id
+        source.id ??
+        source.accountId ??
+        source.account_id
       ),
 
     userId:
       String(
-        account.userId ??
-        account.user_id ??
+        source.userId ??
+        source.user_id ??
         ""
       ).trim(),
 
     firstName:
       String(
-        account.firstName ??
-        account.first_name ??
+        source.firstName ??
+        source.first_name ??
         ""
       ).trim(),
 
     middleName:
       String(
-        account.middleName ??
-        account.middle_name ??
+        source.middleName ??
+        source.middle_name ??
         ""
       ).trim(),
 
     lastName:
       String(
-        account.lastName ??
-        account.last_name ??
+        source.lastName ??
+        source.last_name ??
         ""
       ).trim(),
 
     fullName:
       String(
-        account.fullName ??
-        account.full_name ??
+        source.fullName ??
+        source.full_name ??
         createFullName(
-          account
-        ) ??
-        ""
+          source
+        )
       ).trim(),
 
     phoneNumber:
       String(
-        account.phoneNumber ??
-        account.phone_number ??
+        source.phoneNumber ??
+        source.phone_number ??
         ""
       ).trim(),
 
     supervisorName:
       String(
-        account.supervisorName ??
-        account.supervisor_name ??
+        source.supervisorName ??
+        source.supervisor_name ??
         ""
       ).trim(),
 
     email:
       String(
-        account.email ??
+        source.email ??
         ""
       ).trim(),
 
     profilePictureUrl:
-      account.profilePictureUrl ??
-      account.profile_picture_url ??
-      account.profilePicture ??
-      account.profile_picture ??
+      source.profilePictureUrl ??
+      source.profile_picture_url ??
+      source.profilePicture ??
+      source.profile_picture ??
       null,
 
     directorateName:
       String(
-        account.directorateName ??
-        account.directorate_name ??
-        account.directorate ??
+        source.directorateName ??
+        source.directorate_name ??
+        source.directorate ??
         ""
       ).trim(),
 
     categoryName:
       String(
-        account.categoryName ??
-        account.category_name ??
-        account.category ??
+        source.categoryName ??
+        source.category_name ??
+        source.category ??
         ""
       ).trim(),
 
     districtName:
       String(
-        account.districtName ??
-        account.district_name ??
-        account.district ??
+        source.districtName ??
+        source.district_name ??
+        source.district ??
         ""
       ).trim(),
 
     regionName:
       String(
-        account.regionName ??
-        account.region_name ??
-        account.region ??
+        source.regionName ??
+        source.region_name ??
+        source.region ??
         ""
       ).trim(),
 
     currentGradeName:
       String(
-        account.currentGradeName ??
-        account.current_grade_name ??
-        account.current_grade ??
+        source.currentGradeName ??
+        source.current_grade_name ??
+        source.current_grade ??
         ""
       ).trim(),
 
     managementUnitCostCentreName:
       String(
-        account.managementUnitCostCentreName ??
-        account.management_unit_cost_centre_name ??
-        account.management_unit_cost_centre ??
+        source.managementUnitCostCentreName ??
+        source.management_unit_cost_centre_name ??
+        source.management_unit_cost_centre ??
         ""
       ).trim()
   };
@@ -685,7 +558,7 @@ function normalizeAccount(
 function createFullName(
   account
 ) {
-  return [
+  const nameParts = [
     account.firstName ??
       account.first_name,
 
@@ -694,27 +567,40 @@ function createFullName(
 
     account.lastName ??
       account.last_name
-  ]
-    .filter(
-      value => {
-        return (
-          value !== null &&
-          value !== undefined &&
-          String(value).trim() !==
-            ""
-        );
+  ];
+
+  return nameParts
+    .filter(value => {
+      if (
+        value === null ||
+        value === undefined
+      ) {
+        return false;
       }
-    )
-    .map(
-      value => {
-        return String(
-          value
-        ).trim();
-      }
-    )
-    .join(
-      " "
-    );
+
+      return (
+        String(value).trim() !==
+        ""
+      );
+    })
+    .map(value => {
+      return String(
+        value
+      ).trim();
+    })
+    .join(" ");
+}
+
+function rowNumber(
+  index
+) {
+  return (
+    (
+      currentPage.value -
+      1
+    ) *
+    PAGE_SIZE
+  ) + index + 1;
 }
 
 function selectRow(
@@ -737,8 +623,6 @@ function selectRow(
   selectedRow.value =
     staff;
 
-
-
   router.push({
     name:
       "Manager Staff Details",
@@ -749,8 +633,6 @@ function selectRow(
     }
   });
 }
-
-
 
 function getProfilePictureSrc(
   profilePicture
@@ -819,38 +701,27 @@ function getProfilePictureSrc(
   return `${baseUrl}/${picturePath}`;
 }
 
-
-
 async function exportExcel() {
-  if (exportLoading.value) {
+  if (
+    exportLoading.value ||
+    !canExport.value
+  ) {
     return;
   }
 
-  exportLoading.value = true;
+  exportLoading.value =
+    true;
+
+  errorMessage.value =
+    "";
 
   try {
-    let exportUsers =
-      usersNoPages.value;
+    const exportUsers =
+      await loadAllPagesForExport();
 
     if (
-      exportUsers.length === 0 &&
-      dept.value
-    ) {
-      const response =
-        await manager_users_per_department_no_pages(
-          dept.value
-        );
-
-      applyNonPaginatedResponse(
-        response?.data
-      );
-
-      exportUsers =
-        usersNoPages.value;
-    }
-
-    if (
-      exportUsers.length === 0
+      exportUsers.length ===
+      0
     ) {
       errorMessage.value =
         "No staff records are available to export.";
@@ -870,44 +741,16 @@ async function exportExcel() {
               staff.userId ||
               "",
 
+            "First Name":
+              staff.firstName ||
+              "",
+
             "Full Name":
               staff.fullName ||
               "",
 
             "Phone Number":
               staff.phoneNumber ||
-              "",
-
-            "Email":
-              staff.email ||
-              "",
-
-            "Supervisor's Name":
-              staff.supervisorName ||
-              "",
-
-            "Directorate":
-              staff.directorateName ||
-              "",
-
-            "Class":
-              staff.categoryName ||
-              "",
-
-            "District":
-              staff.districtName ||
-              "",
-
-            "Region":
-              staff.regionName ||
-              "",
-
-            "Current Grade":
-              staff.currentGradeName ||
-              "",
-
-            "Management Unit":
-              staff.managementUnitCostCentreName ||
               ""
           };
         }
@@ -954,22 +797,153 @@ async function exportExcel() {
 
     saveAs(
       file,
-      `${createFileName(dept.value)}.xlsx`
+      `${createFileName(
+        dept.value
+      )}.xlsx`
     );
   } catch (error) {
     console.error(
       "Unable to export filtered staff:",
-      error.response?.data ||
-      error.message ||
-      error
+      error?.response?.data ||
+        error?.message ||
+        error
     );
 
     errorMessage.value =
-      error.response?.data?.detail ||
-      "The staff records could not be exported.";
+      getErrorMessage(
+        error
+      );
   } finally {
-    exportLoading.value = false;
+    exportLoading.value =
+      false;
   }
+}
+
+async function loadAllPagesForExport() {
+  const firstResponse =
+    await manager_users_per_department(
+      dept.value,
+      {
+        page:
+          1,
+
+        page_size:
+          EXPORT_PAGE_SIZE
+      }
+    );
+
+  const firstData =
+    getResponseData(
+      firstResponse?.data
+    );
+
+  const firstUsers =
+    firstData.users.map(
+      account => {
+        return normalizeAccount(
+          account
+        );
+      }
+    );
+
+  const exportTotalPages =
+    Math.max(
+      1,
+      Math.ceil(
+        firstData.count /
+          EXPORT_PAGE_SIZE
+      )
+    );
+
+  const allUsers = [
+    ...firstUsers
+  ];
+
+  for (
+    let page = 2;
+    page <= exportTotalPages;
+    page += 1
+  ) {
+    const response =
+      await manager_users_per_department(
+        dept.value,
+        {
+          page,
+
+          page_size:
+            EXPORT_PAGE_SIZE
+        }
+      );
+
+    const pageData =
+      getResponseData(
+        response?.data
+      );
+
+    const pageUsers =
+      pageData.users.map(
+        account => {
+          return normalizeAccount(
+            account
+          );
+        }
+      );
+
+    allUsers.push(
+      ...pageUsers
+    );
+  }
+
+  const uniqueUsers =
+    new Map();
+
+  allUsers.forEach(
+    account => {
+      if (account.id !== null) {
+        uniqueUsers.set(
+          account.id,
+          account
+        );
+      }
+    }
+  );
+
+  return Array.from(
+    uniqueUsers.values()
+  );
+}
+
+function getResponseData(
+  responseData
+) {
+  const data =
+    responseData &&
+    typeof responseData ===
+      "object"
+      ? responseData
+      : {};
+
+  const results =
+    data.results &&
+    typeof data.results ===
+      "object"
+      ? data.results
+      : {};
+
+  return {
+    count:
+      normalizeCount(
+        data.count ??
+        results.count
+      ),
+
+    users:
+      Array.isArray(
+        results.users
+      )
+        ? results.users
+        : []
+  };
 }
 
 function getDepartmentFromRoute() {
@@ -996,23 +970,22 @@ function getDepartmentFromRoute() {
   }
 }
 
-
-
-
 function normalizePage(
   page
 ) {
-  const normalizedPage =
+  const normalizedValue =
     Number(page);
 
-  return (
-    Number.isInteger(
-      normalizedPage
-    ) &&
-    normalizedPage > 0
-  )
-    ? normalizedPage
-    : 1;
+  if (
+    !Number.isInteger(
+      normalizedValue
+    ) ||
+    normalizedValue <= 0
+  ) {
+    return 1;
+  }
+
+  return normalizedValue;
 }
 
 function normalizeCount(
@@ -1021,14 +994,16 @@ function normalizeCount(
   const normalizedValue =
     Number(value);
 
-  return (
-    Number.isFinite(
+  if (
+    !Number.isFinite(
       normalizedValue
-    ) &&
-    normalizedValue >= 0
-  )
-    ? normalizedValue
-    : 0;
+    ) ||
+    normalizedValue < 0
+  ) {
+    return 0;
+  }
+
+  return normalizedValue;
 }
 
 function normalizeAccountId(
@@ -1037,26 +1012,34 @@ function normalizeAccountId(
   const normalizedValue =
     Number(value);
 
-  return (
-    Number.isInteger(
+  if (
+    !Number.isInteger(
       normalizedValue
-    ) &&
-    normalizedValue > 0
-  )
-    ? normalizedValue
-    : null;
+    ) ||
+    normalizedValue <= 0
+  ) {
+    return null;
+  }
+
+  return normalizedValue;
 }
 
 function createWorksheetName(
   value
 ) {
+  const invalidCharacters =
+    new RegExp(
+      "[\\\\/?\\x2A\\[\\]:]",
+      "g"
+    );
+
   const name =
     String(
       value ||
       "Staff"
     )
       .replace(
-        /[\\/?*[\]:]/g,
+        invalidCharacters,
         ""
       )
       .trim();
@@ -1096,24 +1079,41 @@ function getErrorMessage(
   error
 ) {
   if (
-    error.message?.includes(
+    error?.message?.includes(
       "Network Error"
     ) ||
-    error.code ===
+    error?.code ===
       "ERR_NETWORK"
   ) {
-    return "Please check your internet connection.";
+    return (
+      "Please check your internet " +
+      "connection."
+    );
   }
 
   if (
-    error.response?.status ===
+    error?.response?.status ===
+      400
+  ) {
+    return (
+      error.response?.data?.detail ||
+      error.response?.data?.dept?.[0] ||
+      "A valid filter is required."
+    );
+  }
+
+  if (
+    error?.response?.status ===
       401
   ) {
-    return "Authentication is required.";
+    return (
+      error.response?.data?.detail ||
+      "Authentication is required."
+    );
   }
 
   if (
-    error.response?.status ===
+    error?.response?.status ===
       403
   ) {
     return (
@@ -1122,25 +1122,59 @@ function getErrorMessage(
     );
   }
 
+  if (
+    error?.response?.status ===
+      404
+  ) {
+    return (
+      error.response?.data?.detail ||
+      "The requested staff records were not found."
+    );
+  }
+
   return (
-    error.response?.data?.detail ||
+    error?.response?.data?.detail ||
+    error?.message ||
     "Something went wrong while fetching staff data."
   );
 }
 
 function resetPageData() {
-  users.value = [];
-  usersNoPages.value = [];
-  dept.value = "";
-  filterType.value = "";
-  totalCount.value = 0;
-  currentPage.value = 1;
-  totalPages.value = 1;
-  next.value = null;
-  previous.value = null;
-  selectedRow.value = null;
+  users.value =
+    [];
+
+  dept.value =
+    "";
+
+  filterType.value =
+    "";
+
+  searchQuery.value =
+    "";
+
+  totalCount.value =
+    0;
+
+  currentPage.value =
+    1;
+
+  totalPages.value =
+    1;
+
+  next.value =
+    null;
+
+  previous.value =
+    null;
+
+  selectedRow.value =
+    null;
+
+  errorMessage.value =
+    "";
 }
 </script>
+
 
 <template>
   <div class="premium-container">
